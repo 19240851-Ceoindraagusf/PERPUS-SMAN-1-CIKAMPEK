@@ -1,0 +1,320 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\ClassModel;
+use App\Models\Subject;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
+use Symfony\Component\Process\Process;
+use Throwable;
+
+class EbookMetadataExtractor
+{
+    public function extract(UploadedFile $file): array
+    {
+        $text = $this->extractText($file);
+        $source = $this->normalize($file->getClientOriginalName() . "\n" . $text);
+        $lines = $this->meaningfulLines($text);
+
+        $class = $this->detectClass($source);
+        $subject = $this->detectSubject($source, $class);
+        $detectedSubjectName = null;
+
+        if (! $class && $subject) {
+            $class = $subject->class;
+        }
+
+        if (! $subject) {
+            $detectedSubjectName = $this->detectKnownSubjectName($source);
+            $class = $class ?: $this->fallbackClass();
+        }
+
+        $displaySubjectName = $subject?->name ?: $detectedSubjectName;
+        $title = $this->detectTitle($file, $lines, $displaySubjectName);
+
+        return [
+            'class' => $class,
+            'subject' => $subject,
+            'detected_subject_name' => $detectedSubjectName,
+            'title' => $title,
+            'author' => $this->extractBlockValue($text, ['penulis', 'author', 'pengarang']) ?: 'Tidak diketahui',
+            'publisher' => $this->extractBlockValue($text, ['penerbit', 'publisher'], 4, false) ?: $this->detectPublisher($text),
+            'publication_year' => $this->detectYear($text, $source) ?: (int) date('Y'),
+            'description' => $this->detectDescription($lines) ?: 'Materi pembelajaran ' . ($displaySubjectName ?: 'e-book') . ' dari file ' . $file->getClientOriginalName() . '.',
+            'text_found' => trim($text) !== '',
+        ];
+    }
+
+    private function extractText(UploadedFile $file): string
+    {
+        try {
+            $process = new Process([$this->pdftotextPath(), '-l', '8', '-layout', $file->getRealPath(), '-']);
+            $process->setTimeout(15);
+            $process->run();
+        } catch (Throwable) {
+            return '';
+        }
+
+        if (! $process->isSuccessful()) {
+            return '';
+        }
+
+        return trim($process->getOutput());
+    }
+
+    private function pdftotextPath(): string
+    {
+        $laragonPath = 'C:\\laragon\\bin\\git\\mingw64\\bin\\pdftotext.exe';
+
+        return file_exists($laragonPath) ? $laragonPath : 'pdftotext';
+    }
+
+    private function detectClass(string $source): ?ClassModel
+    {
+        return ClassModel::where('is_active', true)
+            ->orderByRaw('LENGTH(name) DESC')
+            ->get()
+            ->first(fn (ClassModel $class) => collect($this->classAliases($class))
+                ->contains(fn (string $alias) => $this->containsToken($source, $alias)));
+    }
+
+    private function detectSubject(string $source, ?ClassModel $class): ?Subject
+    {
+        $subjects = Subject::query()
+            ->with('class')
+            ->when($class, fn ($query) => $query->where('class_id', $class->id))
+            ->orderByRaw('LENGTH(name) DESC')
+            ->get();
+
+        return $subjects->first(fn (Subject $subject) => collect($this->subjectAliases($subject))
+            ->contains(fn (string $alias) => $this->containsToken($source, $alias)));
+    }
+
+    private function fallbackClass(): ?ClassModel
+    {
+        $classesWithSubjects = ClassModel::whereHas('subjects')
+            ->get();
+
+        if ($classesWithSubjects->count() === 1) {
+            return $classesWithSubjects->first();
+        }
+
+        return ClassModel::where('is_active', true)->orderBy('name')->first();
+    }
+
+    private function detectKnownSubjectName(string $source): ?string
+    {
+        foreach ($this->knownSubjectAliases() as $subjectName => $aliases) {
+            foreach ($aliases as $alias) {
+                if ($this->containsToken($source, $alias)) {
+                    return $subjectName;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function classAliases(ClassModel $class): array
+    {
+        $name = trim($class->name);
+        $aliases = [
+            'kelas ' . $name,
+            'class ' . $name,
+        ];
+
+        $numbers = [
+            'X' => '10',
+            'XI' => '11',
+            'XII' => '12',
+        ];
+
+        $upperName = strtoupper($name);
+        if (isset($numbers[$upperName])) {
+            $aliases[] = 'kelas ' . $numbers[$upperName];
+            $aliases[] = 'class ' . $numbers[$upperName];
+            $aliases[] = 'grade ' . $numbers[$upperName];
+        }
+
+        if (Str::length($name) > 1) {
+            $aliases[] = $name;
+        }
+
+        return array_values(array_unique($aliases));
+    }
+
+    private function subjectAliases(Subject $subject): array
+    {
+        $name = trim($subject->name);
+        $aliases = [$name];
+
+        if ($subject->code) {
+            $aliases[] = $subject->code;
+        }
+
+        $normalizedName = $this->normalize($name);
+        $knownAliases = $this->knownSubjectAliases();
+
+        foreach ($knownAliases as $subjectName => $subjectAliases) {
+            if ($normalizedName === $this->normalize($subjectName)) {
+                array_push($aliases, ...$subjectAliases);
+            }
+        }
+
+        if (Str::startsWith($normalizedName, 'bahasa ') && $normalizedName !== 'bahasa indonesia') {
+            $aliases[] = Str::after($normalizedName, 'bahasa ');
+        }
+
+        return array_values(array_unique(array_filter($aliases)));
+    }
+
+    private function knownSubjectAliases(): array
+    {
+        return [
+            'Bahasa Inggris' => ['bahasa inggris', 'inggris', 'english', 'english language'],
+            'Bahasa Indonesia' => ['bahasa indonesia', 'indonesian language'],
+            'Bahasa Sunda' => ['bahasa sunda', 'sunda', 'sundanese'],
+            'Matematika' => ['matematika', 'math', 'mathematics', 'mathematika'],
+            'Informatika' => ['informatika', 'tik', 'komputer', 'computer science', 'informatics'],
+            'Kimia' => ['kimia', 'chemistry'],
+            'Fisika' => ['fisika', 'physics'],
+            'Biologi' => ['biologi', 'biology'],
+            'Sejarah' => ['sejarah', 'history'],
+            'Geografi' => ['geografi', 'geography'],
+            'Ekonomi' => ['ekonomi', 'economics'],
+        ];
+    }
+
+    private function detectTitle(UploadedFile $file, Collection $lines, ?string $subjectName): string
+    {
+        $title = $lines
+            ->reject(fn (string $line) => $this->looksLikeMetadataLine($line))
+            ->reject(fn (string $line) => $this->looksLikeInstitutionLine($line))
+            ->first();
+
+        if ($subjectName && (! $title || $this->looksLikeInstitutionLine($title))) {
+            $title = $subjectName;
+        }
+
+        return Str::limit($title ?: pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME), 255, '');
+    }
+
+    private function detectYear(string $text, string $source): ?int
+    {
+        if (preg_match('/cetakan\s+(?:pertama|kedua|ketiga|keempat|kelima)?\s*,?\s*(20[0-4]\d|19[5-9]\d)/iu', $text, $matches)) {
+            return (int) $matches[1];
+        }
+
+        if (preg_match('/(?:jakarta|bogor|bandung|yogyakarta|surabaya)\s*,\s*(?:\w+\s+)?(20[0-4]\d|19[5-9]\d)/iu', $text, $matches)) {
+            return (int) $matches[1];
+        }
+
+        if (preg_match('/\b(?:tahun terbit|terbit|published|publication year)\s*[:\-]?\s*(20[0-4]\d|19[5-9]\d)\b/iu', $text, $matches)) {
+            return (int) $matches[1];
+        }
+
+        if (preg_match('/\b(19[5-9]\d|20[0-4]\d)\b/', $source, $matches)) {
+            return (int) $matches[1];
+        }
+
+        return null;
+    }
+
+    private function detectDescription(Collection $lines): ?string
+    {
+        $description = $lines
+            ->reject(fn (string $line) => $this->looksLikeMetadataLine($line))
+            ->skip(1)
+            ->take(4)
+            ->implode(' ');
+
+        return $description ? Str::limit($description, 500, '') : null;
+    }
+
+    private function extractValue(string $text, array $labels): ?string
+    {
+        foreach ($labels as $label) {
+            if (preg_match('/^\s*' . preg_quote($label, '/') . '\s*[:\-]\s*(.+)$/imu', $text, $matches)) {
+                return Str::limit(trim($matches[1]), 255, '');
+            }
+
+            if (preg_match('/^\s*' . preg_quote($label, '/') . '\s*$\R+\s*(.+)$/imu', $text, $matches)) {
+                return Str::limit(trim($matches[1]), 255, '');
+            }
+        }
+
+        return null;
+    }
+
+    private function extractBlockValue(string $text, array $labels, int $lineLimit = 12, bool $skipInstitutionLines = true): ?string
+    {
+        foreach ($labels as $label) {
+            if (preg_match('/^\s*' . preg_quote($label, '/') . '\s*[:\-]\s*(.+)$/imu', $text, $matches)) {
+                return Str::limit(trim($matches[1]), 255, '');
+            }
+
+            if (preg_match('/^\s*' . preg_quote($label, '/') . '\s*$\R+(.+?)(?=^\s*(Penelaah|Penyelia|Ilustrator|Penata Letak|Penyunting|Penerbit|Cetakan|ISBN|Hak Cipta|Disclaimer|Kata Pengantar|Prakata)\b|^\s*(Penelaah|Penyelia|Ilustrator|Penata Letak|Penyunting|Penerbit|Cetakan|ISBN)\s*[:\-]|\z)/imsu', $text, $matches)) {
+                $value = collect(preg_split('/\R+/', trim($matches[1])) ?: [])
+                    ->map(fn (string $line) => trim(preg_replace('/\s+/', ' ', $line)))
+                    ->filter(fn (string $line) => $line !== '' && (! $skipInstitutionLines || ! $this->looksLikeInstitutionLine($line)))
+                    ->take($lineLimit)
+                    ->implode(', ');
+
+                return $value ? Str::limit($value, 255, '') : null;
+            }
+        }
+
+        return $this->extractValue($text, $labels);
+    }
+
+    private function detectPublisher(string $text): string
+    {
+        if (preg_match('/(Pusat\s+Perbukuan[^\r\n]*)/iu', $text, $matches)) {
+            return Str::limit(trim($matches[1]), 255, '');
+        }
+
+        if (preg_match('/(Kementerian\s+Pendidikan[^\r\n]*)/iu', $text, $matches)) {
+            return Str::limit(trim($matches[1]), 255, '');
+        }
+
+        return 'Tidak diketahui';
+    }
+
+    private function meaningfulLines(string $text): Collection
+    {
+        return collect(preg_split('/\R+/', $text) ?: [])
+            ->map(fn (string $line) => trim(preg_replace('/\s+/', ' ', $line)))
+            ->filter(fn (string $line) => $line !== '' && Str::length($line) >= 4)
+            ->take(25)
+            ->values();
+    }
+
+    private function containsToken(string $source, string $needle): bool
+    {
+        $needle = $this->normalize($needle);
+
+        return $needle !== '' && preg_match('/(^|[^a-z0-9])' . preg_quote($needle, '/') . '([^a-z0-9]|$)/i', $source);
+    }
+
+    private function looksLikeMetadataLine(string $line): bool
+    {
+        return preg_match('/^(penulis|author|pengarang|penerbit|publisher|tahun|kelas|mata pelajaran)\s*[:\-]/i', $line)
+            || preg_match('/^(isbn|copyright|daftar isi|kata pengantar)\b/i', $line);
+    }
+
+    private function looksLikeInstitutionLine(string $line): bool
+    {
+        return preg_match('/^(kementerian|republik indonesia|badan|pusat|hak cipta|isbn)\b/i', $line);
+    }
+
+    private function normalize(string $value): string
+    {
+        return Str::of($value)
+            ->lower()
+            ->replaceMatches('/[^a-z0-9]+/i', ' ')
+            ->squish()
+            ->toString();
+    }
+}
