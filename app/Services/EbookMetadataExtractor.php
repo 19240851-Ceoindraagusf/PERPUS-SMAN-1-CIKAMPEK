@@ -246,7 +246,7 @@ class EbookMetadataExtractor
             'Bahasa Sunda' => ['bahasa sunda', 'sunda', 'sundanese'],
             'Matematika' => ['matematika', 'math', 'mathematics', 'mathematika'],
             'Informatika' => ['informatika', 'tik', 'komputer', 'computer science', 'informatics'],
-            'Kimia' => ['kimia', 'chemistry'],
+            'Kimia' => ['kimia', 'chemistry', 'ipa', 'ilmu pengetahuan alam'],
             'Fisika' => ['fisika', 'physics'],
             'Biologi' => ['biologi', 'biology'],
             'Ilmu Pengetahuan Sosial' => ['ilmu pengetahuan sosial', 'ips', 'sejarah indonesia', 'sosiologi', 'ilmu ekonomi'],

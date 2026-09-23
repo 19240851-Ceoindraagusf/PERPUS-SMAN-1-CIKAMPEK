@@ -22,8 +22,8 @@ class ExampleTest extends TestCase
         $response = $this->get('/');
 
         $response->assertStatus(200)
-            ->assertSee('name="q"')
-            ->assertSee('name="class"')
+            ->assertSee('name="q"', false)
+            ->assertSee('name="class"', false)
             ->assertSee('Semua kelas')
             ->assertSee('XII');
     }

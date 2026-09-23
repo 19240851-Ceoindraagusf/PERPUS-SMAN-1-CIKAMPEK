@@ -25,12 +25,21 @@ class SubjectController extends Controller
             ->join('classes', 'classes.id', '=', 'subjects.class_id')
             ->with('class')
             ->withCount('ebooks')
+            ->whereRaw("LOWER(subjects.name) NOT IN ('ipa', 'ilmu pengetahuan alam')")
             ->when($selectedClassId, fn ($query) => $query->where('subjects.class_id', $selectedClassId))
             ->orderByRaw($classOrder)
             ->orderBy('subjects.name')
             ->orderBy('subjects.id')
             ->paginate(10)
             ->withQueryString();
+
+        $subjects->getCollection()->transform(function (Subject $subject) {
+            if ($subject->isScienceBranch()) {
+                $subject->setAttribute('ebooks_count', $subject->sharedEbooks()->count());
+            }
+
+            return $subject;
+        });
 
         $classes = ClassModel::query()
             ->orderByRaw("CASE name WHEN 'X' THEN 1 WHEN 'XI' THEN 2 WHEN 'XII' THEN 3 ELSE 4 END")

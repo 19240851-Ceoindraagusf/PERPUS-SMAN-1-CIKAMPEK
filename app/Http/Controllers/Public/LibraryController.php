@@ -58,9 +58,12 @@ class LibraryController extends Controller
 
         $classes = ClassModel::where('is_active', true)
             ->withCount([
-                'subjects' => fn ($query) => $query->where('is_active', true),
+                'subjects' => fn ($query) => $query
+                    ->where('is_active', true)
+                    ->whereRaw("LOWER(name) NOT IN ('ipa', 'ilmu pengetahuan alam')"),
                 'subjects as ebooks_count' => fn ($query) => $query
                     ->where('subjects.is_active', true)
+                    ->whereRaw("LOWER(subjects.name) NOT IN ('ipa', 'ilmu pengetahuan alam')")
                     ->join('ebooks', 'subjects.id', '=', 'ebooks.subject_id')
                     ->where('ebooks.is_active', true),
             ])
@@ -69,7 +72,9 @@ class LibraryController extends Controller
 
         $stats = [
             'classes' => $classes->count(),
-            'subjects' => Subject::where('is_active', true)->count(),
+            'subjects' => Subject::where('is_active', true)
+                ->whereRaw("LOWER(name) NOT IN ('ipa', 'ilmu pengetahuan alam')")
+                ->count(),
             'ebooks' => Ebook::where('is_active', true)->count(),
             'accesses' => AccessLog::count(),
         ];
@@ -90,9 +95,12 @@ class LibraryController extends Controller
 
         $classes = ClassModel::where('is_active', true)
             ->withCount([
-                'subjects' => fn ($query) => $query->where('is_active', true),
+                'subjects' => fn ($query) => $query
+                    ->where('is_active', true)
+                    ->whereRaw("LOWER(name) NOT IN ('ipa', 'ilmu pengetahuan alam')"),
                 'subjects as ebooks_count' => fn ($query) => $query
                     ->where('subjects.is_active', true)
+                    ->whereRaw("LOWER(subjects.name) NOT IN ('ipa', 'ilmu pengetahuan alam')")
                     ->join('ebooks', 'subjects.id', '=', 'ebooks.subject_id')
                     ->where('ebooks.is_active', true),
             ])
@@ -117,7 +125,14 @@ class LibraryController extends Controller
         $search = trim((string) $request->query('q', ''));
 
         $class->load(['subjects' => fn ($query) => $query
-            ->where('is_active', true)
+            ->whereRaw("LOWER(name) NOT IN ('ipa', 'ilmu pengetahuan alam')")
+            ->where(function ($query) {
+                $query->where('is_active', true);
+
+                foreach (Subject::scienceBranchNames() as $subjectName) {
+                    $query->orWhereRaw('LOWER(name) = ?', [$subjectName]);
+                }
+            })
             ->when($search, fn ($subjectQuery) => $subjectQuery->where(function ($subjectQuery) use ($search) {
                 $subjectQuery->where('name', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%")
@@ -130,10 +145,22 @@ class LibraryController extends Controller
                                 ->orWhere('publisher', 'like', "%{$search}%");
                         }));
             }))
-            ->withCount(['ebooks' => fn ($ebookQuery) => $ebookQuery->where('is_active', true)])
             ->orderBy('name')]);
 
-        $totalSubjects = Subject::where('class_id', $class->id)->where('is_active', true)->count();
+        $class->setRelation('subjects', $class->subjects
+            ->map(function (Subject $subject) {
+                $ebookCount = $subject->sharedEbooks()->where('is_active', true)->count();
+                $subject->setAttribute('ebooks_count', $ebookCount);
+
+                return $subject;
+            })
+            ->filter(fn (Subject $subject) => $subject->is_active || ($subject->isScienceBranch() && $subject->ebooks_count > 0))
+            ->values());
+
+        $totalSubjects = Subject::where('class_id', $class->id)
+            ->where('is_active', true)
+            ->whereRaw("LOWER(name) NOT IN ('ipa', 'ilmu pengetahuan alam')")
+            ->count();
 
         return view('public.class', compact('class', 'search', 'totalSubjects'));
     }
@@ -141,10 +168,14 @@ class LibraryController extends Controller
     public function subject(Request $request, ClassModel $class, Subject $subject): View
     {
         abort_unless($subject->class_id === $class->id, 404);
+        abort_if($subject->isScienceUmbrella(), 404);
 
-        $subject->load(['ebooks' => fn ($query) => $query
+        $ebooks = $subject->sharedEbooks()
             ->where('is_active', true)
-            ->latest()]);
+            ->latest()
+            ->get();
+
+        $subject->setRelation('ebooks', $ebooks);
 
         return view('public.subject', compact('class', 'subject'));
     }
