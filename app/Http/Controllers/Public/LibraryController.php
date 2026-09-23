@@ -16,30 +16,95 @@ class LibraryController extends Controller
 {
     public function home(): View
     {
-        $classes = ClassModel::where('is_active', true)->orderBy('name')->get();
+        $classes = ClassModel::where('is_active', true)
+            ->withCount([
+                'subjects' => fn ($query) => $query->where('is_active', true),
+                'subjects as ebooks_count' => fn ($query) => $query
+                    ->where('subjects.is_active', true)
+                    ->join('ebooks', 'subjects.id', '=', 'ebooks.subject_id')
+                    ->where('ebooks.is_active', true),
+            ])
+            ->orderBy('name')
+            ->get();
 
-        return view('public.home', compact('classes'));
+        $stats = [
+            'classes' => $classes->count(),
+            'subjects' => Subject::where('is_active', true)->count(),
+            'ebooks' => Ebook::where('is_active', true)->count(),
+            'accesses' => AccessLog::count(),
+        ];
+
+        $latestEbooks = Ebook::with('subject.class')
+            ->where('is_active', true)
+            ->latest()
+            ->limit(4)
+            ->get();
+
+        return view('public.home', compact('classes', 'stats', 'latestEbooks'));
     }
 
-    public function library(): View
+    public function library(Request $request): View
     {
-        $classes = ClassModel::where('is_active', true)->orderBy('name')->get();
+        $search = trim((string) $request->query('q', ''));
+        $selectedClass = $request->query('class');
 
-        return view('public.library', compact('classes'));
+        $classes = ClassModel::where('is_active', true)
+            ->withCount([
+                'subjects' => fn ($query) => $query->where('is_active', true),
+                'subjects as ebooks_count' => fn ($query) => $query
+                    ->where('subjects.is_active', true)
+                    ->join('ebooks', 'subjects.id', '=', 'ebooks.subject_id')
+                    ->where('ebooks.is_active', true),
+            ])
+            ->when($selectedClass, fn ($query) => $query->where('name', $selectedClass))
+            ->when($search, fn ($query) => $query->where(function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhereHas('subjects', fn ($subjectQuery) => $subjectQuery
+                        ->where('name', 'like', "%{$search}%")
+                        ->orWhereHas('ebooks', fn ($ebookQuery) => $ebookQuery->where('title', 'like', "%{$search}%")));
+            }))
+            ->orderBy('name')
+            ->get();
+
+        $classOptions = ClassModel::where('is_active', true)->orderBy('name')->pluck('name');
+
+        return view('public.library', compact('classes', 'classOptions', 'search', 'selectedClass'));
     }
 
-    public function class(ClassModel $class): View
+    public function class(Request $request, ClassModel $class): View
     {
-        $class->load(['subjects' => fn ($query) => $query->where('is_active', true)->orderBy('name')]);
+        $search = trim((string) $request->query('q', ''));
 
-        return view('public.class', compact('class'));
+        $class->load(['subjects' => fn ($query) => $query
+            ->where('is_active', true)
+            ->when($search, fn ($subjectQuery) => $subjectQuery->where(function ($subjectQuery) use ($search) {
+                $subjectQuery->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhereHas('ebooks', fn ($ebookQuery) => $ebookQuery
+                        ->where('is_active', true)
+                        ->where(function ($ebookQuery) use ($search) {
+                            $ebookQuery->where('title', 'like', "%{$search}%")
+                                ->orWhere('description', 'like', "%{$search}%")
+                                ->orWhere('author', 'like', "%{$search}%")
+                                ->orWhere('publisher', 'like', "%{$search}%");
+                        }));
+            }))
+            ->withCount(['ebooks' => fn ($ebookQuery) => $ebookQuery->where('is_active', true)])
+            ->orderBy('name')]);
+
+        $totalSubjects = Subject::where('class_id', $class->id)->where('is_active', true)->count();
+
+        return view('public.class', compact('class', 'search', 'totalSubjects'));
     }
 
-    public function subject(ClassModel $class, Subject $subject): View
+    public function subject(Request $request, ClassModel $class, Subject $subject): View
     {
         abort_unless($subject->class_id === $class->id, 404);
 
-        $subject->load(['ebooks' => fn ($query) => $query->where('is_active', true)->latest()]);
+        $subject->load(['ebooks' => fn ($query) => $query
+            ->where('is_active', true)
+            ->latest()]);
 
         return view('public.subject', compact('class', 'subject'));
     }

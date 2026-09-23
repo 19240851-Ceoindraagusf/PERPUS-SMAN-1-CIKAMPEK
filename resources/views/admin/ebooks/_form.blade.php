@@ -1,9 +1,4 @@
 @csrf
-<div class="mb-3">
-    <label class="form-label" for="title">Judul</label>
-    <input class="form-control @error('title') is-invalid @enderror" id="title" name="title" value="{{ old('title', $ebook->title ?? '') }}" required>
-    @error('title')<div class="invalid-feedback">{{ $message }}</div>@enderror
-</div>
 @php
     $selectedClassId = old('class_id', $ebook->subject->class_id ?? '');
 @endphp

@@ -10,13 +10,14 @@
 <div class="card border-0 shadow-sm">
     <div class="table-responsive">
         <table class="table mb-0 align-middle">
-            <thead><tr><th>Kelas</th><th>Mata Pelajaran</th><th>Penulis</th><th>Tahun</th><th>Status</th><th>Aksi</th></tr></thead>
+            <thead><tr><th>Kelas</th><th>Mata Pelajaran</th><th>Penulis</th><th>Penerbit</th><th>Tahun</th><th>Status</th><th>Aksi</th></tr></thead>
             <tbody>
             @forelse($ebooks as $ebook)
                 <tr>
                     <td>Kelas {{ $ebook->subject->class->name ?? '-' }}</td>
                     <td>{{ $ebook->subject->name ?? '-' }}</td>
                     <td>{{ $ebook->author ?: '-' }}</td>
+                    <td>{{ $ebook->publisher ?: '-' }}</td>
                     <td>{{ $ebook->publication_year ?: '-' }}</td>
                     <td>{{ $ebook->is_active ? 'Aktif' : 'Nonaktif' }}</td>
                     <td>
@@ -31,7 +32,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="6" class="text-muted">Data e-book belum tersedia.</td></tr>
+                <tr><td colspan="7" class="text-muted">Data e-book belum tersedia.</td></tr>
             @endforelse
             </tbody>
         </table>

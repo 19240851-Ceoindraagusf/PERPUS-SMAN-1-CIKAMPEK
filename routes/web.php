@@ -9,7 +9,7 @@ use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Public\LibraryController;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/perpustakaan')->name('home');
+Route::get('/', [LibraryController::class, 'home'])->name('home');
 Route::get('/perpustakaan', [LibraryController::class, 'library'])->name('library');
 Route::get('/kelas/{class}', [LibraryController::class, 'class'])->name('classes.show');
 Route::get('/kelas/{class}/mata-pelajaran/{subject}', [LibraryController::class, 'subject'])->name('subjects.show');

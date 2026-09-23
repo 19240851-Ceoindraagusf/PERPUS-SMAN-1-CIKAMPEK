@@ -25,14 +25,15 @@
             </div>
         </div>
         <div class="col-md-8">
+            <span class="badge badge-soft mb-3">Kelas {{ $ebook->subject->class->name }} / {{ $ebook->subject->name }}</span>
             <h1 class="h3">{{ $ebook->title }}</h1>
             <p class="text-muted">{{ $ebook->description ?: 'Belum ada deskripsi e-book.' }}</p>
-            <dl class="row">
-                <dt class="col-sm-4">Mata Pelajaran</dt><dd class="col-sm-8">{{ $ebook->subject->name }}</dd>
-                <dt class="col-sm-4">Penulis</dt><dd class="col-sm-8">{{ $ebook->author ?: '-' }}</dd>
-                <dt class="col-sm-4">Penerbit</dt><dd class="col-sm-8">{{ $ebook->publisher ?: '-' }}</dd>
-                <dt class="col-sm-4">Tahun</dt><dd class="col-sm-8">{{ $ebook->publication_year ?: '-' }}</dd>
-            </dl>
+            <div class="row g-3 mb-4">
+                <div class="col-sm-6"><div class="metric"><div class="small text-muted">Mata Pelajaran</div><div class="fw-semibold">{{ $ebook->subject->name }}</div></div></div>
+                <div class="col-sm-6"><div class="metric"><div class="small text-muted">Penulis</div><div class="fw-semibold">{{ $ebook->author ?: '-' }}</div></div></div>
+                <div class="col-sm-6"><div class="metric"><div class="small text-muted">Penerbit</div><div class="fw-semibold">{{ $ebook->publisher ?: '-' }}</div></div></div>
+                <div class="col-sm-6"><div class="metric"><div class="small text-muted">Tahun</div><div class="fw-semibold">{{ $ebook->publication_year ?: '-' }}</div></div></div>
+            </div>
             @if($ebook->file_path)
                 <a href="{{ asset('storage/' . $ebook->file_path) }}" class="btn btn-success" target="_blank">Baca E-Book</a>
                 <a href="{{ route('ebooks.download', $ebook) }}" class="btn btn-outline-success">Download</a>

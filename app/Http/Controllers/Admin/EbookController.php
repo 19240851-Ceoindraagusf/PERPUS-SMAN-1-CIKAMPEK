@@ -33,7 +33,6 @@ class EbookController extends Controller
         $validated = $request->validate([
             'class_id' => ['required', 'exists:classes,id'],
             'subject_id' => ['required', 'exists:subjects,id'],
-            'title' => ['required', 'string', 'max:255'],
             'author' => ['nullable', 'string', 'max:255'],
             'publisher' => ['nullable', 'string', 'max:255'],
             'publication_year' => ['nullable', 'integer', 'min:1900', 'max:' . (date('Y') + 1)],
@@ -46,6 +45,7 @@ class EbookController extends Controller
         $this->validateSubjectBelongsToClass($validated['subject_id'], $validated['class_id']);
 
         $validated['is_active'] = $request->boolean('is_active');
+        $validated['title'] = $this->titleFromUploadedFile($request->file('file'));
         $validated['file_path'] = $request->file('file')->store('ebooks', 'public');
 
         if ($request->hasFile('cover')) {
@@ -73,7 +73,6 @@ class EbookController extends Controller
         $validated = $request->validate([
             'class_id' => ['required', 'exists:classes,id'],
             'subject_id' => ['required', 'exists:subjects,id'],
-            'title' => ['required', 'string', 'max:255'],
             'author' => ['nullable', 'string', 'max:255'],
             'publisher' => ['nullable', 'string', 'max:255'],
             'publication_year' => ['nullable', 'integer', 'min:1900', 'max:' . (date('Y') + 1)],
@@ -92,6 +91,7 @@ class EbookController extends Controller
                 Storage::disk('public')->delete($ebook->file_path);
             }
 
+            $validated['title'] = $this->titleFromUploadedFile($request->file('file'));
             $validated['file_path'] = $request->file('file')->store('ebooks', 'public');
         }
 
@@ -158,5 +158,10 @@ class EbookController extends Controller
                 ->withInput()
                 ->throwResponse();
         }
+    }
+
+    private function titleFromUploadedFile($file): string
+    {
+        return pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
     }
 }

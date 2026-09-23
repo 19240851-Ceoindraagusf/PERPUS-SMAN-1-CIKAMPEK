@@ -20,9 +20,10 @@ class DashboardController extends Controller
             'accesses' => AccessLog::count(),
         ];
 
-        $latestEbooks = Ebook::with('subject')->latest()->limit(5)->get();
-        $popularEbooks = Ebook::withCount('accessLogs')->orderByDesc('access_logs_count')->limit(5)->get();
+        $latestEbooks = Ebook::with('subject.class')->latest()->limit(5)->get();
+        $popularEbooks = Ebook::with('subject.class')->withCount('accessLogs')->orderByDesc('access_logs_count')->limit(5)->get();
+        $latestAccessLogs = AccessLog::with('ebook.subject.class')->latest('accessed_at')->limit(5)->get();
 
-        return view('admin.dashboard', compact('stats', 'latestEbooks', 'popularEbooks'));
+        return view('admin.dashboard', compact('stats', 'latestEbooks', 'popularEbooks', 'latestAccessLogs'));
     }
 }
