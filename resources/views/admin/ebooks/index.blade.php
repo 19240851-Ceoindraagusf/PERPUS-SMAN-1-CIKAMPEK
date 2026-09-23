@@ -37,6 +37,6 @@
             </tbody>
         </table>
     </div>
-    <div class="card-body">{{ $ebooks->links() }}</div>
+    <div class="card-body">{{ $ebooks->links('vendor.pagination.bootstrap-5-simple') }}</div>
 </div>
 @endsection

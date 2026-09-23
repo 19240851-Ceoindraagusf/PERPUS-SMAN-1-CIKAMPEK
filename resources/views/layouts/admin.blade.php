@@ -18,6 +18,13 @@
         .stat-card { border-left: 4px solid var(--admin-green); }
         .stat-icon { width: 42px; height: 42px; border-radius: 8px; display: grid; place-items: center; background: #eef6f3; color: var(--admin-green); font-weight: 800; }
         .page-header { background: #fff; border: 1px solid var(--admin-line); border-radius: 8px; padding: 1rem; }
+        .pagination { --bs-pagination-color: var(--admin-ink); --bs-pagination-bg: #fff; --bs-pagination-border-width: 1px; --bs-pagination-border-color: var(--admin-line); --bs-pagination-hover-color: var(--admin-green); --bs-pagination-hover-bg: #eef6f3; --bs-pagination-hover-border-color: rgba(15, 107, 79, .35); --bs-pagination-active-color: #fff; --bs-pagination-active-bg: var(--admin-green); --bs-pagination-active-border-color: var(--admin-green); --bs-pagination-disabled-color: #8a96a6; --bs-pagination-disabled-bg: #f4f7fb; --bs-pagination-disabled-border-color: var(--admin-line); }
+        .pagination .page-link {
+            min-width: 42px; min-height: 42px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; font-weight: 600; transition: all .2s ease;
+        }
+        .pagination .page-link:hover { transform: translateY(-1px); }
+        .pagination .page-item.active .page-link { box-shadow: 0 8px 18px rgba(15, 107, 79, .18); }
+        .pagination .page-item.disabled .page-link { cursor: not-allowed; }
         @media (max-width: 991.98px) {
             .admin-shell { flex-direction: column; }
             .admin-sidebar { width: 100%; }

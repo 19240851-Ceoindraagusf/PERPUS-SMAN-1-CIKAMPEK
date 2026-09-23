@@ -34,6 +34,6 @@
             </tbody>
         </table>
     </div>
-    <div class="card-body">{{ $accessLogs->links() }}</div>
+    <div class="card-body">{{ $accessLogs->links('vendor.pagination.bootstrap-5-simple') }}</div>
 </div>
 @endsection

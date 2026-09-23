@@ -22,6 +22,10 @@ class EbookMetadataExtractor
         $subject = $this->detectSubject($source, $class);
         $detectedSubjectName = null;
 
+        if ($subject && $this->isScienceUmbrellaSubject($subject)) {
+            $subject = null;
+        }
+
         if (! $class && $subject) {
             $class = $subject->class;
         }
@@ -41,7 +45,7 @@ class EbookMetadataExtractor
             'title' => $title,
             'author' => $this->extractBlockValue($text, ['penulis', 'author', 'pengarang']) ?: 'Tidak diketahui',
             'publisher' => $this->extractBlockValue($text, ['penerbit', 'publisher'], 4, false) ?: $this->detectPublisher($text),
-            'publication_year' => $this->detectYear($text, $source) ?: (int) date('Y'),
+            'publication_year' => $this->detectYear($text, $source),
             'description' => $this->detectDescription($lines) ?: 'Materi pembelajaran ' . ($displaySubjectName ?: 'e-book') . ' dari file ' . $file->getClientOriginalName() . '.',
             'text_found' => trim($text) !== '',
         ];
@@ -50,18 +54,22 @@ class EbookMetadataExtractor
     private function extractText(UploadedFile $file): string
     {
         try {
-            $process = new Process([$this->pdftotextPath(), '-l', '8', '-layout', $file->getRealPath(), '-']);
-            $process->setTimeout(15);
-            $process->run();
+            $layoutProcess = new Process([$this->pdftotextPath(), '-l', '20', '-layout', $file->getRealPath(), '-']);
+            $layoutProcess->setTimeout(20);
+            $layoutProcess->run();
+
+            $rawProcess = new Process([$this->pdftotextPath(), '-l', '20', '-raw', $file->getRealPath(), '-']);
+            $rawProcess->setTimeout(20);
+            $rawProcess->run();
         } catch (Throwable) {
             return '';
         }
 
-        if (! $process->isSuccessful()) {
+        if (! $layoutProcess->isSuccessful() && ! $rawProcess->isSuccessful()) {
             return '';
         }
 
-        return trim($process->getOutput());
+        return trim(($layoutProcess->isSuccessful() ? $layoutProcess->getOutput() : '') . "\n" . ($rawProcess->isSuccessful() ? $rawProcess->getOutput() : ''));
     }
 
     private function pdftotextPath(): string
@@ -73,11 +81,31 @@ class EbookMetadataExtractor
 
     private function detectClass(string $source): ?ClassModel
     {
+        if ($class = $this->detectExplicitClass($source)) {
+            return $class;
+        }
+
         return ClassModel::where('is_active', true)
             ->orderByRaw('LENGTH(name) DESC')
             ->get()
             ->first(fn (ClassModel $class) => collect($this->classAliases($class))
                 ->contains(fn (string $alias) => $this->containsToken($source, $alias)));
+    }
+
+    private function detectExplicitClass(string $source): ?ClassModel
+    {
+        if (! preg_match('/(?:kelas|class|grade) (xii|xi|x|12|11|10)(?: |$)/i', $source, $matches)) {
+            return null;
+        }
+
+        $className = match (strtolower($matches[1])) {
+            '10' => 'X',
+            '11' => 'XI',
+            '12' => 'XII',
+            default => strtoupper($matches[1]),
+        };
+
+        return ClassModel::where('is_active', true)->where('name', $className)->first();
     }
 
     private function detectSubject(string $source, ?ClassModel $class): ?Subject
@@ -88,8 +116,10 @@ class EbookMetadataExtractor
             ->orderByRaw('LENGTH(name) DESC')
             ->get();
 
-        return $subjects->first(fn (Subject $subject) => collect($this->subjectAliases($subject))
-            ->contains(fn (string $alias) => $this->containsToken($source, $alias)));
+        return $subjects
+            ->reject(fn (Subject $subject) => $this->isScienceUmbrellaSubject($subject))
+            ->first(fn (Subject $subject) => collect($this->subjectAliases($subject))
+                ->contains(fn (string $alias) => $this->containsToken($source, $alias)));
     }
 
     private function fallbackClass(): ?ClassModel
@@ -106,6 +136,10 @@ class EbookMetadataExtractor
 
     private function detectKnownSubjectName(string $source): ?string
     {
+        if ($scienceSubject = $this->detectScienceSubjectName($source)) {
+            return $scienceSubject;
+        }
+
         foreach ($this->knownSubjectAliases() as $subjectName => $aliases) {
             foreach ($aliases as $alias) {
                 if ($this->containsToken($source, $alias)) {
@@ -115,6 +149,40 @@ class EbookMetadataExtractor
         }
 
         return null;
+    }
+
+    public function detectScienceSubjectNameFromText(string $source): ?string
+    {
+        $scores = [
+            'Biologi' => [
+                'biologi', 'biology', 'makhluk hidup', 'sel', 'genetik', 'ekosistem',
+                'keanekaragaman hayati', 'tumbuhan', 'hewan', 'organisme',
+            ],
+            'Kimia' => [
+                'kimia', 'chemistry', 'atom', 'molekul', 'unsur', 'senyawa',
+                'reaksi kimia', 'larutan', 'stoikiometri', 'ikatan kimia',
+            ],
+            'Fisika' => [
+                'fisika', 'physics', 'gerak', 'gaya', 'energi', 'usaha', 'daya',
+                'gelombang', 'listrik', 'magnet', 'kalor', 'optik',
+            ],
+        ];
+
+        $matched = collect($scores)
+            ->map(fn (array $keywords, string $subjectName) => [
+                'subject' => $subjectName,
+                'score' => collect($keywords)->filter(fn (string $keyword) => $this->containsToken($source, $keyword))->count(),
+            ])
+            ->filter(fn (array $result) => $result['score'] > 0)
+            ->sortByDesc('score')
+            ->values();
+
+        return $matched->first()['subject'] ?? null;
+    }
+
+    private function detectScienceSubjectName(string $source): ?string
+    {
+        return $this->detectScienceSubjectNameFromText($source);
     }
 
     private function classAliases(ClassModel $class): array
@@ -181,20 +249,34 @@ class EbookMetadataExtractor
             'Kimia' => ['kimia', 'chemistry'],
             'Fisika' => ['fisika', 'physics'],
             'Biologi' => ['biologi', 'biology'],
+            'Ilmu Pengetahuan Sosial' => ['ilmu pengetahuan sosial', 'ips', 'sejarah indonesia', 'sosiologi', 'ilmu ekonomi'],
+            'Pendidikan Agama Islam dan Budi Pekerti' => ['pendidikan agama islam dan budi pekerti', 'pendidikan agama islam', 'agama islam', 'pai', 'budi pekerti'],
+            'Pendidikan Pancasila' => ['pendidikan pancasila', 'pancasila', 'ppkn', 'pkn'],
             'Sejarah' => ['sejarah', 'history'],
             'Geografi' => ['geografi', 'geography'],
             'Ekonomi' => ['ekonomi', 'economics'],
         ];
     }
 
+    private function isScienceUmbrellaSubject(Subject $subject): bool
+    {
+        return in_array($this->normalize($subject->name), [
+            'ipa',
+            'ilmu pengetahuan alam',
+        ], true);
+    }
+
     private function detectTitle(UploadedFile $file, Collection $lines, ?string $subjectName): string
     {
         $title = $lines
+            ->first(fn (string $line) => $subjectName && $this->normalize($line) === $this->normalize($subjectName))
+            ?: $lines
             ->reject(fn (string $line) => $this->looksLikeMetadataLine($line))
             ->reject(fn (string $line) => $this->looksLikeInstitutionLine($line))
+            ->reject(fn (string $line) => preg_match('/^\d{4}$/', trim($line)))
             ->first();
 
-        if ($subjectName && (! $title || $this->looksLikeInstitutionLine($title))) {
+        if ($subjectName && (! $title || $this->looksLikeInstitutionLine($title) || $this->looksLikePersonName($title) || preg_match('/^\d{4}$/', trim($title)))) {
             $title = $subjectName;
         }
 
@@ -203,19 +285,19 @@ class EbookMetadataExtractor
 
     private function detectYear(string $text, string $source): ?int
     {
-        if (preg_match('/cetakan\s+(?:pertama|kedua|ketiga|keempat|kelima)?\s*,?\s*(20[0-4]\d|19[5-9]\d)/iu', $text, $matches)) {
+        $plainText = preg_replace('/[^\S\r\n]+/', ' ', $text) ?: $text;
+        $singleLineText = preg_replace('/\s+/', ' ', $plainText) ?: $plainText;
+
+        if (preg_match('/Cetakan[^0-9\r\n]*(20[0-4][0-9]|19[5-9][0-9])/i', $plainText, $matches)
+            || preg_match('/Cetakan[^0-9]*(20[0-4][0-9]|19[5-9][0-9])/i', $singleLineText, $matches)) {
             return (int) $matches[1];
         }
 
-        if (preg_match('/(?:jakarta|bogor|bandung|yogyakarta|surabaya)\s*,\s*(?:\w+\s+)?(20[0-4]\d|19[5-9]\d)/iu', $text, $matches)) {
+        if (preg_match('/(?:Jakarta|Bogor|Bandung|Yogyakarta|Surabaya)\s*,\s*[^\r\n]*(20[0-4][0-9]|19[5-9][0-9])/i', $plainText, $matches)) {
             return (int) $matches[1];
         }
 
-        if (preg_match('/\b(?:tahun terbit|terbit|published|publication year)\s*[:\-]?\s*(20[0-4]\d|19[5-9]\d)\b/iu', $text, $matches)) {
-            return (int) $matches[1];
-        }
-
-        if (preg_match('/\b(19[5-9]\d|20[0-4]\d)\b/', $source, $matches)) {
+        if (preg_match('/(?:tahun terbit|terbit|published|publication year)\s*[:\-]?\s*(20[0-4][0-9]|19[5-9][0-9])/i', $singleLineText, $matches)) {
             return (int) $matches[1];
         }
 
@@ -250,6 +332,11 @@ class EbookMetadataExtractor
 
     private function extractBlockValue(string $text, array $labels, int $lineLimit = 12, bool $skipInstitutionLines = true): ?string
     {
+        $lineValue = $this->extractBlockValueFromLines($text, $labels, $lineLimit, $skipInstitutionLines);
+        if ($lineValue) {
+            return $lineValue;
+        }
+
         foreach ($labels as $label) {
             if (preg_match('/^\s*' . preg_quote($label, '/') . '\s*[:\-]\s*(.+)$/imu', $text, $matches)) {
                 return Str::limit(trim($matches[1]), 255, '');
@@ -267,6 +354,56 @@ class EbookMetadataExtractor
         }
 
         return $this->extractValue($text, $labels);
+    }
+
+    private function extractBlockValueFromLines(string $text, array $labels, int $lineLimit, bool $skipInstitutionLines): ?string
+    {
+        $lines = collect(preg_split('/\R+/', $text) ?: [])
+            ->map(fn (string $line) => trim(preg_replace('/\s+/', ' ', $line)))
+            ->values();
+
+        $stopLabels = [
+            'penulis', 'author', 'pengarang', 'penelaah', 'penyelia', 'ilustrator',
+            'penata letak', 'desainer', 'penyunting', 'penerbit', 'cetakan', 'isbn',
+            'hak cipta', 'disclaimer', 'kata pengantar', 'prakata',
+        ];
+
+        foreach ($lines as $index => $line) {
+            $normalizedLine = $this->normalize($line);
+            if (! collect($labels)->contains(fn (string $label) => $normalizedLine === $this->normalize($label))) {
+                continue;
+            }
+
+            $values = [];
+            for ($i = $index + 1; $i < $lines->count(); $i++) {
+                $candidate = trim($lines[$i]);
+                $normalizedCandidate = $this->normalize($candidate);
+
+                if ($candidate === '') {
+                    continue;
+                }
+
+                if (collect($stopLabels)->contains(fn (string $label) => $normalizedCandidate === $this->normalize($label))) {
+                    break;
+                }
+
+                if ($skipInstitutionLines && $this->looksLikeInstitutionLine($candidate)) {
+                    continue;
+                }
+
+                $values[] = $candidate;
+
+                if (count($values) >= $lineLimit) {
+                    break;
+                }
+            }
+
+            if ($values) {
+                return Str::limit(implode(', ', $values), 255, '');
+            }
+        }
+
+        return null;
     }
 
     private function detectPublisher(string $text): string
@@ -307,6 +444,15 @@ class EbookMetadataExtractor
     private function looksLikeInstitutionLine(string $line): bool
     {
         return preg_match('/^(kementerian|republik indonesia|badan|pusat|hak cipta|isbn)\b/i', $line);
+    }
+
+    private function looksLikePersonName(string $line): bool
+    {
+        $words = preg_split('/\s+/', trim($line)) ?: [];
+
+        return count($words) >= 2
+            && count($words) <= 4
+            && ! preg_match('/\b(kelas|sma|smk|untuk|pendidikan|informatika|matematika|bahasa)\b/i', $line);
     }
 
     private function normalize(string $value): string

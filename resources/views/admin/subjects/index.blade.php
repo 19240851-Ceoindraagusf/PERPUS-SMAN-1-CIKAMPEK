@@ -59,6 +59,6 @@
             </tbody>
         </table>
     </div>
-    <div class="card-body">{{ $subjects->links() }}</div>
+    <div class="card-body">{{ $subjects->links('vendor.pagination.bootstrap-5-simple') }}</div>
 </div>
 @endsection

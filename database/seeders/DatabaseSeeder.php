@@ -37,7 +37,7 @@ class DatabaseSeeder extends Seeder
         $classX = ClassModel::where('name', 'X')->first();
 
         // Data contoh untuk development. Data resmi akan dimasukkan setelah validasi dari perpustakaan.
-        foreach (['Bahasa Indonesia', 'Bahasa Inggris', 'Matematika', 'Kimia'] as $subjectName) {
+        foreach (['Bahasa Indonesia', 'Bahasa Inggris', 'Matematika', 'Kimia', 'Fisika', 'Biologi'] as $subjectName) {
             Subject::firstOrCreate(
                 ['class_id' => $classX->id, 'name' => $subjectName],
                 ['description' => 'Contoh mata pelajaran untuk pengembangan awal.']
