@@ -21,7 +21,12 @@
                     <td>{{ $ebook->publication_year ?: '-' }}</td>
                     <td>{{ $ebook->is_active ? 'Aktif' : 'Nonaktif' }}</td>
                     <td>
-                        <div class="d-flex gap-2">
+                        <div class="d-flex gap-2 flex-wrap">
+                            @if($ebook->file_path)
+                                <a class="btn btn-sm btn-outline-info" href="{{ asset('storage/' . $ebook->file_path) }}" target="_blank" rel="noopener noreferrer">Lihat</a>
+                            @else
+                                <span class="btn btn-sm btn-outline-secondary disabled">Lihat</span>
+                            @endif
                             <a class="btn btn-sm btn-outline-success" href="{{ route('admin.ebooks.edit', $ebook) }}">Edit</a>
                             <form method="POST" action="{{ route('admin.ebooks.destroy', $ebook) }}" onsubmit="return confirm('Hapus e-book ini?');">
                                 @csrf
