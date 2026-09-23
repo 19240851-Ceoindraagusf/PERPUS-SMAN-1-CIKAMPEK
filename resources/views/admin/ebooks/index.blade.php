@@ -9,15 +9,15 @@
 </div>
 <div class="card border-0 shadow-sm">
     <div class="table-responsive">
-        <table class="table mb-0 align-middle">
+        <table class="table mb-0 align-middle ebook-table">
             <thead><tr><th>Kelas</th><th>Mata Pelajaran</th><th>Penulis</th><th>Penerbit</th><th>Tahun</th><th>Status</th><th>Aksi</th></tr></thead>
             <tbody>
             @forelse($ebooks as $ebook)
                 <tr>
                     <td>Kelas {{ $ebook->subject->class->name ?? '-' }}</td>
                     <td>{{ $ebook->subject->name ?? '-' }}</td>
-                    <td>{{ $ebook->author ?: '-' }}</td>
-                    <td>{{ $ebook->publisher ?: '-' }}</td>
+                    <td>{{ \Illuminate\Support\Str::limit($ebook->author ?: '-', 55) }}</td>
+                    <td>{{ \Illuminate\Support\Str::limit($ebook->publisher ?: '-', 80) }}</td>
                     <td>{{ $ebook->publication_year ?: '-' }}</td>
                     <td>{{ $ebook->is_active ? 'Aktif' : 'Nonaktif' }}</td>
                     <td>
