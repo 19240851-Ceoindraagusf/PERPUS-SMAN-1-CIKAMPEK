@@ -16,4 +16,15 @@ class ExampleTest extends TestCase
 
         $response->assertStatus(200);
     }
+
+    public function test_home_page_contains_class_search_fields(): void
+    {
+        $response = $this->get('/');
+
+        $response->assertStatus(200)
+            ->assertSee('name="q"')
+            ->assertSee('name="class"')
+            ->assertSee('Semua kelas')
+            ->assertSee('XII');
+    }
 }

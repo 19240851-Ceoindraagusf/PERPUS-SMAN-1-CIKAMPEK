@@ -14,8 +14,48 @@ use Illuminate\View\View;
 
 class LibraryController extends Controller
 {
-    public function home(): View
+    public function home(Request $request): View|RedirectResponse
     {
+        $search = trim((string) $request->query('q', ''));
+        $selectedClass = trim((string) $request->query('class', ''));
+
+        if ($request->query('q') !== null || $request->query('class') !== null) {
+            $classFilter = $selectedClass !== ''
+                ? ClassModel::where('is_active', true)->where('name', $selectedClass)->first()
+                : null;
+
+            if ($search !== '') {
+                $ebookQuery = Ebook::query()
+                    ->where('is_active', true)
+                    ->where(function ($query) use ($search) {
+                        $query->where('title', 'like', "%{$search}%")
+                            ->orWhere('description', 'like', "%{$search}%")
+                            ->orWhere('author', 'like', "%{$search}%")
+                            ->orWhere('publisher', 'like', "%{$search}%")
+                            ->orWhereHas('subject', function ($subjectQuery) use ($search) {
+                                $subjectQuery->where('name', 'like', "%{$search}%")
+                                    ->orWhere('code', 'like', "%{$search}%");
+                            });
+                    });
+
+                if ($classFilter) {
+                    $ebookQuery->whereHas('subject', fn ($subjectQuery) => $subjectQuery->where('class_id', $classFilter->id));
+                }
+
+                $ebook = $ebookQuery->first();
+
+                if ($ebook) {
+                    return redirect()->route('ebooks.show', $ebook);
+                }
+            }
+
+            if ($classFilter && $search === '') {
+                return redirect()->route('classes.show', $classFilter);
+            }
+
+            return redirect()->route('library', ['q' => $search, 'class' => $selectedClass]);
+        }
+
         $classes = ClassModel::where('is_active', true)
             ->withCount([
                 'subjects' => fn ($query) => $query->where('is_active', true),

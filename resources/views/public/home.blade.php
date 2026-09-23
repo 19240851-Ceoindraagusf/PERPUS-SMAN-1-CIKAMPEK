@@ -10,12 +10,20 @@
                 <p class="text-uppercase fw-semibold mb-2 opacity-75">PERPUSTAKAAN DIGITAL SMAN 1 CIKAMPEK</p>
                 <h1 class="display-5 fw-bold">SMAN 1 CIKAMPEK</h1>
                 <p class="lead mt-3">Akses materi dan e-book pembelajaran siswa secara mudah melalui website perpustakaan digital sekolah.</p>
-                <form action="{{ route('library') }}" method="GET" class="hero-panel p-3 mt-4">
-                    <div class="row g-2">
-                        <div class="col-md">
-                            <input type="search" name="q" class="form-control form-control-lg" placeholder="Cari kelas, mata pelajaran, atau e-book">
+                <form action="{{ route('home') }}" method="GET" class="hero-panel p-3 mt-4">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-md-6">
+                            <input type="search" name="q" value="{{ request('q') }}" class="form-control form-control-lg" placeholder="Cari kelas, mata pelajaran, atau e-book">
                         </div>
-                        <div class="col-md-auto">
+                        <div class="col-md-3">
+                            <select name="class" class="form-select form-select-lg">
+                                <option value="">Semua kelas</option>
+                                <option value="X" @selected(request('class') === 'X')>X</option>
+                                <option value="XI" @selected(request('class') === 'XI')>XI</option>
+                                <option value="XII" @selected(request('class') === 'XII')>XII</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
                             <button class="btn btn-light btn-lg w-100" type="submit">Cari Materi</button>
                         </div>
                     </div>
