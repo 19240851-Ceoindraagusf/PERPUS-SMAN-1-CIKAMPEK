@@ -11,6 +11,7 @@ class EbookMetadataExtractorTest extends TestCase
     {
         $extractor = new EbookMetadataExtractor();
 
+        $this->assertSame('IPA', $extractor->detectScienceSubjectNameFromText('Buku IPA kelas X untuk SMA'));
         $this->assertSame('Kimia', $extractor->detectScienceSubjectNameFromText('Buku IPA Kimia kelas X untuk SMA'));
         $this->assertSame('Fisika', $extractor->detectScienceSubjectNameFromText('Modul Fisika kelas XI dengan materi listrik dan magnet'));
         $this->assertSame('Biologi', $extractor->detectScienceSubjectNameFromText('Ringkasan Biologi tentang sel, ekosistem, dan makhluk hidup'));

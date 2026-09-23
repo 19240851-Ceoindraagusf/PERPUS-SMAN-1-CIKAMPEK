@@ -38,16 +38,15 @@ class EbookController extends Controller
         ]);
 
         $metadata = $metadataExtractor->extract($request->file('file'));
-        $subject = $this->resolveSubjectFromMetadata($metadata);
+        $subjects = $this->resolveSubjectsFromMetadata($metadata);
 
-        if (! $subject) {
+        if ($subjects->isEmpty()) {
             return back()
                 ->withErrors(['file' => 'Kelas dan mata pelajaran belum bisa dikenali dari PDF. Pastikan nama kelas dan mata pelajaran ada di nama file atau halaman awal PDF.'])
                 ->withInput();
         }
 
         $validated['is_active'] = $request->boolean('is_active');
-        $validated['subject_id'] = $subject->id;
         $validated['title'] = $metadata['title'];
         $validated['author'] = $metadata['author'];
         $validated['publisher'] = $metadata['publisher'];
@@ -61,8 +60,10 @@ class EbookController extends Controller
 
         unset($validated['file'], $validated['cover']);
 
-        $ebook = Ebook::create($validated);
-        $this->syncSubjectStatus($ebook->subject_id);
+        foreach ($subjects as $subject) {
+            $ebook = Ebook::create($validated + ['subject_id' => $subject->id]);
+            $this->syncSubjectStatus($ebook->subject_id);
+        }
 
         return redirect()->route('admin.ebooks.index')->with('success', 'E-book berhasil ditambahkan.');
     }
@@ -95,9 +96,7 @@ class EbookController extends Controller
                     ->withInput();
             }
 
-            if ($ebook->file_path) {
-                Storage::disk('public')->delete($ebook->file_path);
-            }
+            $this->deleteStoredFileIfUnused($ebook->file_path, $ebook->id);
 
             $validated['subject_id'] = $subject->id;
             $validated['title'] = $metadata['title'];
@@ -109,9 +108,7 @@ class EbookController extends Controller
         }
 
         if ($request->hasFile('cover')) {
-            if ($ebook->cover_path) {
-                Storage::disk('public')->delete($ebook->cover_path);
-            }
+            $this->deleteStoredFileIfUnused($ebook->cover_path, $ebook->id, 'cover_path');
 
             $validated['cover_path'] = $request->file('cover')->store('covers', 'public');
         }
@@ -132,13 +129,8 @@ class EbookController extends Controller
     {
         $subjectId = $ebook->subject_id;
 
-        if ($ebook->file_path) {
-            Storage::disk('public')->delete($ebook->file_path);
-        }
-
-        if ($ebook->cover_path) {
-            Storage::disk('public')->delete($ebook->cover_path);
-        }
+        $this->deleteStoredFileIfUnused($ebook->file_path, $ebook->id);
+        $this->deleteStoredFileIfUnused($ebook->cover_path, $ebook->id, 'cover_path');
 
         $ebook->delete();
         $this->syncSubjectStatus($subjectId);
@@ -180,5 +172,46 @@ class EbookController extends Controller
                 'is_active' => true,
             ]
         );
+    }
+
+    private function resolveSubjectsFromMetadata(array $metadata)
+    {
+        if (($metadata['detected_subject_name'] ?? null) === 'IPA') {
+            if (! $metadata['class']) {
+                return collect();
+            }
+
+            return collect(['Kimia', 'Fisika', 'Biologi'])
+                ->map(fn (string $subjectName) => Subject::firstOrCreate(
+                    [
+                        'class_id' => $metadata['class']->id,
+                        'name' => $subjectName,
+                    ],
+                    [
+                        'code' => null,
+                        'description' => 'Mata pelajaran dibuat otomatis dari metadata PDF IPA.',
+                        'is_active' => true,
+                    ]
+                ));
+        }
+
+        $subject = $this->resolveSubjectFromMetadata($metadata);
+
+        return $subject ? collect([$subject]) : collect();
+    }
+
+    private function deleteStoredFileIfUnused(?string $path, int $currentEbookId, string $column = 'file_path'): void
+    {
+        if (! $path) {
+            return;
+        }
+
+        $isUsedByAnotherEbook = Ebook::where($column, $path)
+            ->where('id', '!=', $currentEbookId)
+            ->exists();
+
+        if (! $isUsedByAnotherEbook) {
+            Storage::disk('public')->delete($path);
+        }
     }
 }

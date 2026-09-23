@@ -19,7 +19,8 @@ class EbookMetadataExtractor
         $lines = $this->meaningfulLines($text);
 
         $class = $this->detectClass($source);
-        $subject = $this->detectSubject($source, $class);
+        $isGenericScience = $this->isGenericScienceSource($source);
+        $subject = $isGenericScience ? null : $this->detectSubject($source, $class);
         $detectedSubjectName = null;
 
         if ($subject && $this->isScienceUmbrellaSubject($subject)) {
@@ -31,7 +32,7 @@ class EbookMetadataExtractor
         }
 
         if (! $subject) {
-            $detectedSubjectName = $this->detectKnownSubjectName($source);
+            $detectedSubjectName = $isGenericScience ? 'IPA' : $this->detectKnownSubjectName($source);
             $class = $class ?: $this->fallbackClass();
         }
 
@@ -136,6 +137,10 @@ class EbookMetadataExtractor
 
     private function detectKnownSubjectName(string $source): ?string
     {
+        if ($this->isGenericScienceSource($source)) {
+            return 'IPA';
+        }
+
         if ($scienceSubject = $this->detectScienceSubjectName($source)) {
             return $scienceSubject;
         }
@@ -153,6 +158,12 @@ class EbookMetadataExtractor
 
     public function detectScienceSubjectNameFromText(string $source): ?string
     {
+        $source = $this->normalize($source);
+
+        if ($this->isGenericScienceSource($source)) {
+            return 'IPA';
+        }
+
         $scores = [
             'Biologi' => [
                 'biologi', 'biology', 'makhluk hidup', 'sel', 'genetik', 'ekosistem',
@@ -183,6 +194,19 @@ class EbookMetadataExtractor
     private function detectScienceSubjectName(string $source): ?string
     {
         return $this->detectScienceSubjectNameFromText($source);
+    }
+
+    private function isGenericScienceSource(string $source): bool
+    {
+        $hasScienceUmbrella = $this->containsToken($source, 'ipa')
+            || $this->containsToken($source, 'ilmu pengetahuan alam');
+
+        if (! $hasScienceUmbrella) {
+            return false;
+        }
+
+        return ! collect(['kimia', 'chemistry', 'fisika', 'physics', 'biologi', 'biology'])
+            ->contains(fn (string $keyword) => $this->containsToken($source, $keyword));
     }
 
     private function classAliases(ClassModel $class): array
@@ -246,7 +270,8 @@ class EbookMetadataExtractor
             'Bahasa Sunda' => ['bahasa sunda', 'sunda', 'sundanese'],
             'Matematika' => ['matematika', 'math', 'mathematics', 'mathematika'],
             'Informatika' => ['informatika', 'tik', 'komputer', 'computer science', 'informatics'],
-            'Kimia' => ['kimia', 'chemistry', 'ipa', 'ilmu pengetahuan alam'],
+            'Kimia' => ['kimia', 'chemistry'],
+            'IPA' => ['ipa', 'ilmu pengetahuan alam'],
             'Fisika' => ['fisika', 'physics'],
             'Biologi' => ['biologi', 'biology'],
             'Ilmu Pengetahuan Sosial' => ['ilmu pengetahuan sosial', 'ips', 'sejarah indonesia', 'sosiologi', 'ilmu ekonomi'],

@@ -47,18 +47,12 @@ class Subject extends Model
 
     public function ebookSourceSubjectIds(): array
     {
-        $subjectIds = [$this->id];
-
-        if ($this->isScienceBranch()) {
-            $subjectIds = array_merge($subjectIds, self::scienceSharedSubjectIdsForClass($this->class_id));
-        }
-
-        return array_values(array_unique($subjectIds));
+        return [$this->id];
     }
 
     public function sharedEbooks()
     {
-        return Ebook::query()->whereIn('subject_id', $this->ebookSourceSubjectIds());
+        return $this->ebooks();
     }
 
     public function usesScienceUmbrellaEbooks(): bool
