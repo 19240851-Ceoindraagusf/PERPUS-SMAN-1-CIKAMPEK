@@ -7,6 +7,25 @@
     <h1 class="h3 mb-0">Data Mata Pelajaran</h1>
     <a href="{{ route('admin.subjects.create') }}" class="btn btn-success">Tambah Mata Pelajaran</a>
 </div>
+<form method="GET" class="card border-0 shadow-sm mb-4">
+    <div class="card-body d-flex flex-wrap align-items-end gap-3">
+        <div>
+            <label class="form-label" for="class_id">Filter Kelas</label>
+            <select name="class_id" id="class_id" class="form-select">
+                <option value="">Semua Kelas</option>
+                @foreach($classes as $class)
+                    <option value="{{ $class->id }}" @selected((string) $selectedClassId === (string) $class->id)>
+                        Kelas {{ $class->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <button type="submit" class="btn btn-outline-success">Terapkan</button>
+        @if($selectedClassId)
+            <a href="{{ route('admin.subjects.index') }}" class="btn btn-outline-secondary">Reset</a>
+        @endif
+    </div>
+</form>
 <div class="card border-0 shadow-sm">
     <div class="table-responsive">
         <table class="table mb-0 align-middle">

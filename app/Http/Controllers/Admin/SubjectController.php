@@ -11,11 +11,33 @@ use Illuminate\View\View;
 
 class SubjectController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $subjects = Subject::with('class')->withCount('ebooks')->latest()->paginate(10);
+        $validated = $request->validate([
+            'class_id' => ['nullable', 'integer', 'exists:classes,id'],
+        ]);
 
-        return view('admin.subjects.index', compact('subjects'));
+        $selectedClassId = $validated['class_id'] ?? null;
+        $classOrder = "CASE classes.name WHEN 'X' THEN 1 WHEN 'XI' THEN 2 WHEN 'XII' THEN 3 ELSE 4 END";
+
+        $subjects = Subject::query()
+            ->select('subjects.*')
+            ->join('classes', 'classes.id', '=', 'subjects.class_id')
+            ->with('class')
+            ->withCount('ebooks')
+            ->when($selectedClassId, fn ($query) => $query->where('subjects.class_id', $selectedClassId))
+            ->orderByRaw($classOrder)
+            ->orderBy('subjects.name')
+            ->orderBy('subjects.id')
+            ->paginate(10)
+            ->withQueryString();
+
+        $classes = ClassModel::query()
+            ->orderByRaw("CASE name WHEN 'X' THEN 1 WHEN 'XI' THEN 2 WHEN 'XII' THEN 3 ELSE 4 END")
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.subjects.index', compact('subjects', 'classes', 'selectedClassId'));
     }
 
     public function create(): View
