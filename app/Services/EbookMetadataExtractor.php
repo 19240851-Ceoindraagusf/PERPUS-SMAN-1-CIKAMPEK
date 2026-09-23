@@ -19,8 +19,8 @@ class EbookMetadataExtractor
         $lines = $this->meaningfulLines($text);
 
         $class = $this->detectClass($source);
-        $isGenericScience = $this->isGenericScienceSource($source);
-        $subject = $isGenericScience ? null : $this->detectSubject($source, $class);
+        $isScienceUmbrella = $this->isScienceUmbrellaSource($source);
+        $subject = $isScienceUmbrella ? null : $this->detectSubject($source, $class);
         $detectedSubjectName = null;
 
         if ($subject && $this->isScienceUmbrellaSubject($subject)) {
@@ -32,7 +32,7 @@ class EbookMetadataExtractor
         }
 
         if (! $subject) {
-            $detectedSubjectName = $isGenericScience ? 'IPA' : $this->detectKnownSubjectName($source);
+            $detectedSubjectName = $isScienceUmbrella ? 'IPA' : $this->detectKnownSubjectName($source);
             $class = $class ?: $this->fallbackClass();
         }
 
@@ -137,7 +137,7 @@ class EbookMetadataExtractor
 
     private function detectKnownSubjectName(string $source): ?string
     {
-        if ($this->isGenericScienceSource($source)) {
+        if ($this->isScienceUmbrellaSource($source)) {
             return 'IPA';
         }
 
@@ -160,7 +160,7 @@ class EbookMetadataExtractor
     {
         $source = $this->normalize($source);
 
-        if ($this->isGenericScienceSource($source)) {
+        if ($this->isScienceUmbrellaSource($source)) {
             return 'IPA';
         }
 
@@ -196,17 +196,10 @@ class EbookMetadataExtractor
         return $this->detectScienceSubjectNameFromText($source);
     }
 
-    private function isGenericScienceSource(string $source): bool
+    private function isScienceUmbrellaSource(string $source): bool
     {
-        $hasScienceUmbrella = $this->containsToken($source, 'ipa')
+        return $this->containsToken($source, 'ipa')
             || $this->containsToken($source, 'ilmu pengetahuan alam');
-
-        if (! $hasScienceUmbrella) {
-            return false;
-        }
-
-        return ! collect(['kimia', 'chemistry', 'fisika', 'physics', 'biologi', 'biology'])
-            ->contains(fn (string $keyword) => $this->containsToken($source, $keyword));
     }
 
     private function classAliases(ClassModel $class): array
