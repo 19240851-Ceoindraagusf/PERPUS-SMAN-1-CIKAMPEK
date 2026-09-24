@@ -60,10 +60,10 @@ class LibraryController extends Controller
             ->withCount([
                 'subjects' => fn ($query) => $query
                     ->where('is_active', true)
-                    ->whereRaw("LOWER(name) NOT IN ('ipa', 'ilmu pengetahuan alam')"),
+                    ->whereRaw("LOWER(name) NOT IN ('ipa', 'ilmu pengetahuan alam', 'ips', 'ilmu pengetahuan sosial')"),
                 'subjects as ebooks_count' => fn ($query) => $query
                     ->where('subjects.is_active', true)
-                    ->whereRaw("LOWER(subjects.name) NOT IN ('ipa', 'ilmu pengetahuan alam')")
+                    ->whereRaw("LOWER(subjects.name) NOT IN ('ipa', 'ilmu pengetahuan alam', 'ips', 'ilmu pengetahuan sosial')")
                     ->join('ebooks', 'subjects.id', '=', 'ebooks.subject_id')
                     ->where('ebooks.is_active', true),
             ])
@@ -73,7 +73,7 @@ class LibraryController extends Controller
         $stats = [
             'classes' => $classes->count(),
             'subjects' => Subject::where('is_active', true)
-                ->whereRaw("LOWER(name) NOT IN ('ipa', 'ilmu pengetahuan alam')")
+                ->whereRaw("LOWER(name) NOT IN ('ipa', 'ilmu pengetahuan alam', 'ips', 'ilmu pengetahuan sosial')")
                 ->count(),
             'ebooks' => Ebook::where('is_active', true)->count(),
             'accesses' => AccessLog::count(),
@@ -97,10 +97,10 @@ class LibraryController extends Controller
             ->withCount([
                 'subjects' => fn ($query) => $query
                     ->where('is_active', true)
-                    ->whereRaw("LOWER(name) NOT IN ('ipa', 'ilmu pengetahuan alam')"),
+                    ->whereRaw("LOWER(name) NOT IN ('ipa', 'ilmu pengetahuan alam', 'ips', 'ilmu pengetahuan sosial')"),
                 'subjects as ebooks_count' => fn ($query) => $query
                     ->where('subjects.is_active', true)
-                    ->whereRaw("LOWER(subjects.name) NOT IN ('ipa', 'ilmu pengetahuan alam')")
+                    ->whereRaw("LOWER(subjects.name) NOT IN ('ipa', 'ilmu pengetahuan alam', 'ips', 'ilmu pengetahuan sosial')")
                     ->join('ebooks', 'subjects.id', '=', 'ebooks.subject_id')
                     ->where('ebooks.is_active', true),
             ])
@@ -125,7 +125,7 @@ class LibraryController extends Controller
         $search = trim((string) $request->query('q', ''));
 
         $class->load(['subjects' => fn ($query) => $query
-            ->whereRaw("LOWER(name) NOT IN ('ipa', 'ilmu pengetahuan alam')")
+            ->whereRaw("LOWER(name) NOT IN ('ipa', 'ilmu pengetahuan alam', 'ips', 'ilmu pengetahuan sosial')")
             ->where(function ($query) {
                 $query->where('is_active', true);
 
@@ -159,7 +159,7 @@ class LibraryController extends Controller
 
         $totalSubjects = Subject::where('class_id', $class->id)
             ->where('is_active', true)
-            ->whereRaw("LOWER(name) NOT IN ('ipa', 'ilmu pengetahuan alam')")
+            ->whereRaw("LOWER(name) NOT IN ('ipa', 'ilmu pengetahuan alam', 'ips', 'ilmu pengetahuan sosial')")
             ->count();
 
         return view('public.class', compact('class', 'search', 'totalSubjects'));

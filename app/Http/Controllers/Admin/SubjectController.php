@@ -25,7 +25,7 @@ class SubjectController extends Controller
             ->join('classes', 'classes.id', '=', 'subjects.class_id')
             ->with('class')
             ->withCount('ebooks')
-            ->whereRaw("LOWER(subjects.name) NOT IN ('ipa', 'ilmu pengetahuan alam')")
+            ->whereRaw("LOWER(subjects.name) NOT IN ('ipa', 'ilmu pengetahuan alam', 'ips', 'ilmu pengetahuan sosial')")
             ->when($selectedClassId, fn ($query) => $query->where('subjects.class_id', $selectedClassId))
             ->orderByRaw($classOrder)
             ->orderBy('subjects.name')

@@ -190,7 +190,26 @@ class EbookController extends Controller
                     [
                         'code' => null,
                         'description' => 'Mata pelajaran dibuat otomatis dari metadata PDF IPA.',
-                        'is_active' => true,
+                        'is_active' => false,
+                    ]
+                ));
+        }
+
+        if (($metadata['detected_subject_name'] ?? null) === 'IPS') {
+            if (! $metadata['class']) {
+                return collect();
+            }
+
+            return collect(['Sosiologi', 'Geologi', 'Ekonomi'])
+                ->map(fn (string $subjectName) => Subject::firstOrCreate(
+                    [
+                        'class_id' => $metadata['class']->id,
+                        'name' => $subjectName,
+                    ],
+                    [
+                        'code' => null,
+                        'description' => 'Mata pelajaran dibuat otomatis dari metadata PDF IPS.',
+                        'is_active' => false,
                     ]
                 ));
         }

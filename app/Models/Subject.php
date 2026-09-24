@@ -23,6 +23,11 @@ class Subject extends Model
         'ilmu pengetahuan alam',
     ];
 
+    private const SOCIAL_UMBRELLA_SUBJECTS = [
+        'ips',
+        'ilmu pengetahuan sosial',
+    ];
+
     protected $fillable = [
         'class_id',
         'name',
@@ -62,7 +67,7 @@ class Subject extends Model
 
     public function isScienceUmbrella(): bool
     {
-        return in_array($this->normalizedName(), self::SCIENCE_UMBRELLA_SUBJECTS, true);
+        return in_array($this->normalizedName(), array_merge(self::SCIENCE_UMBRELLA_SUBJECTS, self::SOCIAL_UMBRELLA_SUBJECTS), true);
     }
 
     public function isScienceBranch(): bool

@@ -20,7 +20,8 @@ class EbookMetadataExtractor
 
         $class = $this->detectClass($source);
         $isScienceUmbrella = $this->isScienceUmbrellaSource($source);
-        $subject = $isScienceUmbrella ? null : $this->detectSubject($source, $class);
+        $isSocialUmbrella = $this->isSocialUmbrellaSource($source);
+        $subject = ($isScienceUmbrella || $isSocialUmbrella) ? null : $this->detectSubject($source, $class);
         $detectedSubjectName = null;
 
         if ($subject && $this->isScienceUmbrellaSubject($subject)) {
@@ -32,8 +33,11 @@ class EbookMetadataExtractor
         }
 
         if (! $subject) {
-            $detectedSubjectName = $isScienceUmbrella ? 'IPA' : $this->detectKnownSubjectName($source);
-            $class = $class ?: $this->fallbackClass();
+            $detectedSubjectName = $isScienceUmbrella ? 'IPA' : ($isSocialUmbrella ? 'IPS' : $this->detectKnownSubjectName($source));
+
+            if (! $isScienceUmbrella && ! $isSocialUmbrella) {
+                $class = $class ?: $this->fallbackClass();
+            }
         }
 
         $displaySubjectName = $subject?->name ?: $detectedSubjectName;
@@ -141,6 +145,10 @@ class EbookMetadataExtractor
             return 'IPA';
         }
 
+        if ($this->isSocialUmbrellaSource($source)) {
+            return 'IPS';
+        }
+
         if ($scienceSubject = $this->detectScienceSubjectName($source)) {
             return $scienceSubject;
         }
@@ -162,6 +170,10 @@ class EbookMetadataExtractor
 
         if ($this->isScienceUmbrellaSource($source)) {
             return 'IPA';
+        }
+
+        if ($this->isSocialUmbrellaSource($source)) {
+            return 'IPS';
         }
 
         $scores = [
@@ -200,6 +212,12 @@ class EbookMetadataExtractor
     {
         return $this->containsToken($source, 'ipa')
             || $this->containsToken($source, 'ilmu pengetahuan alam');
+    }
+
+    private function isSocialUmbrellaSource(string $source): bool
+    {
+        return $this->containsToken($source, 'ips')
+            || $this->containsToken($source, 'ilmu pengetahuan sosial');
     }
 
     private function classAliases(ClassModel $class): array
@@ -267,10 +285,13 @@ class EbookMetadataExtractor
             'IPA' => ['ipa', 'ilmu pengetahuan alam'],
             'Fisika' => ['fisika', 'physics'],
             'Biologi' => ['biologi', 'biology'],
+            'IPS' => ['ips', 'ilmu pengetahuan sosial'],
             'Ilmu Pengetahuan Sosial' => ['ilmu pengetahuan sosial', 'ips', 'sejarah indonesia', 'sosiologi', 'ilmu ekonomi'],
             'Pendidikan Agama Islam dan Budi Pekerti' => ['pendidikan agama islam dan budi pekerti', 'pendidikan agama islam', 'agama islam', 'pai', 'budi pekerti'],
             'Pendidikan Pancasila' => ['pendidikan pancasila', 'pancasila', 'ppkn', 'pkn'],
             'Sejarah' => ['sejarah', 'history'],
+            'Sosiologi' => ['sosiologi', 'sociology'],
+            'Geologi' => ['geologi', 'geology'],
             'Geografi' => ['geografi', 'geography'],
             'Ekonomi' => ['ekonomi', 'economics'],
         ];
@@ -281,6 +302,8 @@ class EbookMetadataExtractor
         return in_array($this->normalize($subject->name), [
             'ipa',
             'ilmu pengetahuan alam',
+            'ips',
+            'ilmu pengetahuan sosial',
         ], true);
     }
 
