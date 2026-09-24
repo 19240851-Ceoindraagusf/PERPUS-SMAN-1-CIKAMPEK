@@ -18,9 +18,9 @@
                         <div class="col-md-3">
                             <select name="class" class="form-select form-select-lg">
                                 <option value="">Semua kelas</option>
-                                <option value="X" @selected(request('class') === 'X')>X</option>
-                                <option value="XI" @selected(request('class') === 'XI')>XI</option>
-                                <option value="XII" @selected(request('class') === 'XII')>XII</option>
+                                @foreach($classOptions as $className)
+                                    <option value="{{ $className }}" @selected(request('class') === $className)>Kelas {{ $className }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="col-md-3">

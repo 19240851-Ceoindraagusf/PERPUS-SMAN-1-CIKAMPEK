@@ -21,7 +21,8 @@ class EbookMetadataExtractor
         $class = $this->detectClass($source);
         $isScienceUmbrella = $this->isScienceUmbrellaSource($source);
         $isSocialUmbrella = $this->isSocialUmbrellaSource($source);
-        $subject = ($isScienceUmbrella || $isSocialUmbrella) ? null : $this->detectSubject($source, $class);
+        $shouldExpandUmbrellaSubject = $this->shouldExpandUmbrellaSubject($class);
+        $subject = (($isScienceUmbrella || $isSocialUmbrella) && $shouldExpandUmbrellaSubject) ? null : $this->detectSubject($source, $class);
         $detectedSubjectName = null;
 
         if ($subject && $this->isScienceUmbrellaSubject($subject)) {
@@ -33,9 +34,13 @@ class EbookMetadataExtractor
         }
 
         if (! $subject) {
-            $detectedSubjectName = $isScienceUmbrella ? 'IPA' : ($isSocialUmbrella ? 'IPS' : $this->detectKnownSubjectName($source));
+            $detectedSubjectName = match (true) {
+                $isScienceUmbrella && $shouldExpandUmbrellaSubject => 'IPA',
+                $isSocialUmbrella && $shouldExpandUmbrellaSubject => 'IPS',
+                default => $this->detectKnownSubjectName($source, $shouldExpandUmbrellaSubject),
+            };
 
-            if (! $isScienceUmbrella && ! $isSocialUmbrella) {
+            if ((! $isScienceUmbrella && ! $isSocialUmbrella) || ! $shouldExpandUmbrellaSubject) {
                 $class = $class ?: $this->fallbackClass();
             }
         }
@@ -110,7 +115,33 @@ class EbookMetadataExtractor
             default => strtoupper($matches[1]),
         };
 
+        if ($majorClass = $this->detectMajorClass($source, $className)) {
+            return $majorClass;
+        }
+
         return ClassModel::where('is_active', true)->where('name', $className)->first();
+    }
+
+    private function detectMajorClass(string $source, string $className): ?ClassModel
+    {
+        if (! in_array($className, ['XI', 'XII'], true)) {
+            return null;
+        }
+
+        $majorName = match (true) {
+            $this->isScienceUmbrellaSource($source) => 'IPA',
+            $this->isSocialUmbrellaSource($source) => 'IPS',
+            $this->containsToken($source, 'bahasa') || $this->containsToken($source, 'language') => 'Bahasa',
+            default => null,
+        };
+
+        if (! $majorName) {
+            return null;
+        }
+
+        return ClassModel::where('is_active', true)
+            ->where('name', $className . ' ' . $majorName)
+            ->first();
     }
 
     private function detectSubject(string $source, ?ClassModel $class): ?Subject
@@ -139,21 +170,25 @@ class EbookMetadataExtractor
         return ClassModel::where('is_active', true)->orderBy('name')->first();
     }
 
-    private function detectKnownSubjectName(string $source): ?string
+    private function detectKnownSubjectName(string $source, bool $allowUmbrellaSubjects = true): ?string
     {
-        if ($this->isScienceUmbrellaSource($source)) {
+        if ($allowUmbrellaSubjects && $this->isScienceUmbrellaSource($source)) {
             return 'IPA';
         }
 
-        if ($this->isSocialUmbrellaSource($source)) {
+        if ($allowUmbrellaSubjects && $this->isSocialUmbrellaSource($source)) {
             return 'IPS';
         }
 
-        if ($scienceSubject = $this->detectScienceSubjectName($source)) {
+        if ($scienceSubject = $this->detectScienceSubjectName($source, $allowUmbrellaSubjects)) {
             return $scienceSubject;
         }
 
         foreach ($this->knownSubjectAliases() as $subjectName => $aliases) {
+            if (! $allowUmbrellaSubjects && in_array($subjectName, ['IPA', 'IPS', 'Ilmu Pengetahuan Sosial'], true)) {
+                continue;
+            }
+
             foreach ($aliases as $alias) {
                 if ($this->containsToken($source, $alias)) {
                     return $subjectName;
@@ -164,15 +199,15 @@ class EbookMetadataExtractor
         return null;
     }
 
-    public function detectScienceSubjectNameFromText(string $source): ?string
+    public function detectScienceSubjectNameFromText(string $source, bool $allowUmbrellaSubjects = true): ?string
     {
         $source = $this->normalize($source);
 
-        if ($this->isScienceUmbrellaSource($source)) {
+        if ($allowUmbrellaSubjects && $this->isScienceUmbrellaSource($source)) {
             return 'IPA';
         }
 
-        if ($this->isSocialUmbrellaSource($source)) {
+        if ($allowUmbrellaSubjects && $this->isSocialUmbrellaSource($source)) {
             return 'IPS';
         }
 
@@ -203,9 +238,18 @@ class EbookMetadataExtractor
         return $matched->first()['subject'] ?? null;
     }
 
-    private function detectScienceSubjectName(string $source): ?string
+    private function detectScienceSubjectName(string $source, bool $allowUmbrellaSubjects = true): ?string
     {
-        return $this->detectScienceSubjectNameFromText($source);
+        return $this->detectScienceSubjectNameFromText($source, $allowUmbrellaSubjects);
+    }
+
+    private function shouldExpandUmbrellaSubject(?ClassModel $class): bool
+    {
+        if (! $class) {
+            return true;
+        }
+
+        return ! preg_match('/^(XI|XII)(\s|$)/i', trim($class->name));
     }
 
     private function isScienceUmbrellaSource(string $source): bool

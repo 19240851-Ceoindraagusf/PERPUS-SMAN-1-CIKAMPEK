@@ -85,7 +85,9 @@ class LibraryController extends Controller
             ->limit(4)
             ->get();
 
-        return view('public.home', compact('classes', 'stats', 'latestEbooks'));
+        $classOptions = ClassModel::where('is_active', true)->orderBy('name')->pluck('name');
+
+        return view('public.home', compact('classes', 'stats', 'latestEbooks', 'classOptions'));
     }
 
     public function library(Request $request): View
