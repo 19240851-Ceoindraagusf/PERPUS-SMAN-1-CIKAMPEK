@@ -18,7 +18,8 @@ class SubjectController extends Controller
         ]);
 
         $selectedClassId = $validated['class_id'] ?? null;
-        $classOrder = "CASE classes.name WHEN 'X' THEN 1 WHEN 'XI' THEN 2 WHEN 'XII' THEN 3 ELSE 4 END";
+        $classOrder = "CASE WHEN classes.name = 'X' THEN 1 WHEN classes.name LIKE 'XI%' THEN 2 WHEN classes.name LIKE 'XII%' THEN 3 ELSE 4 END";
+        $plainClassOrder = "CASE WHEN name = 'X' THEN 1 WHEN name LIKE 'XI%' THEN 2 WHEN name LIKE 'XII%' THEN 3 ELSE 4 END";
 
         $subjects = Subject::query()
             ->select('subjects.*')
@@ -42,7 +43,7 @@ class SubjectController extends Controller
         });
 
         $classes = ClassModel::query()
-            ->orderByRaw("CASE name WHEN 'X' THEN 1 WHEN 'XI' THEN 2 WHEN 'XII' THEN 3 ELSE 4 END")
+            ->orderByRaw($plainClassOrder)
             ->orderBy('name')
             ->get();
 
@@ -51,7 +52,10 @@ class SubjectController extends Controller
 
     public function create(): View
     {
-        $classes = ClassModel::where('is_active', true)->orderBy('name')->get();
+        $classes = ClassModel::where('is_active', true)
+            ->orderByRaw("CASE WHEN name = 'X' THEN 1 WHEN name LIKE 'XI%' THEN 2 WHEN name LIKE 'XII%' THEN 3 ELSE 4 END")
+            ->orderBy('name')
+            ->get();
 
         return view('admin.subjects.create', compact('classes'));
     }
@@ -74,7 +78,10 @@ class SubjectController extends Controller
 
     public function edit(Subject $subject): View
     {
-        $classes = ClassModel::orderBy('name')->get();
+        $classes = ClassModel::query()
+            ->orderByRaw("CASE WHEN name = 'X' THEN 1 WHEN name LIKE 'XI%' THEN 2 WHEN name LIKE 'XII%' THEN 3 ELSE 4 END")
+            ->orderBy('name')
+            ->get();
 
         return view('admin.subjects.edit', compact('subject', 'classes'));
     }

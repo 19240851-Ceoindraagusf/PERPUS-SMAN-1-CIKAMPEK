@@ -14,16 +14,44 @@ use Illuminate\View\View;
 
 class EbookController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $ebooks = Ebook::with('subject.class')->latest()->paginate(10);
+        $validated = $request->validate([
+            'class_id' => ['nullable', 'integer', 'exists:classes,id'],
+            'subject_id' => ['nullable', 'integer', 'exists:subjects,id'],
+        ]);
 
-        return view('admin.ebooks.index', compact('ebooks'));
+        $selectedClassId = $validated['class_id'] ?? null;
+        $selectedSubjectId = $validated['subject_id'] ?? null;
+        $classOrder = "CASE WHEN name = 'X' THEN 1 WHEN name LIKE 'XI%' THEN 2 WHEN name LIKE 'XII%' THEN 3 ELSE 4 END";
+
+        $ebooks = Ebook::query()
+            ->with('subject.class')
+            ->when($selectedClassId, fn ($query) => $query->whereHas('subject', fn ($subjectQuery) => $subjectQuery->where('class_id', $selectedClassId)))
+            ->when($selectedSubjectId, fn ($query) => $query->where('subject_id', $selectedSubjectId))
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        $classes = ClassModel::query()
+            ->orderByRaw($classOrder)
+            ->orderBy('name')
+            ->get();
+
+        $subjects = Subject::query()
+            ->with('class')
+            ->when($selectedClassId, fn ($query) => $query->where('class_id', $selectedClassId))
+            ->whereRaw("LOWER(name) NOT IN ('ipa', 'ilmu pengetahuan alam', 'ips', 'ilmu pengetahuan sosial')")
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.ebooks.index', compact('ebooks', 'classes', 'subjects', 'selectedClassId', 'selectedSubjectId'));
     }
 
     public function create(): View
     {
-        $classes = ClassModel::orderBy('name')->get();
+        $classOrder = "CASE WHEN name = 'X' THEN 1 WHEN name LIKE 'XI%' THEN 2 WHEN name LIKE 'XII%' THEN 3 ELSE 4 END";
+        $classes = ClassModel::orderByRaw($classOrder)->orderBy('name')->get();
         $subjects = Subject::with('class')->orderBy('name')->get();
 
         return view('admin.ebooks.create', compact('classes', 'subjects'));
@@ -70,7 +98,8 @@ class EbookController extends Controller
 
     public function edit(Ebook $ebook): View
     {
-        $classes = ClassModel::orderBy('name')->get();
+        $classOrder = "CASE WHEN name = 'X' THEN 1 WHEN name LIKE 'XI%' THEN 2 WHEN name LIKE 'XII%' THEN 3 ELSE 4 END";
+        $classes = ClassModel::orderByRaw($classOrder)->orderBy('name')->get();
         $subjects = Subject::with('class')->orderBy('name')->get();
 
         return view('admin.ebooks.edit', compact('ebook', 'classes', 'subjects'));

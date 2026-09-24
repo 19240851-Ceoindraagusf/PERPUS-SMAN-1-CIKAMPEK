@@ -23,18 +23,27 @@
                 <label class="form-label small text-muted" for="q">Cari mata pelajaran</label>
                 <input type="search" class="form-control" id="q" name="q" value="{{ $search }}" placeholder="Contoh: Bahasa Inggris, Matematika, Kimia">
             </div>
+            <div class="col-lg-3">
+                <label class="form-label small text-muted" for="subject">Mata pelajaran</label>
+                <select class="form-select" id="subject" name="subject">
+                    <option value="">Semua mata pelajaran</option>
+                    @foreach($subjectOptions as $subjectName)
+                        <option value="{{ $subjectName }}" @selected($selectedSubject === $subjectName)>{{ $subjectName }}</option>
+                    @endforeach
+                </select>
+            </div>
             <div class="col-lg-auto">
                 <button class="btn btn-success" type="submit">Cari</button>
             </div>
-            @if($search)
+            @if($search || $selectedSubject)
                 <div class="col-lg-auto">
                     <a class="btn btn-outline-secondary" href="{{ route('classes.show', $class) }}">Reset</a>
                 </div>
             @endif
         </div>
     </form>
-    @if($search)
-        <p class="text-muted small mb-3">Menampilkan {{ $class->subjects->count() }} hasil untuk "{{ $search }}".</p>
+    @if($search || $selectedSubject)
+        <p class="text-muted small mb-3">Menampilkan {{ $class->subjects->count() }} hasil{{ $search ? ' untuk "' . $search . '"' : '' }}{{ $selectedSubject ? ' pada ' . $selectedSubject : '' }}.</p>
     @endif
     <div class="row g-3">
         @forelse($class->subjects as $subject)

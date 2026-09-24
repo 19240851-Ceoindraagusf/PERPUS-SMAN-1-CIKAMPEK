@@ -18,6 +18,7 @@ class LibraryController extends Controller
     {
         $search = trim((string) $request->query('q', ''));
         $selectedClass = trim((string) $request->query('class', ''));
+        $classOrder = "CASE WHEN name = 'X' THEN 1 WHEN name LIKE 'XI%' THEN 2 WHEN name LIKE 'XII%' THEN 3 ELSE 4 END";
 
         if ($request->query('q') !== null || $request->query('class') !== null) {
             $classFilter = $selectedClass !== ''
@@ -67,6 +68,7 @@ class LibraryController extends Controller
                     ->join('ebooks', 'subjects.id', '=', 'ebooks.subject_id')
                     ->where('ebooks.is_active', true),
             ])
+            ->orderByRaw($classOrder)
             ->orderBy('name')
             ->get();
 
@@ -85,7 +87,10 @@ class LibraryController extends Controller
             ->limit(4)
             ->get();
 
-        $classOptions = ClassModel::where('is_active', true)->orderBy('name')->pluck('name');
+        $classOptions = ClassModel::where('is_active', true)
+            ->orderByRaw($classOrder)
+            ->orderBy('name')
+            ->pluck('name');
 
         return view('public.home', compact('classes', 'stats', 'latestEbooks', 'classOptions'));
     }
@@ -94,6 +99,11 @@ class LibraryController extends Controller
     {
         $search = trim((string) $request->query('q', ''));
         $selectedClass = $request->query('class');
+        $selectedSubject = $request->query('subject');
+        $classOrder = "CASE WHEN name = 'X' THEN 1 WHEN name LIKE 'XI%' THEN 2 WHEN name LIKE 'XII%' THEN 3 ELSE 4 END";
+        $classFilter = $selectedClass
+            ? ClassModel::where('is_active', true)->where('name', $selectedClass)->first()
+            : null;
 
         $classes = ClassModel::where('is_active', true)
             ->withCount([
@@ -114,17 +124,34 @@ class LibraryController extends Controller
                         ->where('name', 'like', "%{$search}%")
                         ->orWhereHas('ebooks', fn ($ebookQuery) => $ebookQuery->where('title', 'like', "%{$search}%")));
             }))
+            ->when($selectedSubject, fn ($query) => $query->whereHas('subjects', fn ($subjectQuery) => $subjectQuery
+                ->where('is_active', true)
+                ->where('name', $selectedSubject)))
+            ->orderByRaw($classOrder)
             ->orderBy('name')
             ->get();
 
-        $classOptions = ClassModel::where('is_active', true)->orderBy('name')->pluck('name');
+        $classOptions = ClassModel::where('is_active', true)
+            ->orderByRaw($classOrder)
+            ->orderBy('name')
+            ->pluck('name');
 
-        return view('public.library', compact('classes', 'classOptions', 'search', 'selectedClass'));
+        $subjectOptions = Subject::query()
+            ->when($classFilter, fn ($query) => $query->where('class_id', $classFilter->id))
+            ->where('is_active', true)
+            ->whereRaw("LOWER(name) NOT IN ('ipa', 'ilmu pengetahuan alam', 'ips', 'ilmu pengetahuan sosial')")
+            ->orderBy('name')
+            ->pluck('name')
+            ->unique()
+            ->values();
+
+        return view('public.library', compact('classes', 'classOptions', 'subjectOptions', 'search', 'selectedClass', 'selectedSubject'));
     }
 
     public function class(Request $request, ClassModel $class): View
     {
         $search = trim((string) $request->query('q', ''));
+        $selectedSubject = $request->query('subject');
 
         $class->load(['subjects' => fn ($query) => $query
             ->whereRaw("LOWER(name) NOT IN ('ipa', 'ilmu pengetahuan alam', 'ips', 'ilmu pengetahuan sosial')")
@@ -135,6 +162,7 @@ class LibraryController extends Controller
                     $query->orWhereRaw('LOWER(name) = ?', [$subjectName]);
                 }
             })
+            ->when($selectedSubject, fn ($subjectQuery) => $subjectQuery->where('name', $selectedSubject))
             ->when($search, fn ($subjectQuery) => $subjectQuery->where(function ($subjectQuery) use ($search) {
                 $subjectQuery->where('name', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%")
@@ -164,7 +192,13 @@ class LibraryController extends Controller
             ->whereRaw("LOWER(name) NOT IN ('ipa', 'ilmu pengetahuan alam', 'ips', 'ilmu pengetahuan sosial')")
             ->count();
 
-        return view('public.class', compact('class', 'search', 'totalSubjects'));
+        $subjectOptions = Subject::where('class_id', $class->id)
+            ->where('is_active', true)
+            ->whereRaw("LOWER(name) NOT IN ('ipa', 'ilmu pengetahuan alam', 'ips', 'ilmu pengetahuan sosial')")
+            ->orderBy('name')
+            ->pluck('name');
+
+        return view('public.class', compact('class', 'search', 'selectedSubject', 'subjectOptions', 'totalSubjects'));
     }
 
     public function subject(Request $request, ClassModel $class, Subject $subject): View

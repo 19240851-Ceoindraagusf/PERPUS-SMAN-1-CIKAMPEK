@@ -23,10 +23,19 @@
                     @endforeach
                 </select>
             </div>
+            <div class="col-lg-3">
+                <label class="form-label small text-muted" for="subject">Mata pelajaran</label>
+                <select class="form-select" id="subject" name="subject">
+                    <option value="">Semua mata pelajaran</option>
+                    @foreach($subjectOptions as $subjectName)
+                        <option value="{{ $subjectName }}" @selected($selectedSubject === $subjectName)>{{ $subjectName }}</option>
+                    @endforeach
+                </select>
+            </div>
             <div class="col-lg-auto">
                 <button class="btn btn-success" type="submit">Terapkan</button>
             </div>
-            @if($search || $selectedClass)
+            @if($search || $selectedClass || $selectedSubject)
                 <div class="col-lg-auto">
                     <a class="btn btn-outline-secondary" href="{{ route('library') }}">Reset</a>
                 </div>

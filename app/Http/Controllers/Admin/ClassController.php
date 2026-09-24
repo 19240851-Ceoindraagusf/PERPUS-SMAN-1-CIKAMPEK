@@ -12,7 +12,10 @@ class ClassController extends Controller
 {
     public function index(): View
     {
-        $classes = ClassModel::withCount('subjects')->latest()->paginate(10);
+        $classes = ClassModel::withCount('subjects')
+            ->orderByRaw("CASE WHEN name = 'X' THEN 1 WHEN name LIKE 'XI%' THEN 2 WHEN name LIKE 'XII%' THEN 3 ELSE 4 END")
+            ->orderBy('name')
+            ->paginate(10);
 
         return view('admin.classes.index', compact('classes'));
     }
