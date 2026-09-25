@@ -62,17 +62,12 @@ class EbookController extends Controller
         $validated = $request->validate([
             'cover' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'file' => ['required', 'file', 'mimes:pdf', 'max:102400'],
+            'subject_id' => ['required', 'exists:subjects,id'],
             'is_active' => ['nullable', 'boolean'],
         ]);
 
+        $subject = Subject::findOrFail($validated['subject_id']);
         $metadata = $metadataExtractor->extract($request->file('file'));
-        $subjects = $this->resolveSubjectsFromMetadata($metadata);
-
-        if ($subjects->isEmpty()) {
-            return back()
-                ->withErrors(['file' => 'Kelas dan mata pelajaran belum bisa dikenali dari PDF. Pastikan nama kelas dan mata pelajaran ada di nama file atau halaman awal PDF.'])
-                ->withInput();
-        }
 
         $validated['is_active'] = $request->boolean('is_active');
         $validated['title'] = $metadata['title'];
@@ -88,10 +83,8 @@ class EbookController extends Controller
 
         unset($validated['file'], $validated['cover']);
 
-        foreach ($subjects as $subject) {
-            $ebook = Ebook::create($validated + ['subject_id' => $subject->id]);
-            $this->syncSubjectStatus($ebook->subject_id);
-        }
+        $ebook = Ebook::create($validated);
+        $this->syncSubjectStatus($ebook->subject_id);
 
         return redirect()->route('admin.ebooks.index')->with('success', 'E-book berhasil ditambahkan.');
     }
@@ -110,6 +103,7 @@ class EbookController extends Controller
         $validated = $request->validate([
             'cover' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'file' => ['nullable', 'file', 'mimes:pdf', 'max:102400'],
+            'subject_id' => ['required', 'exists:subjects,id'],
             'is_active' => ['nullable', 'boolean'],
         ]);
 
@@ -117,17 +111,9 @@ class EbookController extends Controller
 
         if ($request->hasFile('file')) {
             $metadata = $metadataExtractor->extract($request->file('file'));
-            $subject = $this->resolveSubjectFromMetadata($metadata);
-
-            if (! $subject) {
-                return back()
-                    ->withErrors(['file' => 'Kelas dan mata pelajaran belum bisa dikenali dari PDF. Pastikan nama kelas dan mata pelajaran ada di nama file atau halaman awal PDF.'])
-                    ->withInput();
-            }
 
             $this->deleteStoredFileIfUnused($ebook->file_path, $ebook->id);
 
-            $validated['subject_id'] = $subject->id;
             $validated['title'] = $metadata['title'];
             $validated['author'] = $metadata['author'];
             $validated['publisher'] = $metadata['publisher'];
