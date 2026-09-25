@@ -95,7 +95,7 @@ class LibraryController extends Controller
         return view('public.home', compact('classes', 'stats', 'latestEbooks', 'classOptions'));
     }
 
-    public function library(Request $request): View
+    public function library(Request $request): View|RedirectResponse
     {
         $search = trim((string) $request->query('q', ''));
         $selectedClass = $request->query('class');
@@ -104,6 +104,21 @@ class LibraryController extends Controller
         $classFilter = $selectedClass
             ? ClassModel::where('is_active', true)->where('name', $selectedClass)->first()
             : null;
+
+        $subjectSearch = $selectedSubject ?: $search;
+        if ($subjectSearch !== '') {
+            $subject = Subject::query()
+                ->with('class')
+                ->where('is_active', true)
+                ->whereRaw('LOWER(name) = ?', [mb_strtolower(trim($subjectSearch))])
+                ->when($classFilter, fn ($query) => $query->where('class_id', $classFilter->id))
+                ->whereHas('class', fn ($query) => $query->where('is_active', true))
+                ->first();
+
+            if ($subject) {
+                return redirect()->route('subjects.show', [$subject->class, $subject]);
+            }
+        }
 
         $classes = ClassModel::where('is_active', true)
             ->withCount([
