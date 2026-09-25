@@ -31,7 +31,7 @@ class EbookController extends Controller
             ->when($selectedSubjectId, fn ($query) => $query->where('subject_id', $selectedSubjectId))
             ->latest()
             ->paginate(10)
-            ->withQueryString();
+            ->appends($request->query());
 
         $classes = ClassModel::query()
             ->orderByRaw($classOrder)
