@@ -11,10 +11,10 @@
     <a href="{{ route('admin.ebooks.create') }}" class="btn btn-success">Tambah E-Book</a>
 </div>
 <div class="row g-3 mb-4">
-    <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body d-flex justify-content-between gap-3"><div><div class="text-muted">Total Kelas</div><div class="h3 mb-0">{{ $stats['classes'] }}</div></div><div class="stat-icon">K</div></div></div></div>
-    <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body d-flex justify-content-between gap-3"><div><div class="text-muted">Mata Pelajaran</div><div class="h3 mb-0">{{ $stats['subjects'] }}</div></div><div class="stat-icon">M</div></div></div></div>
-    <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body d-flex justify-content-between gap-3"><div><div class="text-muted">Total E-Book</div><div class="h3 mb-0">{{ $stats['ebooks'] }}</div></div><div class="stat-icon">E</div></div></div></div>
-    <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body d-flex justify-content-between gap-3"><div><div class="text-muted">Total Akses</div><div class="h3 mb-0">{{ $stats['accesses'] }}</div></div><div class="stat-icon">A</div></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body"><div class="text-muted">Total Kelas</div><div class="h3 mb-0">{{ $stats['classes'] }}</div></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body"><div class="text-muted">Mata Pelajaran</div><div class="h3 mb-0">{{ $stats['subjects'] }}</div></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body"><div class="text-muted">Total E-Book</div><div class="h3 mb-0">{{ $stats['ebooks'] }}</div></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body"><div class="text-muted">Total Akses</div><div class="h3 mb-0">{{ $stats['accesses'] }}</div></div></div></div>
 </div>
 <div class="row g-4">
     <div class="col-lg-6">
