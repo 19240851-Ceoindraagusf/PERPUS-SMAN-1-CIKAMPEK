@@ -108,6 +108,18 @@ class SubjectController extends Controller
 
     public function destroy(Request $request, Subject $subject): RedirectResponse
     {
+        if (! $request->boolean('force_delete')) {
+            return back()->withErrors([
+                'delete' => 'Penghapusan mata pelajaran tidak diizinkan tanpa konfirmasi eksplisit.',
+            ]);
+        }
+
+        if ($subject->ebooks()->exists()) {
+            return back()->withErrors([
+                'delete' => 'Mata pelajaran tidak dapat dihapus karena masih memiliki ebook.',
+            ]);
+        }
+
         $subject->delete();
 
         $redirectParams = array_filter([

@@ -7,6 +7,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (! filter_var(env('APP_ALLOW_DESTRUCTIVE_MIGRATIONS', false), FILTER_VALIDATE_BOOLEAN)) {
+            return;
+        }
+
         $ipaSubjects = DB::table('subjects')
             ->whereIn(DB::raw('LOWER(name)'), ['ipa', 'ilmu pengetahuan alam'])
             ->get();

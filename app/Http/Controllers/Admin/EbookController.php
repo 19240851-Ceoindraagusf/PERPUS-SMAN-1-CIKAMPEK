@@ -162,6 +162,12 @@ class EbookController extends Controller
 
     public function destroy(Request $request, Ebook $ebook): RedirectResponse
     {
+        if (! $request->boolean('force_delete')) {
+            return back()->withErrors([
+                'delete' => 'Penghapusan ebook tidak diizinkan tanpa konfirmasi eksplisit.',
+            ]);
+        }
+
         $subjectId = $ebook->subject_id;
 
         $this->deleteStoredFileIfUnused($ebook->file_path, $ebook->id);

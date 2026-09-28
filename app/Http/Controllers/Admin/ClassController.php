@@ -54,8 +54,20 @@ class ClassController extends Controller
         return redirect()->route('admin.classes.index')->with('success', 'Kelas berhasil diperbarui.');
     }
 
-    public function destroy(ClassModel $class): RedirectResponse
+    public function destroy(Request $request, ClassModel $class): RedirectResponse
     {
+        if (! $request->boolean('force_delete')) {
+            return back()->withErrors([
+                'delete' => 'Penghapusan kelas tidak diizinkan tanpa konfirmasi eksplisit.',
+            ]);
+        }
+
+        if ($class->subjects()->exists() || $class->subjects()->withCount('ebooks')->get()->contains(fn ($subject) => $subject->ebooks_count > 0)) {
+            return back()->withErrors([
+                'delete' => 'Kelas tidak dapat dihapus karena masih memiliki mata pelajaran atau ebook.',
+            ]);
+        }
+
         $class->delete();
 
         return redirect()->route('admin.classes.index')->with('success', 'Kelas berhasil dihapus.');
