@@ -99,13 +99,21 @@ class SubjectController extends Controller
 
         $subject->update($validated);
 
-        return redirect()->route('admin.subjects.index')->with('success', 'Mata pelajaran berhasil diperbarui.');
+        $redirectParams = array_filter([
+            'class_id' => $request->input('return_class_id') ?? $request->input('class_id'),
+        ]);
+
+        return redirect()->route('admin.subjects.index', $redirectParams)->with('success', 'Mata pelajaran berhasil diperbarui.');
     }
 
-    public function destroy(Subject $subject): RedirectResponse
+    public function destroy(Request $request, Subject $subject): RedirectResponse
     {
         $subject->delete();
 
-        return redirect()->route('admin.subjects.index')->with('success', 'Mata pelajaran berhasil dihapus.');
+        $redirectParams = array_filter([
+            'class_id' => $request->input('return_class_id') ?? $request->input('class_id'),
+        ]);
+
+        return redirect()->route('admin.subjects.index', $redirectParams)->with('success', 'Mata pelajaran berhasil dihapus.');
     }
 }

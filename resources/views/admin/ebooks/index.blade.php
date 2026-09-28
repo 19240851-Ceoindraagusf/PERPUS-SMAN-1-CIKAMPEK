@@ -57,10 +57,14 @@
                             @else
                                 <span class="btn btn-sm btn-outline-secondary disabled">Lihat</span>
                             @endif
-                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.ebooks.edit', $ebook) }}">Edit</a>
+                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.ebooks.edit', ['ebook' => $ebook, 'class_id' => request('class_id'), 'subject_id' => request('subject_id')]) }}">Edit</a>
                             <form method="POST" action="{{ route('admin.ebooks.destroy', $ebook) }}" onsubmit="return confirm('Hapus e-book ini?');">
                                 @csrf
                                 @method('DELETE')
+                                @if(request('class_id') || request('subject_id'))
+                                    <input type="hidden" name="return_class_id" value="{{ request('class_id') }}">
+                                    <input type="hidden" name="return_subject_id" value="{{ request('subject_id') }}">
+                                @endif
                                 <button class="btn btn-sm btn-outline-danger" type="submit">Hapus</button>
                             </form>
                         </div>

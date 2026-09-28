@@ -88,6 +88,20 @@ class Subject extends Model
         )));
     }
 
+    public static function findByClassAndName(int $classId, string $name): ?self
+    {
+        $value = trim($name);
+
+        if ($value === '') {
+            return null;
+        }
+
+        return self::query()
+            ->where('class_id', $classId)
+            ->whereRaw('LOWER(name) = ?', [mb_strtolower($value)])
+            ->first();
+    }
+
     public static function scienceBranchSubjectIdsForClass(int $classId): array
     {
         return self::query()

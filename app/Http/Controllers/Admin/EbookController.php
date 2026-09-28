@@ -10,6 +10,7 @@ use App\Services\EbookMetadataExtractor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class EbookController extends Controller
@@ -60,7 +61,7 @@ class EbookController extends Controller
     public function store(Request $request, EbookMetadataExtractor $metadataExtractor): RedirectResponse
     {
         $validated = $request->validate([
-            'cover' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'cover' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
             'file' => ['required', 'file', 'mimes:pdf', 'max:102400'],
             'subject_id' => ['required', 'exists:subjects,id'],
             'is_active' => ['nullable', 'boolean'],
@@ -84,6 +85,9 @@ class EbookController extends Controller
         unset($validated['file'], $validated['cover']);
 
         $ebook = Ebook::create($validated);
+        $subject->description = $metadataExtractor->buildSubjectDescription($subject->name, $metadata['title'], $metadata['description']);
+        $subject->save();
+        $this->syncGroupCoverForEbook($ebook, $ebook->cover_path);
         $this->syncSubjectStatus($ebook->subject_id);
 
         return redirect()->route('admin.ebooks.index')->with('success', 'E-book berhasil ditambahkan.');
@@ -101,7 +105,7 @@ class EbookController extends Controller
     public function update(Request $request, Ebook $ebook, EbookMetadataExtractor $metadataExtractor): RedirectResponse
     {
         $validated = $request->validate([
-            'cover' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'cover' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
             'file' => ['nullable', 'file', 'mimes:pdf', 'max:102400'],
             'subject_id' => ['required', 'exists:subjects,id'],
             'is_active' => ['nullable', 'boolean'],
@@ -133,14 +137,30 @@ class EbookController extends Controller
         $oldSubjectId = $ebook->subject_id;
 
         $ebook->update($validated);
+        $this->syncGroupCoverForEbook($ebook, $ebook->cover_path);
+
+        $updatedSubject = Subject::findOrFail($ebook->subject_id);
+        if ($request->hasFile('file')) {
+            $updatedSubject->description = $metadataExtractor->buildSubjectDescription(
+                $updatedSubject->name,
+                $validated['title'] ?? $ebook->title,
+                $validated['description'] ?? $ebook->description,
+            );
+            $updatedSubject->save();
+        }
 
         $this->syncSubjectStatus($oldSubjectId);
         $this->syncSubjectStatus($ebook->subject_id);
 
-        return redirect()->route('admin.ebooks.index')->with('success', 'E-book berhasil diperbarui.');
+        $redirectParams = array_filter([
+            'class_id' => $request->input('return_class_id') ?? $request->input('class_id'),
+            'subject_id' => $request->input('return_subject_id') ?? $request->input('subject_id'),
+        ]);
+
+        return redirect()->route('admin.ebooks.index', $redirectParams)->with('success', 'E-book berhasil diperbarui.');
     }
 
-    public function destroy(Ebook $ebook): RedirectResponse
+    public function destroy(Request $request, Ebook $ebook): RedirectResponse
     {
         $subjectId = $ebook->subject_id;
 
@@ -150,7 +170,12 @@ class EbookController extends Controller
         $ebook->delete();
         $this->syncSubjectStatus($subjectId);
 
-        return redirect()->route('admin.ebooks.index')->with('success', 'E-book berhasil dihapus.');
+        $redirectParams = array_filter([
+            'class_id' => $request->input('return_class_id') ?? $request->input('class_id'),
+            'subject_id' => $request->input('return_subject_id') ?? $request->input('subject_id'),
+        ]);
+
+        return redirect()->route('admin.ebooks.index', $redirectParams)->with('success', 'E-book berhasil dihapus.');
     }
 
     private function syncSubjectStatus(int $subjectId): void
@@ -166,6 +191,93 @@ class EbookController extends Controller
         ]);
     }
 
+    private function syncGroupCoverForEbook(Ebook $ebook, ?string $coverPath): void
+    {
+        if (! $coverPath || ! $ebook->subject_id) {
+            return;
+        }
+
+        $subject = $ebook->subject()->first();
+
+        if (! $subject) {
+            return;
+        }
+
+        $matchPatterns = $this->sharedCoverMatchPatterns($subject);
+
+        if ($matchPatterns === []) {
+            return;
+        }
+
+        $subjectIds = Subject::query()
+            ->where('class_id', $subject->class_id)
+            ->where(function ($query) use ($matchPatterns) {
+                foreach ($matchPatterns as $matchPattern) {
+                    $query->orWhereRaw('LOWER(name) LIKE ?', ['%' . $matchPattern . '%']);
+                }
+            })
+            ->pluck('id');
+
+        if ($subjectIds->isEmpty()) {
+            return;
+        }
+
+        Ebook::query()
+            ->whereIn('subject_id', $subjectIds)
+            ->update(['cover_path' => $coverPath]);
+    }
+
+    private function sharedCoverMatchPatterns(Subject $subject): array
+    {
+        $groupNames = $this->groupSubjectNamesForSharedCover($subject);
+
+        if ($groupNames === []) {
+            return [];
+        }
+
+        $patterns = [];
+
+        foreach ($groupNames as $groupName) {
+            $normalized = mb_strtolower(trim($groupName));
+
+            if ($normalized === '') {
+                continue;
+            }
+
+            $patterns[] = $normalized;
+            $patterns[] = mb_strtolower('IPA / ' . $groupName);
+            $patterns[] = mb_strtolower('IPA/' . $groupName);
+            $patterns[] = mb_strtolower('IPS / ' . $groupName);
+            $patterns[] = mb_strtolower('IPS/' . $groupName);
+        }
+
+        return array_values(array_unique($patterns));
+    }
+
+    private function groupSubjectNamesForSharedCover(Subject $subject): array
+    {
+        $normalizedName = mb_strtolower(trim($subject->name));
+
+        if (str_contains($normalizedName, 'ipa')) {
+            return ['Biologi', 'Fisika', 'Kimia'];
+        }
+
+        if (str_contains($normalizedName, 'ips')) {
+            return ['Ekonomi', 'Geografi', 'Sosiologi'];
+        }
+
+        $branchGroups = [
+            'biologi' => ['Biologi', 'Fisika', 'Kimia'],
+            'fisika' => ['Biologi', 'Fisika', 'Kimia'],
+            'kimia' => ['Biologi', 'Fisika', 'Kimia'],
+            'ekonomi' => ['Ekonomi', 'Geografi', 'Sosiologi'],
+            'geografi' => ['Ekonomi', 'Geografi', 'Sosiologi'],
+            'sosiologi' => ['Ekonomi', 'Geografi', 'Sosiologi'],
+        ];
+
+        return $branchGroups[$normalizedName] ?? [];
+    }
+
     private function resolveSubjectFromMetadata(array $metadata): ?Subject
     {
         if ($metadata['subject']) {
@@ -176,6 +288,14 @@ class EbookController extends Controller
             return null;
         }
 
+        $description = $metadata['description'] ?: 'Mata pelajaran ' . $metadata['detected_subject_name'] . ' yang berisi materi pembelajaran sesuai kurikulum.';
+
+        $existing = Subject::findByClassAndName($metadata['class']->id, $metadata['detected_subject_name']);
+
+        if ($existing) {
+            return $existing;
+        }
+
         return Subject::firstOrCreate(
             [
                 'class_id' => $metadata['class']->id,
@@ -183,7 +303,7 @@ class EbookController extends Controller
             ],
             [
                 'code' => null,
-                'description' => 'Mata pelajaran dibuat otomatis dari metadata PDF.',
+                'description' => Str::limit($description, 500, ''),
                 'is_active' => true,
             ]
         );

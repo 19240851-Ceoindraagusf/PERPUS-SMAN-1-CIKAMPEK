@@ -30,6 +30,9 @@
     Status mata pelajaran otomatis: aktif jika sudah memiliki e-book, dan nonaktif jika belum ada e-book.
 </div>
 <div class="d-flex gap-2">
+    @if(request('class_id'))
+        <input type="hidden" name="return_class_id" value="{{ request('class_id') }}">
+    @endif
     <button class="btn btn-success" type="submit">Simpan</button>
-    <a class="btn btn-outline-secondary" href="{{ route('admin.subjects.index') }}">Batal</a>
+    <a class="btn btn-outline-secondary" href="{{ route('admin.subjects.index', ['class_id' => request('class_id')]) }}">Batal</a>
 </div>

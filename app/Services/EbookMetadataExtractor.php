@@ -201,6 +201,7 @@ class EbookMetadataExtractor
 
     public function detectScienceSubjectNameFromText(string $source, bool $allowUmbrellaSubjects = true): ?string
     {
+        $rawSource = $source;
         $source = $this->normalize($source);
 
         if ($allowUmbrellaSubjects && $this->isScienceUmbrellaSource($source)) {
@@ -209,6 +210,30 @@ class EbookMetadataExtractor
 
         if ($allowUmbrellaSubjects && $this->isSocialUmbrellaSource($source)) {
             return 'IPS';
+        }
+
+        $titleLines = collect(preg_split('/\R+/', $rawSource) ?: [])
+            ->map(fn (string $line) => trim(preg_replace('/\s+/', ' ', $line)))
+            ->filter(fn (string $line) => $line !== '')
+            ->take(6)
+            ->values();
+
+        $hasNonScienceTitle = $titleLines->contains(fn (string $line) => $this->containsKnownSubjectAlias($line, [
+            'Bahasa Indonesia',
+            'Bahasa Inggris',
+            'Bahasa Sunda',
+            'Matematika',
+            'Informatika',
+            'Pendidikan Agama Islam dan Budi Pekerti',
+            'Pendidikan Pancasila',
+            'Sejarah',
+            'Sosiologi',
+            'Geografi',
+            'Ekonomi',
+        ]) && ! $this->containsKnownSubjectAlias($line, ['Kimia', 'Fisika', 'Biologi']));
+
+        if ($hasNonScienceTitle) {
+            return null;
         }
 
         $scores = [
@@ -361,11 +386,33 @@ class EbookMetadataExtractor
             ->reject(fn (string $line) => preg_match('/^\d{4}$/', trim($line)))
             ->first();
 
-        if ($subjectName && (! $title || $this->looksLikeInstitutionLine($title) || $this->looksLikePersonName($title) || preg_match('/^\d{4}$/', trim($title)))) {
+        if ($subjectName && (! $title || $this->looksLikeInstitutionLine($title) || $this->looksLikePersonName($title) || $this->isGenericTitle($title, $subjectName) || preg_match('/^\d{4}$/', trim($title)))) {
             $title = $subjectName;
         }
 
         return Str::limit($title ?: pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME), 255, '');
+    }
+
+    private function isGenericTitle(string $title, ?string $subjectName): bool
+    {
+        $normalizedTitle = $this->normalize($title);
+        $normalizedSubject = $subjectName ? $this->normalize($subjectName) : '';
+
+        if ($normalizedTitle === '' || $normalizedTitle === $normalizedSubject) {
+            return false;
+        }
+
+        $genericKeywords = [
+            'ipa', 'ips', 'bahasa', 'bahasa indonesia', 'bahasa inggris', 'matematika', 'informatika',
+            'kimia', 'fisika', 'biologi', 'geografi', 'ekonomi', 'sosiologi', 'pendidikan',
+            'pendidikan pancasila', 'agama islam', 'pancasila', 'bahasa sunda',
+        ];
+
+        if (in_array($normalizedTitle, $genericKeywords, true)) {
+            return true;
+        }
+
+        return preg_match('/^(ipa|ips|bahasa|matematika|informatika|kimia|fisika|biologi|geografi|ekonomi|sosiologi|pendidikan)(?:\s|$)/i', trim($title)) === 1;
     }
 
     private function detectYear(string $text, string $source): ?int
@@ -386,7 +433,36 @@ class EbookMetadataExtractor
             return (int) $matches[1];
         }
 
+        if (preg_match('/(?<!\d)(20[0-4][0-9]|19[5-9][0-9])(?!\d)/', $singleLineText, $matches)) {
+            return (int) $matches[1];
+        }
+
         return null;
+    }
+
+    public function buildSubjectDescription(string $subjectName, ?string $title = null, ?string $description = null): string
+    {
+        $subjectName = trim($subjectName);
+        $title = trim((string) ($title ?: ''));
+        $description = trim((string) ($description ?: ''));
+
+        if ($description !== '') {
+            $summary = preg_replace('/\s+/', ' ', $description) ?: $description;
+
+            $prefixedSummary = $subjectName !== '' ? $subjectName . ': ' . $summary : $summary;
+
+            return Str::of($prefixedSummary)
+                ->limit(280, '...')
+                ->__toString();
+        }
+
+        if ($title !== '') {
+            $normalizedTitle = preg_replace('/\s+/', ' ', $title) ?: $title;
+
+            return 'Mata pelajaran ' . $subjectName . ' yang membahas materi dalam buku "' . $normalizedTitle . '".';
+        }
+
+        return 'Mata pelajaran ' . $subjectName . ' yang berisi materi pembelajaran dan latihan sesuai kurikulum.';
     }
 
     private function detectDescription(Collection $lines): ?string
@@ -493,12 +569,18 @@ class EbookMetadataExtractor
 
     private function detectPublisher(string $text): string
     {
-        if (preg_match('/(Pusat\s+Perbukuan[^\r\n]*)/iu', $text, $matches)) {
-            return Str::limit(trim($matches[1]), 255, '');
-        }
+        $patterns = [
+            '/\b(Pusat\s+Kurikulum\s+dan\s+Perbukuan)\b/i',
+            '/\b(Pusat\s+Perbukuan)\b/i',
+            '/\b(Badan\s+Penelitian\s+dan\s+Pengembangan\s+dan\s+Perbukuan)\b/i',
+            '/\b(Kementerian\s+Pendidikan,\s*Kebudayaan,\s*Riset,\s*dan\s*Teknologi)\b/i',
+            '/\b(Kementerian\s+Pendidikan\s+dan\s+Kebudayaan)\b/i',
+        ];
 
-        if (preg_match('/(Kementerian\s+Pendidikan[^\r\n]*)/iu', $text, $matches)) {
-            return Str::limit(trim($matches[1]), 255, '');
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $text, $matches)) {
+                return Str::limit(trim($matches[1]), 255, '');
+            }
         }
 
         return 'Tidak diketahui';
@@ -511,6 +593,19 @@ class EbookMetadataExtractor
             ->filter(fn (string $line) => $line !== '' && Str::length($line) >= 4)
             ->take(25)
             ->values();
+    }
+
+    private function containsKnownSubjectAlias(string $line, array $subjectNames): bool
+    {
+        $normalizedLine = $this->normalize($line);
+
+        foreach ($subjectNames as $subjectName) {
+            if ($this->containsToken($normalizedLine, $subjectName)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function containsToken(string $source, string $needle): bool

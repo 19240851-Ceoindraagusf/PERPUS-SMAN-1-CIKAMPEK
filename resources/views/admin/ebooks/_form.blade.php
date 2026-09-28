@@ -42,6 +42,10 @@
     <label class="form-check-label" for="is_active">Aktif</label>
 </div>
 <div class="d-flex gap-2">
+    @if(request('class_id') || request('subject_id'))
+        <input type="hidden" name="return_class_id" value="{{ request('class_id') }}">
+        <input type="hidden" name="return_subject_id" value="{{ request('subject_id') }}">
+    @endif
     <button class="btn btn-success" type="submit">Simpan</button>
-    <a class="btn btn-outline-secondary" href="{{ route('admin.ebooks.index') }}">Batal</a>
+    <a class="btn btn-outline-secondary" href="{{ route('admin.ebooks.index', ['class_id' => request('class_id'), 'subject_id' => request('subject_id')]) }}">Batal</a>
 </div>

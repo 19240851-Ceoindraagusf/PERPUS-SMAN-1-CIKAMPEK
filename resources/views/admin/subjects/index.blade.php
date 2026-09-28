@@ -44,10 +44,13 @@
                     </td>
                     <td>
                         <div class="d-flex gap-2">
-                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.subjects.edit', $subject) }}">Edit</a>
+                            <a class="btn btn-sm btn-outline-success" href="{{ route('admin.subjects.edit', ['subject' => $subject, 'class_id' => request('class_id')]) }}">Edit</a>
                             <form method="POST" action="{{ route('admin.subjects.destroy', $subject) }}" onsubmit="return confirm('Hapus mata pelajaran ini? E-book terkait juga akan terhapus.');">
                                 @csrf
                                 @method('DELETE')
+                                @if(request('class_id'))
+                                    <input type="hidden" name="return_class_id" value="{{ request('class_id') }}">
+                                @endif
                                 <button class="btn btn-sm btn-outline-danger" type="submit">Hapus</button>
                             </form>
                         </div>
