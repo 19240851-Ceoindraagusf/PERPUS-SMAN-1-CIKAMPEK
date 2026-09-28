@@ -57,6 +57,46 @@
             </div>
         </div>
     </div>
+    <div class="col-lg-6">
+        <div class="admin-card card">
+            <div class="card-body">
+                <h2 class="h5">Kelas dengan Materi Terbanyak</h2>
+                <ul class="list-group list-group-flush">
+                    @forelse($topClasses as $class)
+                        <li class="list-group-item px-0 d-flex justify-content-between gap-3">
+                            <span>
+                                <span class="fw-semibold d-block">Kelas {{ $class->name }}</span>
+                                <span class="text-muted small">{{ $class->subjects_count ?? 0 }} mapel aktif</span>
+                            </span>
+                            <span class="badge text-bg-primary align-self-center">{{ $class->ebooks_count ?? 0 }}</span>
+                        </li>
+                    @empty
+                        <li class="list-group-item px-0 text-muted">Belum ada data kelas.</li>
+                    @endforelse
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="admin-card card">
+            <div class="card-body">
+                <h2 class="h5">Mapel Paling Banyak Diakses</h2>
+                <ul class="list-group list-group-flush">
+                    @forelse($topSubjects as $subject)
+                        <li class="list-group-item px-0 d-flex justify-content-between gap-3">
+                            <span>
+                                <span class="fw-semibold d-block">{{ $subject->name }}</span>
+                                <span class="text-muted small">Kelas {{ $subject->class->name ?? '-' }}</span>
+                            </span>
+                            <span class="badge text-bg-warning align-self-center">{{ $subject->access_count ?? 0 }}</span>
+                        </li>
+                    @empty
+                        <li class="list-group-item px-0 text-muted">Belum ada data mapel.</li>
+                    @endforelse
+                </ul>
+            </div>
+        </div>
+    </div>
     <div class="col-12">
         <div class="admin-card card">
             <div class="card-body">

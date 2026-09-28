@@ -42,6 +42,31 @@
             @endif
         </div>
     </form>
+    @if($matchedEbooks->isNotEmpty())
+        <div class="mb-5">
+            <div class="d-flex justify-content-between align-items-end gap-3 mb-3">
+                <div>
+                    <h2 class="h4 mb-1">Hasil Pencarian</h2>
+                    <p class="text-muted mb-0">Buku dan materi yang sesuai dengan kata kunci Anda.</p>
+                </div>
+            </div>
+            <div class="row g-3">
+                @foreach($matchedEbooks as $ebook)
+                    <div class="col-md-6 col-lg-4">
+                        <a href="{{ route('ebooks.show', $ebook) }}" class="info-card card h-100 text-decoration-none text-dark">
+                            <div class="card-body">
+                                <span class="badge badge-soft mb-3">{{ $ebook->subject->class->name ?? '-' }} / {{ $ebook->subject->name ?? '-' }}</span>
+                                <h3 class="h5 mb-2">{{ $ebook->title }}</h3>
+                                <p class="text-muted small mb-1">{{ $ebook->author ?: 'Penulis belum diisi' }}</p>
+                                <p class="text-muted small mb-0">{{ $ebook->publisher ?: 'Penerbit belum diisi' }}</p>
+                            </div>
+                        </a>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     <div class="row g-3">
         @forelse($classes as $class)
             <div class="col-md-6 col-lg-4">

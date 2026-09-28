@@ -95,7 +95,7 @@ class LibraryController extends Controller
         return view('public.home', compact('classes', 'stats', 'latestEbooks', 'classOptions'));
     }
 
-    public function library(Request $request): View|RedirectResponse
+    public function library(Request $request): View
     {
         $search = trim((string) $request->query('q', ''));
         $selectedClass = $request->query('class');
@@ -104,21 +104,6 @@ class LibraryController extends Controller
         $classFilter = $selectedClass
             ? ClassModel::where('is_active', true)->where('name', $selectedClass)->first()
             : null;
-
-        $subjectSearch = $selectedSubject ?: $search;
-        if ($subjectSearch !== '') {
-            $subject = Subject::query()
-                ->with('class')
-                ->where('is_active', true)
-                ->whereRaw('LOWER(name) = ?', [mb_strtolower(trim($subjectSearch))])
-                ->when($classFilter, fn ($query) => $query->where('class_id', $classFilter->id))
-                ->whereHas('class', fn ($query) => $query->where('is_active', true))
-                ->first();
-
-            if ($subject) {
-                return redirect()->route('subjects.show', [$subject->class, $subject]);
-            }
-        }
 
         $classes = ClassModel::where('is_active', true)
             ->withCount([
@@ -146,6 +131,24 @@ class LibraryController extends Controller
             ->orderBy('name')
             ->get();
 
+        $matchedEbooks = Ebook::query()
+            ->with('subject.class')
+            ->where('is_active', true)
+            ->when($search, fn ($query) => $query->where(function ($query) use ($search) {
+                $query->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('author', 'like', "%{$search}%")
+                    ->orWhere('publisher', 'like', "%{$search}%")
+                    ->orWhereHas('subject', fn ($subjectQuery) => $subjectQuery
+                        ->where('name', 'like', "%{$search}%")
+                        ->orWhere('code', 'like', "%{$search}%"));
+            }))
+            ->when($selectedClass, fn ($query) => $query->whereHas('subject', fn ($subjectQuery) => $subjectQuery->where('class_id', $classFilter?->id ?? 0)))
+            ->when($selectedSubject, fn ($query) => $query->where('subject_id', Subject::query()->where('name', $selectedSubject)->value('id')))
+            ->latest()
+            ->limit(12)
+            ->get();
+
         $classOptions = ClassModel::where('is_active', true)
             ->orderByRaw($classOrder)
             ->orderBy('name')
@@ -160,7 +163,7 @@ class LibraryController extends Controller
             ->unique()
             ->values();
 
-        return view('public.library', compact('classes', 'classOptions', 'subjectOptions', 'search', 'selectedClass', 'selectedSubject'));
+        return view('public.library', compact('classes', 'matchedEbooks', 'classOptions', 'subjectOptions', 'search', 'selectedClass', 'selectedSubject'));
     }
 
     public function class(Request $request, ClassModel $class): View
@@ -245,10 +248,20 @@ class LibraryController extends Controller
         return view('public.ebook', compact('ebook'));
     }
 
-    public function download(Ebook $ebook): RedirectResponse
+    public function download(Ebook $ebook): \Symfony\Component\HttpFoundation\BinaryFileResponse
     {
         abort_unless($ebook->file_path && Storage::disk('public')->exists($ebook->file_path), 404);
 
-        return redirect(Storage::url($ebook->file_path));
+        $safeName = preg_replace('/[^A-Za-z0-9._-]+/', '-', $ebook->title ?: 'ebook');
+
+        return response()->download(
+            Storage::disk('public')->path($ebook->file_path),
+            trim($safeName, '-') . '.pdf',
+            [
+                'Content-Type' => 'application/pdf',
+                'Cache-Control' => 'no-store, no-cache, must-revalidate',
+                'Pragma' => 'no-cache',
+            ]
+        );
     }
 }
