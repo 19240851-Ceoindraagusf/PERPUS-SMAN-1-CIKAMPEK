@@ -44,6 +44,26 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        return view('admin.dashboard', compact('stats', 'latestEbooks', 'popularEbooks', 'latestAccessLogs', 'topClasses', 'topSubjects'));
+        $weekStart = now()->subDays(6)->startOfDay();
+        $accessesByDay = AccessLog::query()
+            ->where('accessed_at', '>=', $weekStart)
+            ->get()
+            ->groupBy(fn (AccessLog $log) => optional($log->accessed_at)->format('Y-m-d'));
+        $weeklyAccesses = collect(range(0, 6))->map(function (int $offset) use ($weekStart, $accessesByDay) {
+            $date = $weekStart->copy()->addDays($offset);
+
+            return [
+                'label' => $date->locale('id')->isoFormat('ddd'),
+                'count' => $accessesByDay->get($date->format('Y-m-d'), collect())->count(),
+            ];
+        });
+        $collectionHealth = [
+            'without_cover' => Ebook::where('is_active', true)->whereNull('cover_path')->count(),
+            'without_description' => Ebook::where('is_active', true)->where(function ($query) {
+                $query->whereNull('description')->orWhere('description', '');
+            })->count(),
+        ];
+
+        return view('admin.dashboard', compact('stats', 'latestEbooks', 'popularEbooks', 'latestAccessLogs', 'topClasses', 'topSubjects', 'weeklyAccesses', 'collectionHealth'));
     }
 }

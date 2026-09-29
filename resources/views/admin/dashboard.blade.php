@@ -11,12 +11,30 @@
     <a href="{{ route('admin.ebooks.create') }}" class="btn btn-success">Tambah E-Book</a>
 </div>
 <div class="row g-3 mb-4">
-    <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body"><div class="text-muted">Total Kelas</div><div class="h3 mb-0">{{ $stats['classes'] }}</div></div></div></div>
-    <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body"><div class="text-muted">Mata Pelajaran</div><div class="h3 mb-0">{{ $stats['subjects'] }}</div></div></div></div>
-    <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body"><div class="text-muted">Total E-Book</div><div class="h3 mb-0">{{ $stats['ebooks'] }}</div></div></div></div>
-    <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body"><div class="text-muted">Total Akses</div><div class="h3 mb-0">{{ $stats['accesses'] }}</div></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body d-flex justify-content-between"><div><div class="text-muted">Total Kelas</div><div class="h3 mb-0">{{ $stats['classes'] }}</div></div><div class="stat-icon">K</div></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body d-flex justify-content-between"><div><div class="text-muted">Mata Pelajaran</div><div class="h3 mb-0">{{ $stats['subjects'] }}</div></div><div class="stat-icon">M</div></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body d-flex justify-content-between"><div><div class="text-muted">Total E-Book</div><div class="h3 mb-0">{{ $stats['ebooks'] }}</div></div><div class="stat-icon">E</div></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body d-flex justify-content-between"><div><div class="text-muted">Total Akses</div><div class="h3 mb-0">{{ $stats['accesses'] }}</div></div><div class="stat-icon">A</div></div></div></div>
 </div>
 <div class="row g-4">
+    <div class="col-lg-7">
+        <div class="admin-card card h-100"><div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3"><div><h2 class="h5 mb-1">Tren akses 7 hari terakhir</h2><p class="small text-muted mb-0">Jumlah halaman e-book yang dibuka.</p></div><span class="badge text-bg-success">{{ $weeklyAccesses->sum('count') }} akses</span></div>
+            @php($chartMax = max(1, $weeklyAccesses->max('count')))
+            <div class="activity-chart">
+                @foreach($weeklyAccesses as $day)
+                    <div class="activity-bar-wrap"><span class="small fw-semibold">{{ $day['count'] }}</span><div class="activity-bar" style="height: {{ max(5, ($day['count'] / $chartMax) * 125) }}px" title="{{ $day['count'] }} akses"></div><span class="small text-muted">{{ $day['label'] }}</span></div>
+                @endforeach
+            </div>
+        </div></div>
+    </div>
+    <div class="col-lg-5">
+        <div class="admin-card card h-100"><div class="card-body">
+            <h2 class="h5 mb-1">Kelengkapan koleksi</h2><p class="small text-muted mb-3">Data yang perlu dilengkapi agar katalog lebih menarik.</p>
+            <div class="metric mb-3"><div class="small text-muted">E-book tanpa cover</div><div class="d-flex justify-content-between align-items-center"><strong>{{ $collectionHealth['without_cover'] }} buku</strong><a class="small" href="{{ route('admin.ebooks.index') }}">Perbaiki →</a></div></div>
+            <div class="metric"><div class="small text-muted">E-book tanpa deskripsi</div><div class="d-flex justify-content-between align-items-center"><strong>{{ $collectionHealth['without_description'] }} buku</strong><a class="small" href="{{ route('admin.ebooks.index') }}">Perbaiki →</a></div></div>
+        </div></div>
+    </div>
     <div class="col-lg-6">
         <div class="admin-card card">
             <div class="card-body">

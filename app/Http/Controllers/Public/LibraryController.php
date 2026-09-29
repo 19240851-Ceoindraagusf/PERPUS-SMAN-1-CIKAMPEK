@@ -87,12 +87,20 @@ class LibraryController extends Controller
             ->limit(4)
             ->get();
 
+        $popularEbooks = Ebook::with('subject.class')
+            ->where('is_active', true)
+            ->withCount('accessLogs')
+            ->orderByDesc('access_logs_count')
+            ->latest()
+            ->limit(4)
+            ->get();
+
         $classOptions = ClassModel::where('is_active', true)
             ->orderByRaw($classOrder)
             ->orderBy('name')
             ->pluck('name');
 
-        return view('public.home', compact('classes', 'stats', 'latestEbooks', 'classOptions'));
+        return view('public.home', compact('classes', 'stats', 'latestEbooks', 'popularEbooks', 'classOptions'));
     }
 
     public function library(Request $request): View
@@ -236,7 +244,7 @@ class LibraryController extends Controller
 
     public function ebook(Request $request, Ebook $ebook): View
     {
-        $ebook->load('subject.class');
+        $ebook->load('subject.class')->loadCount('accessLogs');
 
         AccessLog::create([
             'ebook_id' => $ebook->id,
@@ -245,7 +253,15 @@ class LibraryController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
-        return view('public.ebook', compact('ebook'));
+        $relatedEbooks = Ebook::with('subject.class')
+            ->where('is_active', true)
+            ->where('id', '!=', $ebook->id)
+            ->where('subject_id', $ebook->subject_id)
+            ->latest()
+            ->limit(4)
+            ->get();
+
+        return view('public.ebook', compact('ebook', 'relatedEbooks'));
     }
 
     public function download(Ebook $ebook): \Symfony\Component\HttpFoundation\BinaryFileResponse

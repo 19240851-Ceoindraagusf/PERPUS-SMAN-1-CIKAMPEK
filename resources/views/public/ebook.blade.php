@@ -18,7 +18,7 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-3 p-md-4 text-center">
                     @if($ebook->cover_path)
-                        <img src="{{ asset('storage/' . $ebook->cover_path) }}" class="img-fluid rounded" alt="Cover {{ $ebook->title }}" style="max-height: 28rem; object-fit: cover; width: 100%;">
+                        <img src="{{ asset('storage/' . $ebook->cover_path) }}" class="detail-cover rounded" alt="Cover {{ $ebook->title }}">
                     @else
                         <div class="bg-light rounded p-5 text-muted">Cover belum tersedia</div>
                     @endif
@@ -27,7 +27,8 @@
         </div>
 
         <div class="col-lg-8">
-            <span class="badge badge-soft mb-3">Kelas {{ $ebook->subject->class->name }} / {{ $ebook->subject->name }}</span>
+            <p class="eyebrow mb-2">Kelas {{ $ebook->subject->class->name }} / {{ $ebook->subject->name }}</p>
+            <span class="badge badge-soft mb-3">E-book tersedia untuk dibaca</span>
             <h1 class="h2 mb-3">{{ $ebook->title }}</h1>
             <p class="text-muted mb-4">{{ $ebook->description ?: 'Belum ada deskripsi e-book.' }}</p>
 
@@ -36,11 +37,12 @@
                 <div class="col-sm-6"><div class="metric"><div class="small text-muted">Penulis</div><div class="fw-semibold">{{ $ebook->author ?: '-' }}</div></div></div>
                 <div class="col-sm-6"><div class="metric"><div class="small text-muted">Penerbit</div><div class="fw-semibold">{{ $ebook->publisher ?: '-' }}</div></div></div>
                 <div class="col-sm-6"><div class="metric"><div class="small text-muted">Tahun</div><div class="fw-semibold">{{ $ebook->publication_year ?: '-' }}</div></div></div>
+                <div class="col-sm-6"><div class="metric"><div class="small text-muted">Telah dibaca</div><div class="fw-semibold">{{ $ebook->access_logs_count }} kali</div></div></div>
             </div>
 
             @if($ebook->file_path)
-                <div class="d-flex flex-column flex-sm-row gap-2 sticky-bottom pb-2">
-                    <a href="{{ asset('storage/' . $ebook->file_path) }}" class="btn btn-success flex-fill" target="_blank" rel="noopener">Baca E-Book</a>
+                <div class="detail-actions d-flex flex-column flex-sm-row gap-2">
+                    <a href="{{ asset('storage/' . $ebook->file_path) }}" class="btn btn-success flex-fill" target="_blank" rel="noopener">Baca Sekarang</a>
                     <a href="{{ route('ebooks.download', $ebook) }}" class="btn btn-outline-success flex-fill">Download</a>
                 </div>
             @else
@@ -48,5 +50,30 @@
             @endif
         </div>
     </div>
+
+    @if($relatedEbooks->isNotEmpty())
+        <section class="mt-5 pt-4 catalog-toolbar">
+            <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
+                <div><p class="eyebrow mb-1">Lanjutkan belajar</p><h2 class="h4 mb-0">E-Book terkait</h2></div>
+                <a class="small fw-semibold text-decoration-none" href="{{ route('subjects.show', [$ebook->subject->class, $ebook->subject]) }}">Lihat semua mapel →</a>
+            </div>
+            <div class="row g-3">
+                @foreach($relatedEbooks as $related)
+                    <div class="col-6 col-md-3">
+                        <article class="collection-card info-card card h-100">
+                            <a class="text-decoration-none text-dark" href="{{ route('ebooks.show', $related) }}">
+                                @if($related->cover_path)
+                                    <img src="{{ asset('storage/' . $related->cover_path) }}" class="book-cover" alt="Cover {{ $related->title }}">
+                                @else
+                                    <div class="book-cover-placeholder"><small>E-BOOK</small><strong>{{ $ebook->subject->name }}</strong><small>SMAN 1 CIKAMPEK</small></div>
+                                @endif
+                                <div class="card-body"><h3 class="h6 book-title mb-0">{{ $related->title }}</h3></div>
+                            </a>
+                        </article>
+                    </div>
+                @endforeach
+            </div>
+        </section>
+    @endif
 </section>
 @endsection
