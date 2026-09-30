@@ -96,4 +96,55 @@ class PublicLibraryUpgradeTest extends TestCase
             ->assertSee('Kelas dengan Materi Terbanyak')
             ->assertSee('Mapel Paling Banyak Diakses');
     }
+
+    public function test_inactive_ebook_cannot_be_viewed_or_downloaded(): void
+    {
+        $class = ClassModel::create(['name' => 'X', 'is_active' => true]);
+        $subject = Subject::create(['class_id' => $class->id, 'name' => 'Matematika', 'is_active' => true]);
+        $ebook = Ebook::create([
+            'subject_id' => $subject->id,
+            'title' => 'Buku Nonaktif',
+            'file_path' => 'ebooks/inactive.pdf',
+            'is_active' => false,
+        ]);
+
+        $this->get(route('ebooks.show', $ebook))->assertNotFound();
+        $this->get(route('ebooks.download', $ebook))->assertNotFound();
+        $this->assertDatabaseCount('access_logs', 0);
+    }
+
+    public function test_access_logs_store_anonymized_ip_addresses(): void
+    {
+        $class = ClassModel::create(['name' => 'X', 'is_active' => true]);
+        $subject = Subject::create(['class_id' => $class->id, 'name' => 'Matematika', 'is_active' => true]);
+        $ebook = Ebook::create([
+            'subject_id' => $subject->id,
+            'title' => 'Buku Aktif',
+            'file_path' => 'ebooks/active.pdf',
+            'is_active' => true,
+        ]);
+
+        $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.27'])
+            ->get(route('ebooks.show', $ebook))
+            ->assertOk();
+
+        $this->assertDatabaseHas('access_logs', [
+            'ebook_id' => $ebook->id,
+            'ip_address' => '203.0.113.0',
+        ]);
+    }
+
+    public function test_access_log_pruning_removes_only_expired_logs(): void
+    {
+        $class = ClassModel::create(['name' => 'X', 'is_active' => true]);
+        $subject = Subject::create(['class_id' => $class->id, 'name' => 'Matematika', 'is_active' => true]);
+        $ebook = Ebook::create(['subject_id' => $subject->id, 'title' => 'Buku Aktif', 'is_active' => true]);
+        $expiredLog = AccessLog::create(['ebook_id' => $ebook->id, 'accessed_at' => now()->subDays(91)]);
+        $recentLog = AccessLog::create(['ebook_id' => $ebook->id, 'accessed_at' => now()->subDays(89)]);
+
+        $this->artisan('access-logs:prune')->assertSuccessful();
+
+        $this->assertDatabaseMissing('access_logs', ['id' => $expiredLog->id]);
+        $this->assertDatabaseHas('access_logs', ['id' => $recentLog->id]);
+    }
 }

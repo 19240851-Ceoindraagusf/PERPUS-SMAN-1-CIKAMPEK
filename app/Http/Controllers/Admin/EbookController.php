@@ -71,7 +71,7 @@ class EbookController extends Controller
         $metadata = $metadataExtractor->extract($request->file('file'));
 
         $validated['is_active'] = $request->boolean('is_active');
-        $validated['title'] = $metadata['title'];
+        $validated['title'] = $metadataExtractor->titleForSelectedSubject($metadata['title'], $subject->name);
         $validated['author'] = $metadata['author'];
         $validated['publisher'] = $metadata['publisher'];
         $validated['publication_year'] = $metadata['publication_year'];
@@ -112,13 +112,14 @@ class EbookController extends Controller
         ]);
 
         $validated['is_active'] = $request->boolean('is_active');
+        $subject = Subject::findOrFail($validated['subject_id']);
 
         if ($request->hasFile('file')) {
             $metadata = $metadataExtractor->extract($request->file('file'));
 
             $this->deleteStoredFileIfUnused($ebook->file_path, $ebook->id);
 
-            $validated['title'] = $metadata['title'];
+            $validated['title'] = $metadataExtractor->titleForSelectedSubject($metadata['title'], $subject->name);
             $validated['author'] = $metadata['author'];
             $validated['publisher'] = $metadata['publisher'];
             $validated['publication_year'] = $metadata['publication_year'];
@@ -219,7 +220,7 @@ class EbookController extends Controller
             ->where('class_id', $subject->class_id)
             ->where(function ($query) use ($matchPatterns) {
                 foreach ($matchPatterns as $matchPattern) {
-                    $query->orWhereRaw('LOWER(name) LIKE ?', ['%' . $matchPattern . '%']);
+                    $query->orWhereRaw('LOWER(name) LIKE ?', ['%'.$matchPattern.'%']);
                 }
             })
             ->pluck('id');
@@ -251,10 +252,10 @@ class EbookController extends Controller
             }
 
             $patterns[] = $normalized;
-            $patterns[] = mb_strtolower('IPA / ' . $groupName);
-            $patterns[] = mb_strtolower('IPA/' . $groupName);
-            $patterns[] = mb_strtolower('IPS / ' . $groupName);
-            $patterns[] = mb_strtolower('IPS/' . $groupName);
+            $patterns[] = mb_strtolower('IPA / '.$groupName);
+            $patterns[] = mb_strtolower('IPA/'.$groupName);
+            $patterns[] = mb_strtolower('IPS / '.$groupName);
+            $patterns[] = mb_strtolower('IPS/'.$groupName);
         }
 
         return array_values(array_unique($patterns));
@@ -272,16 +273,9 @@ class EbookController extends Controller
             return ['Ekonomi', 'Geografi', 'Sosiologi'];
         }
 
-        $branchGroups = [
-            'biologi' => ['Biologi', 'Fisika', 'Kimia'],
-            'fisika' => ['Biologi', 'Fisika', 'Kimia'],
-            'kimia' => ['Biologi', 'Fisika', 'Kimia'],
-            'ekonomi' => ['Ekonomi', 'Geografi', 'Sosiologi'],
-            'geografi' => ['Ekonomi', 'Geografi', 'Sosiologi'],
-            'sosiologi' => ['Ekonomi', 'Geografi', 'Sosiologi'],
-        ];
-
-        return $branchGroups[$normalizedName] ?? [];
+        // Mapel cabang memiliki cover masing-masing. Hanya ebook mapel
+        // gabungan yang diawali IPA atau IPS yang boleh membagikan cover.
+        return [];
     }
 
     private function resolveSubjectFromMetadata(array $metadata): ?Subject
@@ -294,7 +288,7 @@ class EbookController extends Controller
             return null;
         }
 
-        $description = $metadata['description'] ?: 'Mata pelajaran ' . $metadata['detected_subject_name'] . ' yang berisi materi pembelajaran sesuai kurikulum.';
+        $description = $metadata['description'] ?: 'Mata pelajaran '.$metadata['detected_subject_name'].' yang berisi materi pembelajaran sesuai kurikulum.';
 
         $existing = Subject::findByClassAndName($metadata['class']->id, $metadata['detected_subject_name']);
 
@@ -341,7 +335,7 @@ class EbookController extends Controller
                 return collect();
             }
 
-            return collect(['Sosiologi', 'Geologi', 'Ekonomi'])
+            return collect(['Sosiologi', 'Geografi', 'Ekonomi'])
                 ->map(fn (string $subjectName) => Subject::firstOrCreate(
                     [
                         'class_id' => $metadata['class']->id,

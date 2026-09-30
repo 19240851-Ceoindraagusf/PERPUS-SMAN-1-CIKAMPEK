@@ -15,7 +15,7 @@ class EbookMetadataExtractor
     public function extract(UploadedFile $file): array
     {
         $text = $this->extractText($file);
-        $source = $this->normalize($file->getClientOriginalName() . "\n" . $text);
+        $source = $this->normalize($file->getClientOriginalName()."\n".$text);
         $lines = $this->meaningfulLines($text);
 
         $class = $this->detectClass($source);
@@ -56,9 +56,35 @@ class EbookMetadataExtractor
             'author' => $this->extractBlockValue($text, ['penulis', 'author', 'pengarang']) ?: 'Tidak diketahui',
             'publisher' => $this->extractBlockValue($text, ['penerbit', 'publisher'], 4, false) ?: $this->detectPublisher($text),
             'publication_year' => $this->detectYear($text, $source),
-            'description' => $this->detectDescription($lines) ?: 'Materi pembelajaran ' . ($displaySubjectName ?: 'e-book') . ' dari file ' . $file->getClientOriginalName() . '.',
+            'description' => $this->detectDescription($lines) ?: 'Materi pembelajaran '.($displaySubjectName ?: 'e-book').' dari file '.$file->getClientOriginalName().'.',
             'text_found' => trim($text) !== '',
         ];
+    }
+
+    /**
+     * Keeps the displayed title aligned with the subject chosen by the admin.
+     * PDF metadata can be incomplete or contain the title of another book.
+     */
+    public function titleForSelectedSubject(?string $detectedTitle, string $subjectName): string
+    {
+        $title = trim((string) $detectedTitle);
+        $subjectName = trim($subjectName);
+
+        if ($subjectName === '') {
+            return Str::limit($title, 255, '');
+        }
+
+        if ($title === '' || $this->normalize($title) === $this->normalize($subjectName)) {
+            return $subjectName;
+        }
+
+        $aliases = $this->knownSubjectAliases()[$subjectName] ?? [$subjectName];
+
+        if (collect($aliases)->contains(fn (string $alias) => $this->containsToken($title, $alias))) {
+            return Str::limit($title, 255, '');
+        }
+
+        return $subjectName;
     }
 
     private function extractText(UploadedFile $file): string
@@ -79,7 +105,7 @@ class EbookMetadataExtractor
             return '';
         }
 
-        return trim(($layoutProcess->isSuccessful() ? $layoutProcess->getOutput() : '') . "\n" . ($rawProcess->isSuccessful() ? $rawProcess->getOutput() : ''));
+        return trim(($layoutProcess->isSuccessful() ? $layoutProcess->getOutput() : '')."\n".($rawProcess->isSuccessful() ? $rawProcess->getOutput() : ''));
     }
 
     private function pdftotextPath(): string
@@ -140,7 +166,7 @@ class EbookMetadataExtractor
         }
 
         return ClassModel::where('is_active', true)
-            ->where('name', $className . ' ' . $majorName)
+            ->where('name', $className.' '.$majorName)
             ->first();
     }
 
@@ -293,8 +319,8 @@ class EbookMetadataExtractor
     {
         $name = trim($class->name);
         $aliases = [
-            'kelas ' . $name,
-            'class ' . $name,
+            'kelas '.$name,
+            'class '.$name,
         ];
 
         $numbers = [
@@ -305,9 +331,9 @@ class EbookMetadataExtractor
 
         $upperName = strtoupper($name);
         if (isset($numbers[$upperName])) {
-            $aliases[] = 'kelas ' . $numbers[$upperName];
-            $aliases[] = 'class ' . $numbers[$upperName];
-            $aliases[] = 'grade ' . $numbers[$upperName];
+            $aliases[] = 'kelas '.$numbers[$upperName];
+            $aliases[] = 'class '.$numbers[$upperName];
+            $aliases[] = 'grade '.$numbers[$upperName];
         }
 
         if (Str::length($name) > 1) {
@@ -381,10 +407,10 @@ class EbookMetadataExtractor
         $title = $lines
             ->first(fn (string $line) => $subjectName && $this->normalize($line) === $this->normalize($subjectName))
             ?: $lines
-            ->reject(fn (string $line) => $this->looksLikeMetadataLine($line))
-            ->reject(fn (string $line) => $this->looksLikeInstitutionLine($line))
-            ->reject(fn (string $line) => preg_match('/^\d{4}$/', trim($line)))
-            ->first();
+                ->reject(fn (string $line) => $this->looksLikeMetadataLine($line))
+                ->reject(fn (string $line) => $this->looksLikeInstitutionLine($line))
+                ->reject(fn (string $line) => preg_match('/^\d{4}$/', trim($line)))
+                ->first();
 
         if ($subjectName && (! $title || $this->looksLikeInstitutionLine($title) || $this->looksLikePersonName($title) || $this->isGenericTitle($title, $subjectName) || preg_match('/^\d{4}$/', trim($title)))) {
             $title = $subjectName;
@@ -449,7 +475,7 @@ class EbookMetadataExtractor
         if ($description !== '') {
             $summary = preg_replace('/\s+/', ' ', $description) ?: $description;
 
-            $prefixedSummary = $subjectName !== '' ? $subjectName . ': ' . $summary : $summary;
+            $prefixedSummary = $subjectName !== '' ? $subjectName.': '.$summary : $summary;
 
             return Str::of($prefixedSummary)
                 ->limit(280, '...')
@@ -459,10 +485,10 @@ class EbookMetadataExtractor
         if ($title !== '') {
             $normalizedTitle = preg_replace('/\s+/', ' ', $title) ?: $title;
 
-            return 'Mata pelajaran ' . $subjectName . ' yang membahas materi dalam buku "' . $normalizedTitle . '".';
+            return 'Mata pelajaran '.$subjectName.' yang membahas materi dalam buku "'.$normalizedTitle.'".';
         }
 
-        return 'Mata pelajaran ' . $subjectName . ' yang berisi materi pembelajaran dan latihan sesuai kurikulum.';
+        return 'Mata pelajaran '.$subjectName.' yang berisi materi pembelajaran dan latihan sesuai kurikulum.';
     }
 
     private function detectDescription(Collection $lines): ?string
@@ -479,11 +505,11 @@ class EbookMetadataExtractor
     private function extractValue(string $text, array $labels): ?string
     {
         foreach ($labels as $label) {
-            if (preg_match('/^\s*' . preg_quote($label, '/') . '\s*[:\-]\s*(.+)$/imu', $text, $matches)) {
+            if (preg_match('/^\s*'.preg_quote($label, '/').'\s*[:\-]\s*(.+)$/imu', $text, $matches)) {
                 return Str::limit(trim($matches[1]), 255, '');
             }
 
-            if (preg_match('/^\s*' . preg_quote($label, '/') . '\s*$\R+\s*(.+)$/imu', $text, $matches)) {
+            if (preg_match('/^\s*'.preg_quote($label, '/').'\s*$\R+\s*(.+)$/imu', $text, $matches)) {
                 return Str::limit(trim($matches[1]), 255, '');
             }
         }
@@ -499,11 +525,11 @@ class EbookMetadataExtractor
         }
 
         foreach ($labels as $label) {
-            if (preg_match('/^\s*' . preg_quote($label, '/') . '\s*[:\-]\s*(.+)$/imu', $text, $matches)) {
+            if (preg_match('/^\s*'.preg_quote($label, '/').'\s*[:\-]\s*(.+)$/imu', $text, $matches)) {
                 return Str::limit(trim($matches[1]), 255, '');
             }
 
-            if (preg_match('/^\s*' . preg_quote($label, '/') . '\s*$\R+(.+?)(?=^\s*(Penelaah|Penyelia|Ilustrator|Penata Letak|Penyunting|Penerbit|Cetakan|ISBN|Hak Cipta|Disclaimer|Kata Pengantar|Prakata)\b|^\s*(Penelaah|Penyelia|Ilustrator|Penata Letak|Penyunting|Penerbit|Cetakan|ISBN)\s*[:\-]|\z)/imsu', $text, $matches)) {
+            if (preg_match('/^\s*'.preg_quote($label, '/').'\s*$\R+(.+?)(?=^\s*(Penelaah|Penyelia|Ilustrator|Penata Letak|Penyunting|Penerbit|Cetakan|ISBN|Hak Cipta|Disclaimer|Kata Pengantar|Prakata)\b|^\s*(Penelaah|Penyelia|Ilustrator|Penata Letak|Penyunting|Penerbit|Cetakan|ISBN)\s*[:\-]|\z)/imsu', $text, $matches)) {
                 $value = collect(preg_split('/\R+/', trim($matches[1])) ?: [])
                     ->map(fn (string $line) => trim(preg_replace('/\s+/', ' ', $line)))
                     ->filter(fn (string $line) => $line !== '' && (! $skipInstitutionLines || ! $this->looksLikeInstitutionLine($line)))
@@ -612,7 +638,7 @@ class EbookMetadataExtractor
     {
         $needle = $this->normalize($needle);
 
-        return $needle !== '' && preg_match('/(^|[^a-z0-9])' . preg_quote($needle, '/') . '([^a-z0-9]|$)/i', $source);
+        return $needle !== '' && preg_match('/(^|[^a-z0-9])'.preg_quote($needle, '/').'([^a-z0-9]|$)/i', $source);
     }
 
     private function looksLikeMetadataLine(string $line): bool

@@ -1,6 +1,6 @@
 @csrf
 <div class="alert alert-info">
-    Pilih mata pelajaran tujuan. Sistem akan membaca halaman awal PDF untuk mengisi judul, penulis, penerbit, tahun terbit, dan deskripsi secara otomatis.
+    Pilih mata pelajaran tujuan dengan teliti. Sistem membaca halaman awal PDF untuk mengisi metadata; judul ebook akan selalu divalidasi agar sesuai dengan mata pelajaran yang dipilih.
 </div>
 <div class="row">
     <div class="col-md-6 mb-3">

@@ -9,7 +9,7 @@ class EbookMetadataExtractorTest extends TestCase
 {
     public function test_it_detects_science_subjects_from_ipa_text(): void
     {
-        $extractor = new EbookMetadataExtractor();
+        $extractor = new EbookMetadataExtractor;
 
         $this->assertSame('IPA', $extractor->detectScienceSubjectNameFromText('Buku IPA kelas X untuk SMA'));
         $this->assertSame('IPA', $extractor->detectScienceSubjectNameFromText('Buku IPA Kimia kelas X untuk SMA'));
@@ -26,7 +26,7 @@ class EbookMetadataExtractorTest extends TestCase
 
     public function test_it_ignores_science_keywords_when_a_non_science_subject_is_the_main_title(): void
     {
-        $extractor = new EbookMetadataExtractor();
+        $extractor = new EbookMetadataExtractor;
 
         $source = "Bahasa Indonesia Cerdas Cergas Berbahasa dan Bersastra Indonesia kelas X\n\nBacaan 1: Mengamati perubahan lingkungan\n\nPada saat itu, siswa membahas kimia dalam contoh sederhana.";
 
@@ -35,7 +35,7 @@ class EbookMetadataExtractorTest extends TestCase
 
     public function test_it_extracts_clean_publisher_and_year_metadata(): void
     {
-        $extractor = new EbookMetadataExtractor();
+        $extractor = new EbookMetadataExtractor;
         $detectPublisher = new \ReflectionMethod(EbookMetadataExtractor::class, 'detectPublisher');
         $detectYear = new \ReflectionMethod(EbookMetadataExtractor::class, 'detectYear');
 
@@ -50,7 +50,7 @@ class EbookMetadataExtractorTest extends TestCase
 
     public function test_it_builds_subject_description_from_uploaded_ebook_content(): void
     {
-        $extractor = new EbookMetadataExtractor();
+        $extractor = new EbookMetadataExtractor;
 
         $description = $extractor->buildSubjectDescription(
             'Bahasa Indonesia',
@@ -64,20 +64,29 @@ class EbookMetadataExtractorTest extends TestCase
 
     public function test_it_matches_shared_cover_subjects_for_ipa_and_ips_slash_names(): void
     {
-        $controller = new \App\Http\Controllers\Admin\EbookController();
+        $controller = new \App\Http\Controllers\Admin\EbookController;
         $method = new \ReflectionMethod($controller, 'sharedCoverMatchPatterns');
         $method->setAccessible(true);
 
-        $scienceSubject = new \App\Models\Subject();
+        $scienceSubject = new \App\Models\Subject;
         $scienceSubject->name = 'IPA / Kimia';
 
         $this->assertContains('kimia', $method->invoke($controller, $scienceSubject));
         $this->assertContains('ipa / kimia', $method->invoke($controller, $scienceSubject));
 
-        $socialSubject = new \App\Models\Subject();
+        $socialSubject = new \App\Models\Subject;
         $socialSubject->name = 'IPS / Ekonomi';
 
         $this->assertContains('ekonomi', $method->invoke($controller, $socialSubject));
         $this->assertContains('ips / ekonomi', $method->invoke($controller, $socialSubject));
+    }
+
+    public function test_it_uses_the_selected_subject_when_the_detected_title_is_incorrect(): void
+    {
+        $extractor = new EbookMetadataExtractor;
+
+        $this->assertSame('Biologi', $extractor->titleForSelectedSubject('Informatika', 'Biologi'));
+        $this->assertSame('Matematika', $extractor->titleForSelectedSubject('Pendidikan Pancasila', 'Matematika'));
+        $this->assertSame('Fisika Tingkat Lanjut', $extractor->titleForSelectedSubject('Fisika Tingkat Lanjut', 'Fisika'));
     }
 }

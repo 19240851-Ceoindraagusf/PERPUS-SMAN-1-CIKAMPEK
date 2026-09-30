@@ -244,12 +244,14 @@ class LibraryController extends Controller
 
     public function ebook(Request $request, Ebook $ebook): View
     {
+        abort_unless($ebook->is_active, 404);
+
         $ebook->load('subject.class')->loadCount('accessLogs');
 
         AccessLog::create([
             'ebook_id' => $ebook->id,
             'accessed_at' => now(),
-            'ip_address' => $request->ip(),
+            'ip_address' => $this->anonymizeIpAddress($request->ip()),
             'user_agent' => $request->userAgent(),
         ]);
 
@@ -266,18 +268,41 @@ class LibraryController extends Controller
 
     public function download(Ebook $ebook): \Symfony\Component\HttpFoundation\BinaryFileResponse
     {
+        abort_unless($ebook->is_active, 404);
         abort_unless($ebook->file_path && Storage::disk('public')->exists($ebook->file_path), 404);
 
         $safeName = preg_replace('/[^A-Za-z0-9._-]+/', '-', $ebook->title ?: 'ebook');
 
         return response()->download(
             Storage::disk('public')->path($ebook->file_path),
-            trim($safeName, '-') . '.pdf',
+            trim($safeName, '-').'.pdf',
             [
                 'Content-Type' => 'application/pdf',
                 'Cache-Control' => 'no-store, no-cache, must-revalidate',
                 'Pragma' => 'no-cache',
             ]
         );
+    }
+
+    private function anonymizeIpAddress(?string $ipAddress): ?string
+    {
+        if (! $ipAddress || ! filter_var($ipAddress, FILTER_VALIDATE_IP)) {
+            return null;
+        }
+
+        if (filter_var($ipAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            $parts = explode('.', $ipAddress);
+            $parts[3] = '0';
+
+            return implode('.', $parts);
+        }
+
+        $packedAddress = inet_pton($ipAddress);
+
+        if ($packedAddress === false) {
+            return null;
+        }
+
+        return inet_ntop(substr($packedAddress, 0, 6).str_repeat("\0", 10));
     }
 }

@@ -51,7 +51,7 @@ return new class extends Migration
 
     private function branchSubjectIds(int $classId)
     {
-        return collect(['Sosiologi', 'Geologi', 'Ekonomi'])
+        return collect(['Sosiologi', 'Geografi', 'Ekonomi'])
             ->mapWithKeys(function (string $subjectName) use ($classId) {
                 $subject = DB::table('subjects')
                     ->where('class_id', $classId)

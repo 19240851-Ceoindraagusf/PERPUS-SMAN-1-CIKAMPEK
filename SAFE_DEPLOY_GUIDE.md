@@ -49,6 +49,13 @@ powershell -ExecutionPolicy Bypass -File .\scripts\update-with-backup.ps1
 4. Cek data pengguna, kelas, subject, dan e-book setelah update.
 5. Simpan backup di lokasi aman di luar folder project bila memungkinkan.
 
+## Privasi dan retensi log akses
+
+- Alamat IP kunjungan baru disimpan dalam bentuk anonim: IPv4 menjadi jaringan `/24` (contoh `203.0.113.27` menjadi `203.0.113.0`), sedangkan IPv6 disamarkan ke `/48`.
+- Migrasi upgrade juga menganonimkan IP yang sudah tersimpan.
+- Log akses yang lebih lama dari 90 hari dihapus otomatis setiap hari pukul 03:30. Bila diperlukan, ubah `ACCESS_LOG_RETENTION_DAYS` di `.env` (minimal `1`).
+- Pastikan Laravel Scheduler dipanggil setiap menit pada server agar backup dan pembersihan log berjalan, misalnya dengan Task Scheduler menjalankan `php artisan schedule:run`.
+
 ## Pengaman test
 
 Konfigurasi test memakai `perpus_digital_sman1_cikampek_testing`. Selain itu, bootstrap test akan membatalkan seluruh test bila database bukan SQLite `:memory:` atau nama database yang diakhiri `_testing`. Dengan begitu, `RefreshDatabase` tidak dapat lagi menghapus data perpustakaan utama.
