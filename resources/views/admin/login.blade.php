@@ -26,10 +26,11 @@
             max-width: 520px;
         }
         .brand-mark {
-            width: 58px;
-            height: 58px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, .16);
+            width: 66px;
+            height: 66px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #fff;
             border: 1px solid rgba(255, 255, 255, .26);
             display: grid;
             place-items: center;
@@ -77,7 +78,7 @@
         <div class="col-lg-6">
             <div class="school-panel">
                 <div class="d-flex align-items-center gap-3 mb-4">
-                    <div class="brand-mark">S1C</div>
+                    <img class="brand-mark" src="{{ asset('images/logo-perpus-sman-1-cikampek.jpeg') }}" alt="Logo Perpustakaan SMAN 1 Cikampek">
                     <div>
                         <div class="fw-bold text-uppercase">Perpustakaan Digital</div>
                         <div class="opacity-75">SMAN 1 Cikampek</div>

@@ -20,10 +20,8 @@
         a { color: var(--school-blue); }
         .navbar { box-shadow: 0 1px 0 rgba(16, 35, 63, .06); }
         .brand-mark {
-            width: 48px; height: 48px; border-radius: 14px;
-            background: linear-gradient(135deg, var(--school-green), #168a69);
-            color: #fff; display: grid; place-items: center; font-weight: 800; letter-spacing: 0;
-            box-shadow: 0 10px 22px rgba(15, 107, 79, .22);
+            width: 56px; height: 56px; border-radius: 50%; object-fit: cover;
+            box-shadow: 0 5px 14px rgba(15, 35, 63, .18);
         }
         .brand-name { line-height: 1.05; }
         .nav-pill { border-radius: 10px; color: var(--school-ink); padding: .5rem .9rem; font-weight: 600; }
@@ -81,7 +79,7 @@
         .book-card-footer { display: flex; align-items: center; justify-content: space-between; }
         .catalog-toolbar { border-bottom: 1px solid var(--school-line); }
         @media (max-width: 575.98px) {
-            .brand-mark { width: 42px; height: 42px; font-size: .85rem; }
+            .brand-mark { width: 48px; height: 48px; font-size: .85rem; }
             .brand-name { font-size: .92rem; }
             .hero { text-align: left; }
             .display-5 { font-size: 2rem; }
@@ -97,7 +95,7 @@
 <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
         <a class="navbar-brand fw-semibold d-flex align-items-center gap-2" href="{{ route('library') }}">
-            <span class="brand-mark">S1C</span>
+            <img class="brand-mark" src="{{ asset('images/logo-perpus-sman-1-cikampek.jpeg') }}" alt="Logo Perpustakaan SMAN 1 Cikampek">
             <span class="brand-name">PERPUSTAKAAN DIGITAL<br><small class="text-muted">SMAN 1 CIKAMPEK</small></span>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#publicNav" aria-controls="publicNav" aria-expanded="false" aria-label="Buka navigasi">

@@ -13,7 +13,7 @@
         .admin-sidebar a { color: rgba(255, 255, 255, .85); border-radius: 8px; }
         .admin-sidebar a:hover, .admin-sidebar a.active { background: rgba(255, 255, 255, .12); color: #fff; }
         .admin-content { min-width: 0; flex: 1 1 auto; }
-        .admin-brand-mark { width: 44px; height: 44px; border-radius: 10px; background: rgba(255, 255, 255, .16); display: grid; place-items: center; font-weight: 800; }
+        .admin-brand-mark { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; background: #fff; }
         .ebook-table { min-width: 1120px; table-layout: fixed; }
         .ebook-table th, .ebook-table td { white-space: normal; vertical-align: top; word-break: break-word; }
         .ebook-table th:nth-child(1), .ebook-table td:nth-child(1) { width: 8%; }
@@ -50,7 +50,7 @@
 <div class="admin-shell d-flex">
     <aside class="admin-sidebar p-3">
         <div class="mb-4 d-flex gap-2 align-items-center">
-            <div class="admin-brand-mark">S1C</div>
+            <img class="admin-brand-mark" src="{{ asset('images/logo-perpus-sman-1-cikampek.jpeg') }}" alt="Logo Perpustakaan SMAN 1 Cikampek">
             <div>
                 <div class="fw-bold">PERPUSTAKAAN DIGITAL</div>
                 <div class="small opacity-75">SMAN 1 CIKAMPEK</div>
