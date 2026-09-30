@@ -14,7 +14,9 @@ Route::get('/perpustakaan', [LibraryController::class, 'library'])->name('librar
 Route::get('/kelas/{class}', [LibraryController::class, 'class'])->name('classes.show');
 Route::get('/kelas/{class}/mata-pelajaran/{subject}', [LibraryController::class, 'subject'])->name('subjects.show');
 Route::get('/ebook/{ebook}', [LibraryController::class, 'ebook'])->name('ebooks.show');
+Route::get('/ebook/{ebook}/baca', [LibraryController::class, 'reader'])->name('ebooks.reader');
 Route::get('/ebook/{ebook}/download', [LibraryController::class, 'download'])->name('ebooks.download');
+Route::view('/favorit', 'public.favorites')->name('favorites');
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

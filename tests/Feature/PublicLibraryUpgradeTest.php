@@ -8,6 +8,7 @@ use App\Models\Ebook;
 use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class PublicLibraryUpgradeTest extends TestCase
@@ -50,6 +51,41 @@ class PublicLibraryUpgradeTest extends TestCase
         $response->assertOk()
             ->assertSee('Biologi Dasar')
             ->assertSee('Kelas X');
+    }
+
+    public function test_catalog_can_filter_by_year_and_author_and_reader_is_available(): void
+    {
+        $class = ClassModel::create(['name' => 'X', 'is_active' => true]);
+        $subject = Subject::create(['class_id' => $class->id, 'name' => 'Kimia', 'is_active' => true]);
+        $matchingEbook = Ebook::create([
+            'subject_id' => $subject->id,
+            'title' => 'Kimia 2025',
+            'author' => 'Ani',
+            'publication_year' => 2025,
+            'file_path' => 'ebooks/kimia.pdf',
+            'is_active' => true,
+        ]);
+        Ebook::create([
+            'subject_id' => $subject->id,
+            'title' => 'Kimia Lama',
+            'author' => 'Budi',
+            'publication_year' => 2023,
+            'is_active' => true,
+        ]);
+
+        $this->get(route('library', ['year' => 2025, 'author' => 'Ani', 'sort' => 'title']))
+            ->assertOk()
+            ->assertSee('Kimia 2025')
+            ->assertDontSee('Kimia Lama')
+            ->assertSee('Tahun terbit')
+            ->assertSee('Paling sering dibaca');
+
+        $this->get(route('favorites'))->assertOk()->assertSee('Favorit & Terakhir Dibuka', false);
+        Storage::fake('public');
+        Storage::disk('public')->put('ebooks/kimia.pdf', 'PDF placeholder');
+        $this->get(route('ebooks.reader', $matchingEbook))
+            ->assertOk()
+            ->assertSee('Pembaca PDF');
     }
 
     public function test_admin_dashboard_shows_analytics_sections(): void

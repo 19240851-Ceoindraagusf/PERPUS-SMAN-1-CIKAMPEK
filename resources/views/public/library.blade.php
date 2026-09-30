@@ -11,7 +11,7 @@
     </div>
     <form action="{{ route('library') }}" method="GET" class="search-panel mb-4">
         <div class="row g-2 align-items-end">
-            <div class="col-lg">
+            <div class="col-lg-4">
                 <label class="form-label small text-muted" for="q">Kata kunci</label>
                 <input type="search" class="form-control" id="q" name="q" value="{{ $search }}" placeholder="Contoh: Matematika, X, Biologi">
             </div>
@@ -22,6 +22,32 @@
                     @foreach($classOptions as $className)
                         <option value="{{ $className }}" @selected($selectedClass === $className)>Kelas {{ $className }}</option>
                     @endforeach
+                </select>
+            </div>
+            <div class="col-lg-2">
+                <label class="form-label small text-muted" for="year">Tahun terbit</label>
+                <select class="form-select" id="year" name="year">
+                    <option value="">Semua tahun</option>
+                    @foreach($yearOptions as $year)
+                        <option value="{{ $year }}" @selected((string) $selectedYear === (string) $year)>{{ $year }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-lg-3">
+                <label class="form-label small text-muted" for="author">Penulis</label>
+                <select class="form-select" id="author" name="author">
+                    <option value="">Semua penulis</option>
+                    @foreach($authorOptions as $author)
+                        <option value="{{ $author }}" @selected($selectedAuthor === $author)>{{ $author }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-lg-3">
+                <label class="form-label small text-muted" for="sort">Urutkan</label>
+                <select class="form-select" id="sort" name="sort">
+                    <option value="newest" @selected($sort === 'newest')>Terbaru ditambahkan</option>
+                    <option value="popular" @selected($sort === 'popular')>Paling sering dibaca</option>
+                    <option value="title" @selected($sort === 'title')>Judul A–Z</option>
                 </select>
             </div>
             <div class="col-lg-3">
@@ -36,7 +62,7 @@
             <div class="col-lg-auto">
                 <button class="btn btn-success" type="submit">Terapkan</button>
             </div>
-            @if($search || $selectedClass || $selectedSubject)
+            @if($search || $selectedClass || $selectedSubject || $selectedYear || $selectedAuthor || $sort !== 'newest')
                 <div class="col-lg-auto">
                     <a class="btn btn-outline-secondary" href="{{ route('library') }}">Reset</a>
                 </div>
@@ -53,8 +79,8 @@
         <div class="mb-5">
             <div class="d-flex justify-content-between align-items-end gap-3 mb-3">
                 <div>
-                    <h2 class="h4 mb-1">Hasil Pencarian</h2>
-                    <p class="text-muted mb-0">Buku dan materi yang sesuai dengan kata kunci Anda.</p>
+                    <h2 class="h4 mb-1">Koleksi E-Book</h2>
+                    <p class="text-muted mb-0">Menampilkan {{ $matchedEbooks->total() }} buku{{ $search ? ' untuk “' . $search . '”' : '' }}.</p>
                 </div>
             </div>
             <div class="row g-3">
@@ -80,6 +106,13 @@
                     </div>
                 @endforeach
             </div>
+            <div class="mt-4">{{ $matchedEbooks->onEachSide(1)->links() }}</div>
+        </div>
+    @else
+        <div class="empty-state mb-5">
+            <h2 class="h5">Buku tidak ditemukan</h2>
+            <p class="text-muted mb-3">Coba gunakan kata kunci atau filter yang lebih luas.</p>
+            <a href="{{ route('library') }}" class="btn btn-outline-success">Reset katalog</a>
         </div>
     @endif
 

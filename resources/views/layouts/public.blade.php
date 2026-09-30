@@ -78,6 +78,9 @@
         .book-badge { position: absolute; top: .75rem; left: .75rem; box-shadow: 0 4px 14px rgba(0,0,0,.15); }
         .book-card-footer { display: flex; align-items: center; justify-content: space-between; }
         .catalog-toolbar { border-bottom: 1px solid var(--school-line); }
+        .reader-frame { width: 100%; height: min(78vh, 960px); border: 0; border-radius: 14px; background: #e7edf4; }
+        .saved-book-card { border: 1px solid var(--school-line); border-radius: 14px; background: #fff; padding: 1rem; }
+        .saved-book-card + .saved-book-card { margin-top: .75rem; }
         @media (max-width: 575.98px) {
             .brand-mark { width: 48px; height: 48px; font-size: .85rem; }
             .brand-name { font-size: .92rem; }
@@ -105,6 +108,7 @@
             <div class="navbar-nav ms-auto gap-lg-2 mt-3 mt-lg-0">
                 <a class="nav-link nav-pill {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">Beranda</a>
                 <a class="nav-link nav-pill {{ request()->routeIs('library') || request()->routeIs('classes.*') || request()->routeIs('subjects.*') || request()->routeIs('ebooks.*') ? 'active' : '' }}" href="{{ route('library') }}">Perpustakaan</a>
+                <a class="nav-link nav-pill {{ request()->routeIs('favorites') ? 'active' : '' }}" href="{{ route('favorites') }}">Favorit</a>
                 <a class="nav-link nav-pill" href="{{ route('admin.login') }}">Admin</a>
             </div>
         </div>
@@ -120,5 +124,60 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    (() => {
+        const favoriteKey = 'perpus-favorites-v1';
+        const recentKey = 'perpus-recent-v1';
+        const read = (key) => { try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; } };
+        const write = (key, items) => localStorage.setItem(key, JSON.stringify(items));
+        const bookFrom = (element) => ({
+            id: element.dataset.ebookId,
+            title: element.dataset.ebookTitle,
+            subject: element.dataset.ebookSubject,
+            className: element.dataset.ebookClass,
+            url: element.dataset.ebookUrl,
+            readerUrl: element.dataset.ebookReaderUrl,
+        });
+        const isFavorite = (book) => read(favoriteKey).some((item) => item.id === book.id);
+        const updateFavoriteButton = (button) => {
+            const saved = isFavorite(bookFrom(button));
+            button.textContent = saved ? '✓ Tersimpan di favorit' : '♡ Simpan ke favorit';
+            button.classList.toggle('btn-success', saved);
+            button.classList.toggle('btn-outline-success', !saved);
+        };
+        document.querySelectorAll('[data-favorite-button]').forEach((button) => {
+            updateFavoriteButton(button);
+            button.addEventListener('click', () => {
+                const book = bookFrom(button);
+                const items = read(favoriteKey);
+                write(favoriteKey, isFavorite(book) ? items.filter((item) => item.id !== book.id) : [book, ...items]);
+                updateFavoriteButton(button);
+            });
+        });
+        document.querySelectorAll('[data-ebook-record]').forEach((element) => {
+            const book = bookFrom(element);
+            const items = read(recentKey).filter((item) => item.id !== book.id);
+            write(recentKey, [{ ...book, openedAt: new Date().toISOString() }, ...items].slice(0, 8));
+        });
+        const renderSavedBooks = (target, items, emptyText, allowRemove) => {
+            if (!target) return;
+            target.replaceChildren();
+            if (!items.length) { target.textContent = emptyText; target.classList.add('text-muted'); return; }
+            target.classList.remove('text-muted');
+            items.forEach((book) => {
+                const card = document.createElement('article'); card.className = 'saved-book-card';
+                const title = document.createElement('a'); title.href = book.url; title.className = 'fw-semibold text-decoration-none d-block mb-1'; title.textContent = book.title;
+                const meta = document.createElement('p'); meta.className = 'small text-muted mb-3'; meta.textContent = `Kelas ${book.className} / ${book.subject}`;
+                const open = document.createElement('a'); open.href = book.readerUrl || book.url; open.className = 'btn btn-sm btn-success'; open.textContent = 'Baca';
+                card.append(title, meta, open);
+                if (allowRemove) { const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'btn btn-sm btn-link text-danger ms-2'; remove.textContent = 'Hapus'; remove.addEventListener('click', () => { write(favoriteKey, read(favoriteKey).filter((item) => item.id !== book.id)); renderSavedBooks(target, read(favoriteKey), emptyText, true); }); card.append(remove); }
+                target.append(card);
+            });
+        };
+        renderSavedBooks(document.querySelector('[data-favorites-list]'), read(favoriteKey), 'Belum ada buku favorit. Simpan buku dari halaman detail e-book.', true);
+        renderSavedBooks(document.querySelector('[data-recent-list]'), read(recentKey), 'Belum ada buku yang dibuka pada perangkat ini.', false);
+    })();
+</script>
+@stack('scripts')
 </body>
 </html>

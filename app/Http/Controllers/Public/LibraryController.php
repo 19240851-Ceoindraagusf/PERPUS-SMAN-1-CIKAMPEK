@@ -21,40 +21,11 @@ class LibraryController extends Controller
         $classOrder = "CASE WHEN name = 'X' THEN 1 WHEN name LIKE 'XI%' THEN 2 WHEN name LIKE 'XII%' THEN 3 ELSE 4 END";
 
         if ($request->query('q') !== null || $request->query('class') !== null) {
-            $classFilter = $selectedClass !== ''
-                ? ClassModel::where('is_active', true)->where('name', $selectedClass)->first()
-                : null;
-
-            if ($search !== '') {
-                $ebookQuery = Ebook::query()
-                    ->where('is_active', true)
-                    ->where(function ($query) use ($search) {
-                        $query->where('title', 'like', "%{$search}%")
-                            ->orWhere('description', 'like', "%{$search}%")
-                            ->orWhere('author', 'like', "%{$search}%")
-                            ->orWhere('publisher', 'like', "%{$search}%")
-                            ->orWhereHas('subject', function ($subjectQuery) use ($search) {
-                                $subjectQuery->where('name', 'like', "%{$search}%")
-                                    ->orWhere('code', 'like', "%{$search}%");
-                            });
-                    });
-
-                if ($classFilter) {
-                    $ebookQuery->whereHas('subject', fn ($subjectQuery) => $subjectQuery->where('class_id', $classFilter->id));
-                }
-
-                $ebook = $ebookQuery->first();
-
-                if ($ebook) {
-                    return redirect()->route('ebooks.show', $ebook);
-                }
-            }
-
-            if ($classFilter && $search === '') {
-                return redirect()->route('classes.show', $classFilter);
-            }
-
-            return redirect()->route('library', ['q' => $search, 'class' => $selectedClass]);
+            // A search should show every relevant title, not unexpectedly open the first match.
+            return redirect()->route('library', array_filter([
+                'q' => $search,
+                'class' => $selectedClass,
+            ], fn ($value) => $value !== ''));
         }
 
         $classes = ClassModel::where('is_active', true)
@@ -108,6 +79,10 @@ class LibraryController extends Controller
         $search = trim((string) $request->query('q', ''));
         $selectedClass = $request->query('class');
         $selectedSubject = $request->query('subject');
+        $selectedYear = $request->query('year');
+        $selectedAuthor = $request->query('author');
+        $sort = $request->query('sort', 'newest');
+        $sort = in_array($sort, ['newest', 'popular', 'title'], true) ? $sort : 'newest';
         $classOrder = "CASE WHEN name = 'X' THEN 1 WHEN name LIKE 'XI%' THEN 2 WHEN name LIKE 'XII%' THEN 3 ELSE 4 END";
         $classFilter = $selectedClass
             ? ClassModel::where('is_active', true)->where('name', $selectedClass)->first()
@@ -152,10 +127,15 @@ class LibraryController extends Controller
                         ->orWhere('code', 'like', "%{$search}%"));
             }))
             ->when($selectedClass, fn ($query) => $query->whereHas('subject', fn ($subjectQuery) => $subjectQuery->where('class_id', $classFilter?->id ?? 0)))
-            ->when($selectedSubject, fn ($query) => $query->where('subject_id', Subject::query()->where('name', $selectedSubject)->value('id')))
-            ->latest()
-            ->limit(12)
-            ->get();
+            ->when($selectedSubject, fn ($query) => $query->whereHas('subject', fn ($subjectQuery) => $subjectQuery->where('name', $selectedSubject)))
+            ->when($selectedYear, fn ($query) => $query->where('publication_year', $selectedYear))
+            ->when($selectedAuthor, fn ($query) => $query->where('author', $selectedAuthor))
+            ->withCount('accessLogs')
+            ->when($sort === 'popular', fn ($query) => $query->orderByDesc('access_logs_count')->latest())
+            ->when($sort === 'title', fn ($query) => $query->orderBy('title'))
+            ->when($sort === 'newest', fn ($query) => $query->latest())
+            ->paginate(12)
+            ->withQueryString();
 
         $classOptions = ClassModel::where('is_active', true)
             ->orderByRaw($classOrder)
@@ -171,7 +151,24 @@ class LibraryController extends Controller
             ->unique()
             ->values();
 
-        return view('public.library', compact('classes', 'matchedEbooks', 'classOptions', 'subjectOptions', 'search', 'selectedClass', 'selectedSubject'));
+        $yearOptions = Ebook::where('is_active', true)
+            ->whereNotNull('publication_year')
+            ->when($classFilter, fn ($query) => $query->whereHas('subject', fn ($subjectQuery) => $subjectQuery->where('class_id', $classFilter->id)))
+            ->orderByDesc('publication_year')
+            ->pluck('publication_year')
+            ->unique()
+            ->values();
+
+        $authorOptions = Ebook::where('is_active', true)
+            ->whereNotNull('author')
+            ->where('author', '!=', '')
+            ->when($classFilter, fn ($query) => $query->whereHas('subject', fn ($subjectQuery) => $subjectQuery->where('class_id', $classFilter->id)))
+            ->orderBy('author')
+            ->pluck('author')
+            ->unique()
+            ->values();
+
+        return view('public.library', compact('classes', 'matchedEbooks', 'classOptions', 'subjectOptions', 'yearOptions', 'authorOptions', 'search', 'selectedClass', 'selectedSubject', 'selectedYear', 'selectedAuthor', 'sort'));
     }
 
     public function class(Request $request, ClassModel $class): View
@@ -264,6 +261,16 @@ class LibraryController extends Controller
             ->get();
 
         return view('public.ebook', compact('ebook', 'relatedEbooks'));
+    }
+
+    public function reader(Ebook $ebook): View
+    {
+        abort_unless($ebook->is_active, 404);
+        abort_unless($ebook->file_path && Storage::disk('public')->exists($ebook->file_path), 404);
+
+        $ebook->load('subject.class');
+
+        return view('public.reader', compact('ebook'));
     }
 
     public function download(Ebook $ebook): \Symfony\Component\HttpFoundation\BinaryFileResponse

@@ -3,7 +3,7 @@
 @section('title', $ebook->title)
 
 @section('content')
-<section class="container py-4 py-md-5">
+<section class="container py-4 py-md-5" data-ebook-record data-ebook-id="{{ $ebook->id }}" data-ebook-title="{{ $ebook->title }}" data-ebook-subject="{{ $ebook->subject->name }}" data-ebook-class="{{ $ebook->subject->class->name }}" data-ebook-url="{{ route('ebooks.show', $ebook) }}" data-ebook-reader-url="{{ route('ebooks.reader', $ebook) }}">
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb mb-0">
             <li class="breadcrumb-item"><a href="{{ route('library') }}">Perpustakaan</a></li>
@@ -42,9 +42,10 @@
 
             @if($ebook->file_path)
                 <div class="detail-actions d-flex flex-column flex-sm-row gap-2">
-                    <a href="{{ asset('storage/' . $ebook->file_path) }}" class="btn btn-success flex-fill" target="_blank" rel="noopener">Baca Sekarang</a>
+                    <a href="{{ route('ebooks.reader', $ebook) }}" class="btn btn-success flex-fill">Baca Sekarang</a>
                     <a href="{{ route('ebooks.download', $ebook) }}" class="btn btn-outline-success flex-fill">Download</a>
                 </div>
+                <button type="button" class="btn btn-outline-success mt-2 w-100" data-favorite-button data-ebook-id="{{ $ebook->id }}" data-ebook-title="{{ $ebook->title }}" data-ebook-subject="{{ $ebook->subject->name }}" data-ebook-class="{{ $ebook->subject->class->name }}" data-ebook-url="{{ route('ebooks.show', $ebook) }}" data-ebook-reader-url="{{ route('ebooks.reader', $ebook) }}">♡ Simpan ke favorit</button>
             @else
                 <div class="alert alert-warning mb-0">File PDF belum tersedia.</div>
             @endif
