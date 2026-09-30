@@ -48,6 +48,7 @@
                             <form method="POST" action="{{ route('admin.subjects.destroy', $subject) }}" onsubmit="return confirm('Hapus mata pelajaran ini? E-book terkait juga akan terhapus.');">
                                 @csrf
                                 @method('DELETE')
+                                <input type="hidden" name="force_delete" value="1">
                                 @if(request('class_id'))
                                     <input type="hidden" name="return_class_id" value="{{ request('class_id') }}">
                                 @endif

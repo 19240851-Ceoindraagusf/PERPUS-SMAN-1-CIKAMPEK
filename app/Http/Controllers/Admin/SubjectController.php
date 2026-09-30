@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ClassModel;
 use App\Models\Subject;
+use App\Services\EbookFileCleanup;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -106,7 +107,7 @@ class SubjectController extends Controller
         return redirect()->route('admin.subjects.index', $redirectParams)->with('success', 'Mata pelajaran berhasil diperbarui.');
     }
 
-    public function destroy(Request $request, Subject $subject): RedirectResponse
+    public function destroy(Request $request, Subject $subject, EbookFileCleanup $ebookFileCleanup): RedirectResponse
     {
         if (! $request->boolean('force_delete')) {
             return back()->withErrors([
@@ -114,11 +115,7 @@ class SubjectController extends Controller
             ]);
         }
 
-        if ($subject->ebooks()->exists()) {
-            return back()->withErrors([
-                'delete' => 'Mata pelajaran tidak dapat dihapus karena masih memiliki ebook.',
-            ]);
-        }
+        $subject->ebooks()->get()->each(fn ($ebook) => $ebookFileCleanup->delete($ebook));
 
         $subject->delete();
 
@@ -126,6 +123,6 @@ class SubjectController extends Controller
             'class_id' => $request->input('return_class_id') ?? $request->input('class_id'),
         ]);
 
-        return redirect()->route('admin.subjects.index', $redirectParams)->with('success', 'Mata pelajaran berhasil dihapus.');
+        return redirect()->route('admin.subjects.index', $redirectParams)->with('success', 'Mata pelajaran dan e-book terkait berhasil dihapus.');
     }
 }

@@ -61,6 +61,7 @@
                             <form method="POST" action="{{ route('admin.ebooks.destroy', $ebook) }}" onsubmit="return confirm('Hapus e-book ini?');">
                                 @csrf
                                 @method('DELETE')
+                                <input type="hidden" name="force_delete" value="1">
                                 @if(request('class_id') || request('subject_id'))
                                     <input type="hidden" name="return_class_id" value="{{ request('class_id') }}">
                                     <input type="hidden" name="return_subject_id" value="{{ request('subject_id') }}">

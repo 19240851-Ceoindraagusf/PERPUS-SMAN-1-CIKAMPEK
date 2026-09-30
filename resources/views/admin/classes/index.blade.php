@@ -23,6 +23,7 @@
                             <form method="POST" action="{{ route('admin.classes.destroy', $class) }}" onsubmit="return confirm('Hapus kelas ini? Data mata pelajaran dan e-book terkait juga akan terhapus.');">
                                 @csrf
                                 @method('DELETE')
+                                <input type="hidden" name="force_delete" value="1">
                                 <button class="btn btn-sm btn-outline-danger" type="submit">Hapus</button>
                             </form>
                         </div>

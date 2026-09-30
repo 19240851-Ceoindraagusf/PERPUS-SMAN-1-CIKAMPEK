@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ClassModel;
+use App\Services\EbookFileCleanup;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -45,7 +46,7 @@ class ClassController extends Controller
     public function update(Request $request, ClassModel $class): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:100', 'unique:classes,name,' . $class->id],
+            'name' => ['required', 'string', 'max:100', 'unique:classes,name,'.$class->id],
             'description' => ['nullable', 'string'],
         ]);
 
@@ -54,7 +55,7 @@ class ClassController extends Controller
         return redirect()->route('admin.classes.index')->with('success', 'Kelas berhasil diperbarui.');
     }
 
-    public function destroy(Request $request, ClassModel $class): RedirectResponse
+    public function destroy(Request $request, ClassModel $class, EbookFileCleanup $ebookFileCleanup): RedirectResponse
     {
         if (! $request->boolean('force_delete')) {
             return back()->withErrors([
@@ -62,14 +63,13 @@ class ClassController extends Controller
             ]);
         }
 
-        if ($class->subjects()->exists() || $class->subjects()->withCount('ebooks')->get()->contains(fn ($subject) => $subject->ebooks_count > 0)) {
-            return back()->withErrors([
-                'delete' => 'Kelas tidak dapat dihapus karena masih memiliki mata pelajaran atau ebook.',
-            ]);
-        }
+        $class->subjects()->with('ebooks')->get()->each(function ($subject) use ($ebookFileCleanup) {
+            $subject->ebooks->each(fn ($ebook) => $ebookFileCleanup->delete($ebook));
+            $subject->delete();
+        });
 
         $class->delete();
 
-        return redirect()->route('admin.classes.index')->with('success', 'Kelas berhasil dihapus.');
+        return redirect()->route('admin.classes.index')->with('success', 'Kelas beserta mata pelajaran dan e-book terkait berhasil dihapus.');
     }
 }
