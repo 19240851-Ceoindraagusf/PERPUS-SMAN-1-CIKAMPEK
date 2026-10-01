@@ -25,11 +25,7 @@
                 <article class="collection-card info-card card h-100">
                     <div class="card-body d-flex gap-3">
                         <a href="{{ route('ebooks.show', $ebook) }}" class="book-row-cover">
-                            @if($ebook->cover_path)
-                                <img src="{{ asset('storage/' . $ebook->cover_path) }}" class="book-cover rounded" alt="Cover {{ $ebook->title }}">
-                            @else
-                                <div class="book-cover-placeholder rounded p-2"><small>BUKU DIGITAL</small><strong class="small">{{ $subject->name }}</strong></div>
-                            @endif
+                            @include('public._book-cover', ['ebook' => $ebook])
                         </a>
                         <div class="min-w-0 d-flex flex-column">
                             <div><span class="badge badge-soft mb-2">{{ $ebook->publication_year ?: 'Tahun belum diisi' }}</span>

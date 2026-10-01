@@ -47,11 +47,15 @@
     @endif
     <div class="row g-3">
         @forelse($class->subjects as $subject)
+            @php
+                $normalizedName = strtolower($subject->name);
+                $subjectIcon = str_contains($normalizedName, 'matematika') ? '∑' : (str_contains($normalizedName, 'bahasa') ? 'Aa' : (str_contains($normalizedName, 'fisika') ? '⚛' : (str_contains($normalizedName, 'kimia') ? '⚗' : (str_contains($normalizedName, 'biologi') ? '⌬' : (str_contains($normalizedName, 'sejarah') ? '◷' : '•')))));
+            @endphp
             <div class="col-md-6 col-lg-4">
                 <a class="info-card card h-100 text-decoration-none text-dark" href="{{ route('subjects.show', [$class, $subject]) }}">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
-                            <div class="icon-box">{{ strtoupper(substr($subject->name, 0, 1)) }}</div>
+                            <div class="icon-box subject-icon">{{ $subjectIcon }}</div>
                             <span class="badge badge-soft">{{ $subject->ebooks_count }} e-book</span>
                         </div>
                         <h2 class="h5">{{ $subject->name }}</h2>
@@ -60,7 +64,7 @@
                 </a>
             </div>
         @empty
-            <div class="col-12"><div class="alert alert-info">{{ $search ? 'Mata pelajaran tidak ditemukan. Coba kata kunci lain.' : 'Mata pelajaran belum tersedia.' }}</div></div>
+            <div class="col-12"><div class="empty-state"><h2 class="h5">{{ $search ? 'Mata pelajaran belum ditemukan' : 'Mata pelajaran belum tersedia' }}</h2><p class="text-muted mb-3">{{ $search ? 'Coba kata kunci lebih singkat atau lihat semua mata pelajaran pada kelas ini.' : 'Silakan kembali lagi setelah koleksi ditambahkan.' }}</p><a href="{{ route('classes.show', $class) }}" class="btn btn-outline-success">Lihat semua mapel</a></div></div>
         @endforelse
     </div>
 </section>

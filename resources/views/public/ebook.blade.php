@@ -18,9 +18,9 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-3 p-md-4 text-center">
                     @if($ebook->cover_path)
-                        <img src="{{ asset('storage/' . $ebook->cover_path) }}" class="detail-cover rounded" alt="Cover {{ $ebook->title }}">
+                        <img src="{{ asset('storage/' . $ebook->cover_path) }}" class="detail-cover rounded" loading="lazy" decoding="async" alt="Cover {{ $ebook->title }}">
                     @else
-                        <div class="bg-light rounded p-5 text-muted">Cover belum tersedia</div>
+                        @include('public._book-cover', ['ebook' => $ebook])
                     @endif
                 </div>
             </div>
@@ -63,11 +63,7 @@
                     <div class="col-6 col-md-3">
                         <article class="collection-card info-card card h-100">
                             <a class="text-decoration-none text-dark" href="{{ route('ebooks.show', $related) }}">
-                                @if($related->cover_path)
-                                    <img src="{{ asset('storage/' . $related->cover_path) }}" class="book-cover" alt="Cover {{ $related->title }}">
-                                @else
-                                    <div class="book-cover-placeholder"><small>E-BOOK</small><strong>{{ $ebook->subject->name }}</strong><small>SMAN 1 CIKAMPEK</small></div>
-                                @endif
+                                @include('public._book-cover', ['ebook' => $related])
                                 <div class="card-body"><h3 class="h6 book-title mb-0">{{ $related->title }}</h3></div>
                             </a>
                         </article>

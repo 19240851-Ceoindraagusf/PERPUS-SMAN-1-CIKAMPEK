@@ -65,6 +65,21 @@
     </div>
 </section>
 
+<section class="container pt-5" data-home-recent hidden>
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+        <div class="section-title"><p class="eyebrow mb-1">Belajarmu</p><h2 class="h4 mb-1">Lanjutkan Belajar</h2><p class="text-muted mb-0">Buku yang terakhir kamu buka pada perangkat ini.</p></div>
+        <a href="{{ route('favorites') }}" class="btn btn-outline-success">Lihat semua</a>
+    </div>
+    <div class="row g-3" data-home-recent-list></div>
+</section>
+
+<section class="container pt-5">
+    <div class="study-banner">
+        <div><p class="eyebrow mb-1">Koleksi pilihan</p><h2 class="h4 mb-2">Siapkan belajar lebih terarah</h2><p class="mb-0 text-muted">Gunakan filter kelas dan mata pelajaran untuk menemukan materi yang sesuai dengan kebutuhan belajarmu.</p></div>
+        <a href="{{ route('library', ['sort' => 'popular']) }}" class="btn btn-success">Lihat buku populer</a>
+    </div>
+</section>
+
 <section class="container py-5">
     <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
         <div class="section-title">
@@ -110,16 +125,12 @@
                     <a class="text-decoration-none text-dark" href="{{ route('ebooks.show', $ebook) }}">
                         <div class="book-card-image">
                             <span class="badge text-bg-light text-success book-badge">Terbaru</span>
-                            @if($ebook->cover_path)
-                                <img src="{{ asset('storage/' . $ebook->cover_path) }}" class="book-cover" alt="Cover {{ $ebook->title }}">
-                            @else
-                                <div class="book-cover-placeholder"><small>PERPUSTAKAAN DIGITAL</small><strong>{{ $ebook->subject->name ?? 'E-BOOK' }}</strong><small>SMAN 1 CIKAMPEK</small></div>
-                            @endif
+                            @include('public._book-cover', ['ebook' => $ebook])
                         </div>
                         <div class="card-body">
                             <span class="badge badge-soft mb-2">Kelas {{ $ebook->subject->class->name ?? '-' }}</span>
                             <h3 class="h6 book-title mb-2">{{ $ebook->title }}</h3>
-                            <p class="book-meta text-muted small mb-0">{{ $ebook->author ?: 'Penulis belum diisi' }}</p>
+                            <p class="book-meta text-muted small mb-0">{{ $ebook->author ?: 'Penulis belum diisi' }}<br>{{ $ebook->publication_year ?: 'Tahun belum diisi' }}</p>
                         </div>
                     </a>
                     <div class="card-footer book-card-footer"><a href="{{ route('ebooks.show', $ebook) }}" class="small fw-semibold text-decoration-none">Baca E-Book</a><span class="small text-muted">PDF</span></div>
@@ -147,16 +158,12 @@
                     <a class="text-decoration-none text-dark" href="{{ route('ebooks.show', $ebook) }}">
                         <div class="book-card-image">
                             <span class="badge text-bg-warning book-badge">Populer</span>
-                            @if($ebook->cover_path)
-                                <img src="{{ asset('storage/' . $ebook->cover_path) }}" class="book-cover" alt="Cover {{ $ebook->title }}">
-                            @else
-                                <div class="book-cover-placeholder"><small>PERPUSTAKAAN DIGITAL</small><strong>{{ $ebook->subject->name ?? 'E-BOOK' }}</strong><small>SMAN 1 CIKAMPEK</small></div>
-                            @endif
+                            @include('public._book-cover', ['ebook' => $ebook])
                         </div>
                         <div class="card-body">
                             <span class="badge badge-soft mb-2">Kelas {{ $ebook->subject->class->name ?? '-' }}</span>
                             <h3 class="h6 book-title mb-2">{{ $ebook->title }}</h3>
-                            <p class="book-meta text-muted small mb-0">{{ $ebook->access_logs_count }} kali dibuka</p>
+                            <p class="book-meta text-muted small mb-0">{{ $ebook->author ?: 'Penulis belum diisi' }}<br>{{ $ebook->access_logs_count }} kali dibuka</p>
                         </div>
                     </a>
                     <div class="card-footer book-card-footer"><a href="{{ route('ebooks.show', $ebook) }}" class="small fw-semibold text-decoration-none">Baca E-Book</a><span class="small text-muted">PDF</span></div>

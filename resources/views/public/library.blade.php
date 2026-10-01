@@ -89,16 +89,12 @@
                         <article class="collection-card info-card card h-100">
                             <div class="card-body d-flex gap-3">
                                 <a href="{{ route('ebooks.show', $ebook) }}" class="book-row-cover">
-                                    @if($ebook->cover_path)
-                                        <img src="{{ asset('storage/' . $ebook->cover_path) }}" class="book-cover rounded" alt="Cover {{ $ebook->title }}">
-                                    @else
-                                        <div class="book-cover-placeholder rounded p-2"><small>E-BOOK</small><strong class="small">{{ $ebook->subject->name ?? 'Materi' }}</strong></div>
-                                    @endif
+                                    @include('public._book-cover', ['ebook' => $ebook])
                                 </a>
                                 <div class="min-w-0">
                                     <span class="badge badge-soft mb-2">Kelas {{ $ebook->subject->class->name ?? '-' }}</span>
                                     <h3 class="h6 mb-2"><a href="{{ route('ebooks.show', $ebook) }}" class="text-decoration-none text-dark">{{ $ebook->title }}</a></h3>
-                                    <p class="text-muted small mb-2">{{ $ebook->author ?: 'Penulis belum diisi' }}</p>
+                                    <p class="text-muted small mb-2">{{ $ebook->author ?: 'Penulis belum diisi' }} · {{ $ebook->publication_year ?: 'Tahun belum diisi' }}</p>
                                     <a href="{{ route('ebooks.show', $ebook) }}" class="small fw-semibold text-decoration-none">Buka buku</a>
                                 </div>
                             </div>
@@ -111,7 +107,8 @@
     @else
         <div class="empty-state mb-5">
             <h2 class="h5">Buku tidak ditemukan</h2>
-            <p class="text-muted mb-3">Coba gunakan kata kunci atau filter yang lebih luas.</p>
+            <p class="text-muted mb-3">Coba gunakan kata kunci lebih singkat, hapus salah satu filter, atau jelajahi mata pelajaran populer.</p>
+            <div class="d-flex justify-content-center flex-wrap gap-2 mb-3"><a class="btn btn-sm btn-outline-success" href="{{ route('library', ['q' => 'Matematika']) }}">Matematika</a><a class="btn btn-sm btn-outline-success" href="{{ route('library', ['q' => 'Bahasa Indonesia']) }}">Bahasa Indonesia</a><a class="btn btn-sm btn-outline-success" href="{{ route('library', ['q' => 'Biologi']) }}">Biologi</a></div>
             <a href="{{ route('library') }}" class="btn btn-outline-success">Reset katalog</a>
         </div>
     @endif

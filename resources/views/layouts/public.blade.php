@@ -64,7 +64,15 @@
         .collection-card { overflow: hidden; }
         .collection-card .card-body { padding: 1rem; }
         .book-cover { aspect-ratio: 3 / 4; width: 100%; object-fit: cover; background: #e7edf4; }
-        .book-cover-placeholder { aspect-ratio: 3 / 4; background: var(--school-ink); color: #fff; display: flex; flex-direction: column; justify-content: space-between; padding: 1rem; }
+        .book-cover[loading="lazy"] { content-visibility: auto; }
+        .book-cover-placeholder { aspect-ratio: 3 / 4; color: #fff; display: flex; flex-direction: column; justify-content: space-between; padding: 1rem; overflow: hidden; position: relative; }
+        .book-cover-placeholder::after { content: ''; position: absolute; width: 130%; aspect-ratio: 1; border: 1px solid rgba(255,255,255,.18); border-radius: 50%; right: -48%; bottom: -35%; }
+        .book-cover-placeholder strong, .book-cover-placeholder small { position: relative; z-index: 1; }
+        .book-cover-theme-0 { background: linear-gradient(145deg, #0f6b4f, #1fa779); }
+        .book-cover-theme-1 { background: linear-gradient(145deg, #1956a3, #538ee0); }
+        .book-cover-theme-2 { background: linear-gradient(145deg, #8e4c13, #e29a38); }
+        .book-cover-theme-3 { background: linear-gradient(145deg, #6b317f, #aa6ec0); }
+        .book-cover-theme-4 { background: linear-gradient(145deg, #b44952, #e47d80); }
         .book-cover-placeholder small { color: rgba(255, 255, 255, .72); }
         .book-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .book-meta { min-height: 2.5rem; }
@@ -79,8 +87,14 @@
         .book-card-footer { display: flex; align-items: center; justify-content: space-between; }
         .catalog-toolbar { border-bottom: 1px solid var(--school-line); }
         .reader-frame { width: 100%; height: min(78vh, 960px); border: 0; border-radius: 14px; background: #e7edf4; }
+        .reader-shell { background: #e7edf4; border-radius: 16px; padding: .75rem; transition: background .2s ease; }
+        .reader-shell.reader-dark { background: #142033; }
+        .reader-shell.reader-dark .reader-frame { background: #1a2738; }
         .saved-book-card { border: 1px solid var(--school-line); border-radius: 14px; background: #fff; padding: 1rem; }
         .saved-book-card + .saved-book-card { margin-top: .75rem; }
+        .study-banner { border: 1px solid var(--school-line); border-radius: 18px; background: linear-gradient(115deg, #eff8f4, #f7fbff); padding: 1.5rem; display: flex; gap: 1rem; justify-content: space-between; align-items: center; }
+        .study-banner .eyebrow { color: var(--school-green); }
+        .subject-icon { font-size: 1.3rem; }
         @media (max-width: 575.98px) {
             .brand-mark { width: 48px; height: 48px; font-size: .85rem; }
             .brand-name { font-size: .92rem; }
@@ -91,6 +105,7 @@
             .hero-visual { min-height: 220px; max-width: 330px; margin: 0 auto; }
             .hero-book { width: 128px; }
             .book-row-cover { width: 76px; flex-basis: 76px; }
+            .study-banner { align-items: flex-start; flex-direction: column; }
         }
     </style>
 </head>
@@ -118,8 +133,13 @@
 <main>@yield('content')</main>
 
 <footer class="border-top bg-white py-4 mt-5">
-    <div class="container text-center text-muted small">
-        &copy; {{ date('Y') }} Perpustakaan Digital SMAN 1 Cikampek.
+    <div class="container">
+        <div class="row text-center text-md-start g-3 small text-muted">
+            <div class="col-md-5"><strong class="text-dark d-block mb-1">Perpustakaan Digital</strong>&copy; {{ date('Y') }} SMAN 1 Cikampek.</div>
+            <div class="col-md-3"><strong class="text-dark d-block mb-1">Lokasi</strong>{{ config('library.location') }}</div>
+            <div class="col-md-2"><strong class="text-dark d-block mb-1">Layanan</strong>{{ config('library.service_hours') }}</div>
+            <div class="col-md-2"><strong class="text-dark d-block mb-1">Bantuan</strong>{{ config('library.contact') }}</div>
+        </div>
     </div>
 </footer>
 
@@ -176,6 +196,21 @@
         };
         renderSavedBooks(document.querySelector('[data-favorites-list]'), read(favoriteKey), 'Belum ada buku favorit. Simpan buku dari halaman detail e-book.', true);
         renderSavedBooks(document.querySelector('[data-recent-list]'), read(recentKey), 'Belum ada buku yang dibuka pada perangkat ini.', false);
+        const homeRecent = document.querySelector('[data-home-recent]');
+        const homeRecentList = document.querySelector('[data-home-recent-list]');
+        const recentBooks = read(recentKey).slice(0, 4);
+        if (homeRecent && homeRecentList && recentBooks.length) {
+            homeRecent.hidden = false;
+            recentBooks.forEach((book) => {
+                const column = document.createElement('div'); column.className = 'col-12 col-sm-6 col-lg-3';
+                const card = document.createElement('article'); card.className = 'saved-book-card h-100 d-flex flex-column';
+                const kicker = document.createElement('span'); kicker.className = 'badge badge-soft align-self-start mb-2'; kicker.textContent = `Kelas ${book.className}`;
+                const title = document.createElement('a'); title.href = book.url; title.className = 'fw-semibold text-decoration-none mb-1'; title.textContent = book.title;
+                const meta = document.createElement('p'); meta.className = 'small text-muted mb-3'; meta.textContent = book.subject;
+                const open = document.createElement('a'); open.href = book.readerUrl || book.url; open.className = 'btn btn-sm btn-success mt-auto'; open.textContent = 'Lanjut baca';
+                card.append(kicker, title, meta, open); column.append(card); homeRecentList.append(column);
+            });
+        }
     })();
 </script>
 @stack('scripts')
