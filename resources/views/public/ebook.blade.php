@@ -1,6 +1,7 @@
 @extends('layouts.public')
 
 @section('title', $ebook->title)
+@section('meta_description', $ebook->description ?: 'Baca ' . $ebook->title . ' di Perpustakaan Digital SMAN 1 Cikampek.')
 
 @section('content')
 <section class="container py-4 py-md-5" data-ebook-record data-ebook-id="{{ $ebook->id }}" data-ebook-title="{{ $ebook->title }}" data-ebook-subject="{{ $ebook->subject->name }}" data-ebook-class="{{ $ebook->subject->class->name }}" data-ebook-url="{{ route('ebooks.show', $ebook) }}" data-ebook-reader-url="{{ route('ebooks.reader', $ebook) }}">

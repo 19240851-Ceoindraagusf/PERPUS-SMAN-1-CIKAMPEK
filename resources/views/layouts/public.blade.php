@@ -4,6 +4,16 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Perpustakaan Digital SMAN 1 Cikampek')</title>
+    <meta name="description" content="@yield('meta_description', 'Katalog buku pelajaran dan materi digital SMAN 1 Cikampek.')">
+    <meta name="theme-color" content="#0f6b4f">
+    <link rel="canonical" href="{{ url()->current() }}">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="@yield('title', 'Perpustakaan Digital SMAN 1 Cikampek')">
+    <meta property="og:description" content="@yield('meta_description', 'Katalog buku pelajaran dan materi digital SMAN 1 Cikampek.')">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:image" content="{{ asset('images/logo-perpus-sman-1-cikampek.jpeg') }}">
+    <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo-perpus-sman-1-cikampek.jpeg') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
@@ -95,6 +105,11 @@
         .study-banner { border: 1px solid var(--school-line); border-radius: 18px; background: linear-gradient(115deg, #eff8f4, #f7fbff); padding: 1.5rem; display: flex; gap: 1rem; justify-content: space-between; align-items: center; }
         .study-banner .eyebrow { color: var(--school-green); }
         .subject-icon { font-size: 1.3rem; }
+        .search-suggestions { position: absolute; z-index: 1050; top: calc(100% + .25rem); left: 0; right: 0; max-height: 360px; overflow-y: auto; overscroll-behavior: contain; background: #fff; border: 1px solid var(--school-line); border-radius: 12px; box-shadow: 0 14px 30px rgba(15,35,63,.14); }
+        .search-suggestion-heading { position: sticky; top: 0; z-index: 1; padding: .55rem .85rem; background: #f7faf9; border-bottom: 1px solid var(--school-line); color: var(--school-muted); font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+        .search-suggestion { display: block; padding: .7rem .85rem; color: var(--school-ink); text-decoration: none; }
+        .search-suggestion:hover, .search-suggestion:focus, .search-suggestion.active { background: var(--school-soft); color: var(--school-green); }
+        .search-all-results { display: block; position: sticky; bottom: 0; padding: .7rem .85rem; background: #fff; border-top: 1px solid var(--school-line); color: var(--school-green); font-size: .875rem; font-weight: 700; text-decoration: none; }
         @media (max-width: 575.98px) {
             .brand-mark { width: 48px; height: 48px; font-size: .85rem; }
             .brand-name { font-size: .92rem; }
@@ -211,8 +226,80 @@
                 card.append(kicker, title, meta, open); column.append(card); homeRecentList.append(column);
             });
         }
+        document.querySelectorAll('[data-smart-search]').forEach((input) => {
+            const panel = input.parentElement.querySelector('[data-search-suggestions]');
+            let requestTimer;
+            let activeIndex = -1;
+            let activeRequest;
+            const clear = () => { if (panel) { panel.replaceChildren(); panel.hidden = true; } activeIndex = -1; input.setAttribute('aria-expanded', 'false'); input.removeAttribute('aria-activedescendant'); };
+            const links = () => [...panel.querySelectorAll('.search-suggestion')];
+            const setActive = (index) => {
+                const items = links();
+                if (!items.length) return;
+                activeIndex = (index + items.length) % items.length;
+                items.forEach((item, itemIndex) => item.classList.toggle('active', itemIndex === activeIndex));
+                input.setAttribute('aria-activedescendant', items[activeIndex].id);
+            };
+            input.addEventListener('input', () => {
+                clearTimeout(requestTimer);
+                activeRequest?.abort();
+                const query = input.value.trim();
+                if (query.length < 2) return clear();
+                requestTimer = setTimeout(async () => {
+                    try {
+                        activeRequest = new AbortController();
+                        const response = await fetch(`{{ route('search.suggestions') }}?q=${encodeURIComponent(query)}`, { headers: { Accept: 'application/json' }, signal: activeRequest.signal });
+                        const payload = await response.json();
+                        // Support cached responses from the previous endpoint format during an update.
+                        const suggestions = Array.isArray(payload) ? payload : (payload.items || []);
+                        clear();
+                        if (suggestions.length) {
+                            const heading = document.createElement('div'); heading.className = 'search-suggestion-heading'; heading.textContent = 'Rekomendasi e-book';
+                            panel.append(heading);
+                        }
+                        suggestions.forEach((item, index) => {
+                            const link = document.createElement('a'); link.href = item.url; link.className = 'search-suggestion';
+                            link.id = `search-suggestion-${index}`; link.setAttribute('role', 'option');
+                            const title = document.createElement('strong'); title.className = 'd-block small'; title.textContent = item.title;
+                            const meta = document.createElement('span'); meta.className = 'small text-muted'; meta.textContent = item.meta;
+                            link.append(title, meta); panel.append(link);
+                        });
+                        if (!Array.isArray(payload) && payload.correction) {
+                            const correction = document.createElement('a'); correction.href = payload.correction.url; correction.className = 'search-suggestion fw-semibold';
+                            correction.id = `search-suggestion-${suggestions.length}`; correction.setAttribute('role', 'option'); correction.textContent = payload.correction.label;
+                            panel.append(correction);
+                        }
+                        if (suggestions.length) {
+                            const allResults = document.createElement('a'); allResults.className = 'search-all-results';
+                            allResults.href = `{{ route('library') }}?q=${encodeURIComponent(query)}`;
+                            allResults.textContent = `Lihat semua hasil untuk “${query}”`;
+                            panel.append(allResults);
+                        }
+                        panel.hidden = !panel.children.length;
+                        input.setAttribute('aria-expanded', panel.hidden ? 'false' : 'true');
+                    } catch (error) { if (error.name !== 'AbortError') clear(); }
+                }, 220);
+            });
+            input.addEventListener('keydown', (event) => {
+                if (panel.hidden) return;
+                if (event.key === 'ArrowDown') { event.preventDefault(); setActive(activeIndex + 1); }
+                if (event.key === 'ArrowUp') { event.preventDefault(); setActive(activeIndex - 1); }
+                if (event.key === 'Escape') { clear(); }
+                if (event.key === 'Enter' && activeIndex >= 0) { event.preventDefault(); links()[activeIndex]?.click(); }
+            });
+            // Keep the list alive while a mouse or touch interaction selects a suggestion.
+            // Without this, the input blur can remove the item before its link is followed.
+            panel?.addEventListener('pointerdown', (event) => {
+                const link = event.target.closest('.search-suggestion, .search-all-results');
+                if (!link) return;
+                event.preventDefault();
+                window.location.assign(link.href);
+            });
+            input.addEventListener('blur', () => setTimeout(clear, 160));
+        });
     })();
 </script>
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('{{ asset('sw.js') }}').catch(() => {});</script>
 @stack('scripts')
 </body>
 </html>

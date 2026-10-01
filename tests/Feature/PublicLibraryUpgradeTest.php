@@ -88,6 +88,26 @@ class PublicLibraryUpgradeTest extends TestCase
             ->assertSee('Pembaca PDF');
     }
 
+    public function test_search_suggestions_and_sitemap_expose_public_collection(): void
+    {
+        $class = ClassModel::create(['name' => 'X', 'is_active' => true]);
+        $subject = Subject::create(['class_id' => $class->id, 'name' => 'Biologi', 'is_active' => true]);
+        $ebook = Ebook::create(['subject_id' => $subject->id, 'title' => 'Biologi Dasar', 'author' => 'Ibu Sari', 'is_active' => true]);
+
+        $this->get(route('search.suggestions', ['q' => 'Biol']))
+            ->assertOk()
+            ->assertJsonFragment(['title' => 'Biologi Dasar']);
+
+        $this->get(route('search.suggestions', ['q' => 'Biolgi']))
+            ->assertOk()
+            ->assertJsonPath('correction.label', 'Mungkin maksud Anda: Biologi');
+
+        $this->get(route('sitemap'))
+            ->assertOk()
+            ->assertHeader('Content-Type', 'application/xml')
+            ->assertSee(route('ebooks.show', $ebook), false);
+    }
+
     public function test_admin_dashboard_shows_analytics_sections(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);

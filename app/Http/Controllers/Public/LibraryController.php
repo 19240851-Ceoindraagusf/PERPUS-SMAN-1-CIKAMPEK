@@ -8,6 +8,7 @@ use App\Models\ClassModel;
 use App\Models\Ebook;
 use App\Models\Subject;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -137,6 +138,10 @@ class LibraryController extends Controller
             ->paginate(12)
             ->withQueryString();
 
+        $suggestedSearch = $search !== '' && $matchedEbooks->isEmpty()
+            ? $this->closestSearchTerm($search)
+            : null;
+
         $classOptions = ClassModel::where('is_active', true)
             ->orderByRaw($classOrder)
             ->orderBy('name')
@@ -168,7 +173,53 @@ class LibraryController extends Controller
             ->unique()
             ->values();
 
-        return view('public.library', compact('classes', 'matchedEbooks', 'classOptions', 'subjectOptions', 'yearOptions', 'authorOptions', 'search', 'selectedClass', 'selectedSubject', 'selectedYear', 'selectedAuthor', 'sort'));
+        return view('public.library', compact('classes', 'matchedEbooks', 'classOptions', 'subjectOptions', 'yearOptions', 'authorOptions', 'search', 'selectedClass', 'selectedSubject', 'selectedYear', 'selectedAuthor', 'sort', 'suggestedSearch'));
+    }
+
+    public function searchSuggestions(Request $request): JsonResponse
+    {
+        $search = trim((string) $request->query('q', ''));
+
+        if (mb_strlen($search) < 2) {
+            return response()->json([]);
+        }
+
+        $ebooks = Ebook::query()
+            ->with('subject.class')
+            ->where('is_active', true)
+            ->where(function ($query) use ($search) {
+                $query->where('title', 'like', "%{$search}%")
+                    ->orWhere('author', 'like', "%{$search}%")
+                    ->orWhereHas('subject', fn ($subjectQuery) => $subjectQuery->where('name', 'like', "%{$search}%"));
+            })
+            ->limit(20)
+            ->get()
+            ->map(fn (Ebook $ebook) => [
+                'title' => $ebook->title,
+                'meta' => 'Kelas '.($ebook->subject->class->name ?? '-').' · '.($ebook->subject->name ?? 'E-book'),
+                'url' => route('ebooks.show', $ebook),
+            ]);
+
+        $correction = $ebooks->isEmpty() ? $this->closestSearchTerm($search) : null;
+
+        return response()->json([
+            'items' => $ebooks,
+            'correction' => $correction ? [
+                'label' => 'Mungkin maksud Anda: '.$correction,
+                'url' => route('library', ['q' => $correction]),
+            ] : null,
+        ]);
+    }
+
+    public function sitemap(): \Illuminate\Http\Response
+    {
+        $urls = collect([route('home'), route('library')])
+            ->merge(ClassModel::where('is_active', true)->get()->map(fn (ClassModel $class) => route('classes.show', $class)))
+            ->merge(Ebook::where('is_active', true)->get()->map(fn (Ebook $ebook) => route('ebooks.show', $ebook)));
+
+        $xml = view('public.sitemap', compact('urls'))->render();
+
+        return response($xml, 200)->header('Content-Type', 'application/xml');
     }
 
     public function class(Request $request, ClassModel $class): View
@@ -311,5 +362,29 @@ class LibraryController extends Controller
         }
 
         return inet_ntop(substr($packedAddress, 0, 6).str_repeat("\0", 10));
+    }
+
+    private function closestSearchTerm(string $search): ?string
+    {
+        $needle = mb_strtolower(trim($search));
+        if (mb_strlen($needle) < 3) {
+            return null;
+        }
+
+        $candidates = Ebook::query()->where('is_active', true)
+            ->with('subject:id,name')
+            ->select(['id', 'subject_id', 'title', 'author'])
+            ->limit(250)
+            ->get()
+            ->flatMap(fn (Ebook $ebook) => array_filter([$ebook->title, $ebook->author, $ebook->subject?->name]))
+            ->unique();
+
+        $closest = $candidates->map(function (string $candidate) use ($needle) {
+            return ['text' => $candidate, 'distance' => levenshtein($needle, mb_strtolower($candidate))];
+        })->sortBy('distance')->first();
+
+        return $closest && $closest['distance'] <= max(2, (int) floor(mb_strlen($needle) / 3))
+            ? $closest['text']
+            : null;
     }
 }

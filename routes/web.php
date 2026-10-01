@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [LibraryController::class, 'home'])->name('home');
 Route::get('/perpustakaan', [LibraryController::class, 'library'])->name('library');
+Route::get('/saran-pencarian', [LibraryController::class, 'searchSuggestions'])->name('search.suggestions');
+Route::get('/sitemap.xml', [LibraryController::class, 'sitemap'])->name('sitemap');
 Route::get('/kelas/{class}', [LibraryController::class, 'class'])->name('classes.show');
 Route::get('/kelas/{class}/mata-pelajaran/{subject}', [LibraryController::class, 'subject'])->name('subjects.show');
 Route::get('/ebook/{ebook}', [LibraryController::class, 'ebook'])->name('ebooks.show');

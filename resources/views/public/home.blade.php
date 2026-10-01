@@ -1,6 +1,7 @@
 @extends('layouts.public')
 
 @section('title', 'Perpustakaan Digital SMAN 1 Cikampek')
+@section('meta_description', 'Temukan buku pelajaran dan materi digital SMAN 1 Cikampek untuk belajar kapan saja.')
 
 @section('content')
 <section class="hero py-5">
@@ -12,8 +13,9 @@
                 <p class="lead mt-3 mb-0">Buku pelajaran dan materi digital SMAN 1 Cikampek, tersusun rapi untuk menemani proses belajarmu.</p>
                 <form action="{{ route('home') }}" method="GET" class="hero-panel hero-search p-3 mt-4">
                     <div class="row g-2 align-items-center">
-                        <div class="col-md-6">
-                            <input type="search" name="q" value="{{ request('q') }}" class="form-control form-control-lg" placeholder="Cari judul, mata pelajaran, atau penulis">
+                        <div class="col-md-6 position-relative">
+                            <input type="search" name="q" value="{{ request('q') }}" class="form-control form-control-lg" data-smart-search autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="hero-search-suggestions" placeholder="Cari judul, mata pelajaran, atau penulis">
+                            <div class="search-suggestions" id="hero-search-suggestions" data-search-suggestions role="listbox" hidden></div>
                         </div>
                         <div class="col-md-3">
                             <select name="class" class="form-select form-select-lg">

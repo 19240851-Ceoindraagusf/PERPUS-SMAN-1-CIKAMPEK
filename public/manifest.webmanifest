@@ -1,0 +1,10 @@
+{
+  "name": "Perpustakaan Digital SMAN 1 Cikampek",
+  "short_name": "Perpus SMAN 1",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6f8fb",
+  "theme_color": "#0f6b4f",
+  "lang": "id",
+  "icons": [{"src": "/images/logo-perpus-sman-1-cikampek.jpeg", "sizes": "any", "type": "image/jpeg", "purpose": "any maskable"}]
+}

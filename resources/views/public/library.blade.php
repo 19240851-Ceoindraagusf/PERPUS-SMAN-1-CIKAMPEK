@@ -1,6 +1,7 @@
 @extends('layouts.public')
 
 @section('title', 'Perpustakaan Digital')
+@section('meta_description', 'Jelajahi katalog buku pelajaran digital SMAN 1 Cikampek berdasarkan kelas, mata pelajaran, penulis, dan tahun terbit.')
 
 @section('content')
 <section class="container py-5">
@@ -11,9 +12,10 @@
     </div>
     <form action="{{ route('library') }}" method="GET" class="search-panel mb-4">
         <div class="row g-2 align-items-end">
-            <div class="col-lg-4">
+            <div class="col-lg-4 position-relative">
                 <label class="form-label small text-muted" for="q">Kata kunci</label>
-                <input type="search" class="form-control" id="q" name="q" value="{{ $search }}" placeholder="Contoh: Matematika, X, Biologi">
+                <input type="search" class="form-control" id="q" name="q" value="{{ $search }}" data-smart-search autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="catalog-search-suggestions" placeholder="Contoh: Matematika, X, Biologi">
+                <div class="search-suggestions" id="catalog-search-suggestions" data-search-suggestions role="listbox" hidden></div>
             </div>
             <div class="col-lg-3">
                 <label class="form-label small text-muted" for="class">Kelas</label>
@@ -107,6 +109,9 @@
     @else
         <div class="empty-state mb-5">
             <h2 class="h5">Buku tidak ditemukan</h2>
+            @if($suggestedSearch)
+                <p class="mb-2">Mungkin maksud Anda <a class="fw-semibold" href="{{ route('library', ['q' => $suggestedSearch]) }}">{{ $suggestedSearch }}</a>?</p>
+            @endif
             <p class="text-muted mb-3">Coba gunakan kata kunci lebih singkat, hapus salah satu filter, atau jelajahi mata pelajaran populer.</p>
             <div class="d-flex justify-content-center flex-wrap gap-2 mb-3"><a class="btn btn-sm btn-outline-success" href="{{ route('library', ['q' => 'Matematika']) }}">Matematika</a><a class="btn btn-sm btn-outline-success" href="{{ route('library', ['q' => 'Bahasa Indonesia']) }}">Bahasa Indonesia</a><a class="btn btn-sm btn-outline-success" href="{{ route('library', ['q' => 'Biologi']) }}">Biologi</a></div>
             <a href="{{ route('library') }}" class="btn btn-outline-success">Reset katalog</a>
