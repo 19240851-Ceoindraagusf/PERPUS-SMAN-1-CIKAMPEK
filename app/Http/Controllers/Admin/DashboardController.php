@@ -7,6 +7,7 @@ use App\Models\AccessLog;
 use App\Models\ClassModel;
 use App\Models\Ebook;
 use App\Models\Subject;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -64,6 +65,55 @@ class DashboardController extends Controller
             })->count(),
         ];
 
-        return view('admin.dashboard', compact('stats', 'latestEbooks', 'popularEbooks', 'latestAccessLogs', 'topClasses', 'topSubjects', 'weeklyAccesses', 'collectionHealth'));
+        $currentYear = (int) now()->format('Y');
+        $auditItems = Ebook::with('subject.class')->get()->map(function (Ebook $ebook) use ($currentYear) {
+            $issues = [];
+            $author = trim((string) $ebook->author);
+
+            if (! $ebook->file_path) {
+                $issues[] = ['label' => 'PDF belum diunggah', 'level' => 'critical'];
+            } elseif (! Storage::disk('public')->exists($ebook->file_path)) {
+                $issues[] = ['label' => 'File PDF tidak ditemukan', 'level' => 'critical'];
+            }
+            if (! $ebook->cover_path) {
+                $issues[] = ['label' => 'Cover belum ada', 'level' => 'warning'];
+            }
+            if ($author === '') {
+                $issues[] = ['label' => 'Penulis belum diisi', 'level' => 'warning'];
+            } elseif (mb_strlen($author) > 120 || str_contains(mb_strtoupper($author), 'DAFTAR ISI')) {
+                $issues[] = ['label' => 'Penulis perlu diperiksa', 'level' => 'warning'];
+            }
+            if (trim((string) $ebook->publisher) === '') {
+                $issues[] = ['label' => 'Penerbit belum diisi', 'level' => 'info'];
+            }
+            if (! $ebook->publication_year || $ebook->publication_year < 1945 || $ebook->publication_year > $currentYear + 1) {
+                $issues[] = ['label' => 'Tahun terbit tidak valid', 'level' => 'info'];
+            }
+            if (trim((string) $ebook->description) === '') {
+                $issues[] = ['label' => 'Deskripsi belum diisi', 'level' => 'info'];
+            }
+
+            $ebook->setAttribute('audit_issues', $issues);
+            $ebook->setAttribute('audit_score', collect($issues)->sum(fn (array $issue) => match ($issue['level']) {
+                'critical' => 4,
+                'warning' => 2,
+                default => 1,
+            }));
+
+            return $ebook;
+        });
+
+        $collectionAudit = [
+            'total' => $auditItems->count(),
+            'ready' => $auditItems->filter(fn (Ebook $ebook) => $ebook->audit_score === 0)->count(),
+            'critical' => $auditItems->filter(fn (Ebook $ebook) => collect($ebook->audit_issues)->contains('level', 'critical'))->count(),
+            'needs_review' => $auditItems->filter(fn (Ebook $ebook) => $ebook->audit_score > 0)->count(),
+        ];
+        $auditEbooks = $auditItems->filter(fn (Ebook $ebook) => $ebook->audit_score > 0)
+            ->sortByDesc('audit_score')
+            ->take(12)
+            ->values();
+
+        return view('admin.dashboard', compact('stats', 'latestEbooks', 'popularEbooks', 'latestAccessLogs', 'topClasses', 'topSubjects', 'weeklyAccesses', 'collectionHealth', 'collectionAudit', 'auditEbooks'));
     }
 }

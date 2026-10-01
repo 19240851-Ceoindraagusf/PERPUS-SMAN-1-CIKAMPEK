@@ -31,6 +31,12 @@
         .activity-bar-wrap { height: 100%; flex: 1; min-width: 26px; display: flex; flex-direction: column; justify-content: end; align-items: center; gap: .4rem; }
         .activity-bar { width: 100%; max-width: 42px; min-height: 5px; background: linear-gradient(180deg, #279b77, var(--admin-green)); border-radius: 7px 7px 2px 2px; transition: height .2s ease; }
         .page-header { background: #fff; border: 1px solid var(--admin-line); border-radius: 8px; padding: 1rem; }
+        .audit-summary { background: linear-gradient(120deg, #fff, #f8fbfa); border: 1px solid var(--admin-line); border-radius: 12px; padding: 1rem; }
+        .audit-item { border-left: 4px solid #d99a22; }
+        .audit-item.critical { border-left-color: #c8414b; }
+        .audit-badge-critical { background: #fbe8ea; color: #9d2732; }
+        .audit-badge-warning { background: #fff3db; color: #965b00; }
+        .audit-badge-info { background: #eaf2ff; color: #1956a3; }
         .pagination { --bs-pagination-color: var(--admin-ink); --bs-pagination-bg: #fff; --bs-pagination-border-width: 1px; --bs-pagination-border-color: var(--admin-line); --bs-pagination-hover-color: var(--admin-green); --bs-pagination-hover-bg: #eef6f3; --bs-pagination-hover-border-color: rgba(15, 107, 79, .35); --bs-pagination-active-color: #fff; --bs-pagination-active-bg: var(--admin-green); --bs-pagination-active-border-color: var(--admin-green); --bs-pagination-disabled-color: #8a96a6; --bs-pagination-disabled-bg: #f4f7fb; --bs-pagination-disabled-border-color: var(--admin-line); }
         .pagination .page-link {
             min-width: 42px; min-height: 42px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; font-weight: 600; transition: all .2s ease;

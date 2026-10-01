@@ -16,6 +16,49 @@
     <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body d-flex justify-content-between"><div><div class="text-muted">Total E-Book</div><div class="h3 mb-0">{{ $stats['ebooks'] }}</div></div><div class="stat-icon">E</div></div></div></div>
     <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body d-flex justify-content-between"><div><div class="text-muted">Total Akses</div><div class="h3 mb-0">{{ $stats['accesses'] }}</div></div><div class="stat-icon">A</div></div></div></div>
 </div>
+<section class="audit-summary mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+        <div>
+            <p class="text-success small fw-semibold text-uppercase mb-1">Audit kualitas koleksi</p>
+            <h2 class="h5 mb-1">Periksa data sebelum ditemukan siswa</h2>
+            <p class="text-muted small mb-0">Mendeteksi file PDF, cover, penulis, penerbit, tahun terbit, dan deskripsi yang perlu dilengkapi atau diperiksa.</p>
+        </div>
+        <a href="{{ route('admin.ebooks.index') }}" class="btn btn-outline-success btn-sm">Kelola semua e-book</a>
+    </div>
+    <div class="row g-3">
+        <div class="col-sm-6 col-lg-3"><div class="metric"><div class="small text-muted">Koleksi siap</div><strong class="h4 mb-0">{{ $collectionAudit['ready'] }} <small class="fs-6 fw-normal">dari {{ $collectionAudit['total'] }}</small></strong></div></div>
+        <div class="col-sm-6 col-lg-3"><div class="metric"><div class="small text-muted">Perlu ditinjau</div><strong class="h4 mb-0">{{ $collectionAudit['needs_review'] }}</strong></div></div>
+        <div class="col-sm-6 col-lg-3"><div class="metric"><div class="small text-muted">File bermasalah</div><strong class="h4 mb-0 text-danger">{{ $collectionAudit['critical'] }}</strong></div></div>
+        <div class="col-sm-6 col-lg-3"><div class="metric"><div class="small text-muted">Tanpa cover</div><strong class="h4 mb-0">{{ $collectionHealth['without_cover'] }}</strong></div></div>
+    </div>
+</section>
+<section class="admin-card card mb-4">
+    <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <div><h2 class="h5 mb-1">Prioritas perbaikan koleksi</h2><p class="small text-muted mb-0">Urutan tertinggi diberikan untuk PDF yang tidak tersedia dan metadata yang tampak tidak valid.</p></div>
+            <span class="badge text-bg-light">Maks. 12 e-book</span>
+        </div>
+        @forelse($auditEbooks as $ebook)
+            @php($hasCriticalIssue = collect($ebook->audit_issues)->contains('level', 'critical'))
+            <article class="audit-item {{ $hasCriticalIssue ? 'critical' : '' }} rounded bg-light p-3 mb-2">
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+                    <div>
+                        <h3 class="h6 mb-1">{{ $ebook->title }}</h3>
+                        <p class="small text-muted mb-2">Kelas {{ $ebook->subject->class->name ?? '-' }} · {{ $ebook->subject->name ?? '-' }}</p>
+                        <div class="d-flex flex-wrap gap-1">
+                            @foreach($ebook->audit_issues as $issue)
+                                <span class="badge audit-badge-{{ $issue['level'] }}">{{ $issue['label'] }}</span>
+                            @endforeach
+                        </div>
+                    </div>
+                    <a href="{{ route('admin.ebooks.edit', $ebook) }}" class="btn btn-sm btn-success">Perbaiki</a>
+                </div>
+            </article>
+        @empty
+            <div class="text-center py-4"><div class="h5 text-success">Koleksi sudah rapi</div><p class="text-muted mb-0">Tidak ada masalah kualitas data yang terdeteksi saat ini.</p></div>
+        @endforelse
+    </div>
+</section>
 <div class="row g-4">
     <div class="col-lg-7">
         <div class="admin-card card h-100"><div class="card-body">

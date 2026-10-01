@@ -150,7 +150,9 @@ class PublicLibraryUpgradeTest extends TestCase
         $response->assertOk()
             ->assertSee('E-Book Paling Banyak Diakses')
             ->assertSee('Kelas dengan Materi Terbanyak')
-            ->assertSee('Mapel Paling Banyak Diakses');
+            ->assertSee('Mapel Paling Banyak Diakses')
+            ->assertSee('Audit kualitas koleksi')
+            ->assertSee('Prioritas perbaikan koleksi');
     }
 
     public function test_inactive_ebook_cannot_be_viewed_or_downloaded(): void
