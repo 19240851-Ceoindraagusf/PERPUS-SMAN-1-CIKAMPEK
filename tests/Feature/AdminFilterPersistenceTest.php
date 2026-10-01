@@ -6,7 +6,10 @@ use App\Models\ClassModel;
 use App\Models\Ebook;
 use App\Models\Subject;
 use App\Models\User;
+use App\Services\EbookMetadataExtractor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class AdminFilterPersistenceTest extends TestCase
@@ -80,6 +83,66 @@ class AdminFilterPersistenceTest extends TestCase
             ->assertSee('admin/ebooks?class_id=' . $class->id . '&amp;subject_id=' . $subject->id, false)
             ->assertSee('name="return_class_id"', false)
             ->assertSee('name="return_subject_id"', false);
+    }
+
+    public function test_manual_ebook_metadata_overrides_pdf_detection_and_empty_fields_use_detection(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin);
+
+        $class = ClassModel::create([
+            'name' => 'X',
+            'description' => 'Kelas sepuluh',
+            'is_active' => true,
+        ]);
+        $subject = Subject::create([
+            'class_id' => $class->id,
+            'name' => 'Biologi',
+            'is_active' => true,
+        ]);
+
+        Storage::fake('public');
+        $metadata = [
+            'title' => 'Biologi Dasar',
+            'author' => 'Penulis PDF',
+            'publisher' => 'Penerbit PDF',
+            'publication_year' => 2022,
+            'description' => 'Deskripsi dari PDF',
+        ];
+
+        $extractor = \Mockery::mock(EbookMetadataExtractor::class);
+        $extractor->shouldReceive('extract')->twice()->andReturn($metadata, $metadata);
+        $extractor->shouldReceive('titleForSelectedSubject')->twice()->andReturn('Biologi Dasar');
+        $extractor->shouldReceive('buildSubjectDescription')->twice()->andReturn('Deskripsi mapel');
+        $this->app->instance(EbookMetadataExtractor::class, $extractor);
+
+        $this->post(route('admin.ebooks.store'), [
+            'subject_id' => $subject->id,
+            'author' => 'Penulis Manual',
+            'publisher' => 'Penerbit Manual',
+            'publication_year' => '2025',
+            'file' => UploadedFile::fake()->create('manual.pdf', 10, 'application/pdf'),
+        ])->assertRedirect(route('admin.ebooks.index'));
+
+        $this->assertDatabaseHas('ebooks', [
+            'author' => 'Penulis Manual',
+            'publisher' => 'Penerbit Manual',
+            'publication_year' => 2025,
+        ]);
+
+        $this->post(route('admin.ebooks.store'), [
+            'subject_id' => $subject->id,
+            'author' => '',
+            'publisher' => '',
+            'publication_year' => '',
+            'file' => UploadedFile::fake()->create('automatic.pdf', 10, 'application/pdf'),
+        ])->assertRedirect(route('admin.ebooks.index'));
+
+        $this->assertDatabaseHas('ebooks', [
+            'author' => 'Penulis PDF',
+            'publisher' => 'Penerbit PDF',
+            'publication_year' => 2022,
+        ]);
     }
 
     public function test_same_subject_name_in_different_classes_is_not_mixed(): void

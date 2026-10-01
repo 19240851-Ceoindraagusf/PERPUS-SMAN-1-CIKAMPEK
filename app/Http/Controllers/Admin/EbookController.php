@@ -64,6 +64,9 @@ class EbookController extends Controller
             'cover' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
             'file' => ['required', 'file', 'mimes:pdf', 'max:102400'],
             'subject_id' => ['required', 'exists:subjects,id'],
+            'author' => ['nullable', 'string', 'max:255'],
+            'publisher' => ['nullable', 'string', 'max:255'],
+            'publication_year' => ['nullable', 'integer', 'between:1901,2155'],
             'is_active' => ['nullable', 'boolean'],
         ]);
 
@@ -72,9 +75,11 @@ class EbookController extends Controller
 
         $validated['is_active'] = $request->boolean('is_active');
         $validated['title'] = $metadataExtractor->titleForSelectedSubject($metadata['title'], $subject->name);
-        $validated['author'] = $metadata['author'];
-        $validated['publisher'] = $metadata['publisher'];
-        $validated['publication_year'] = $metadata['publication_year'];
+        $validated['author'] = $request->filled('author') ? trim($validated['author']) : $metadata['author'];
+        $validated['publisher'] = $request->filled('publisher') ? trim($validated['publisher']) : $metadata['publisher'];
+        $validated['publication_year'] = $request->filled('publication_year')
+            ? $validated['publication_year']
+            : $metadata['publication_year'];
         $validated['description'] = $metadata['description'];
         $validated['file_path'] = $request->file('file')->store('ebooks', 'public');
 
@@ -108,6 +113,9 @@ class EbookController extends Controller
             'cover' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
             'file' => ['nullable', 'file', 'mimes:pdf', 'max:102400'],
             'subject_id' => ['required', 'exists:subjects,id'],
+            'author' => ['nullable', 'string', 'max:255'],
+            'publisher' => ['nullable', 'string', 'max:255'],
+            'publication_year' => ['nullable', 'integer', 'between:1901,2155'],
             'is_active' => ['nullable', 'boolean'],
         ]);
 
@@ -120,9 +128,11 @@ class EbookController extends Controller
             $this->deleteStoredFileIfUnused($ebook->file_path, $ebook->id);
 
             $validated['title'] = $metadataExtractor->titleForSelectedSubject($metadata['title'], $subject->name);
-            $validated['author'] = $metadata['author'];
-            $validated['publisher'] = $metadata['publisher'];
-            $validated['publication_year'] = $metadata['publication_year'];
+            $validated['author'] = $request->filled('author') ? trim($validated['author']) : $metadata['author'];
+            $validated['publisher'] = $request->filled('publisher') ? trim($validated['publisher']) : $metadata['publisher'];
+            $validated['publication_year'] = $request->filled('publication_year')
+                ? $validated['publication_year']
+                : $metadata['publication_year'];
             $validated['description'] = $metadata['description'];
             $validated['file_path'] = $request->file('file')->store('ebooks', 'public');
         }

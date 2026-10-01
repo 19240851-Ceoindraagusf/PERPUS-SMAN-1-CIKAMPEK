@@ -16,6 +16,21 @@
         @error('subject_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
     <div class="col-md-6 mb-3">
+        <label class="form-label" for="author">Penulis</label>
+        <input class="form-control @error('author') is-invalid @enderror" id="author" name="author" type="text" maxlength="255" value="{{ old('author', $ebook->author ?? '') }}">
+        @error('author')<div class="invalid-feedback">{{ $message }}</div>@enderror
+    </div>
+    <div class="col-md-6 mb-3">
+        <label class="form-label" for="publisher">Penerbit</label>
+        <input class="form-control @error('publisher') is-invalid @enderror" id="publisher" name="publisher" type="text" maxlength="255" value="{{ old('publisher', $ebook->publisher ?? '') }}">
+        @error('publisher')<div class="invalid-feedback">{{ $message }}</div>@enderror
+    </div>
+    <div class="col-md-6 mb-3">
+        <label class="form-label" for="publication_year">Tahun Terbit</label>
+        <input class="form-control @error('publication_year') is-invalid @enderror" id="publication_year" name="publication_year" type="number" min="1901" max="2155" step="1" value="{{ old('publication_year', $ebook->publication_year ?? '') }}">
+        @error('publication_year')<div class="invalid-feedback">{{ $message }}</div>@enderror
+    </div>
+    <div class="col-md-6 mb-3">
         <label class="form-label" for="cover">Cover</label>
         <input class="form-control @error('cover') is-invalid @enderror" id="cover" name="cover" type="file" accept=".jpg,.jpeg,.png,.webp,image/*">
         @error('cover')<div class="invalid-feedback">{{ $message }}</div>@enderror
