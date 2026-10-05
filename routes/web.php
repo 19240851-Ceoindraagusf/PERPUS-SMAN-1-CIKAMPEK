@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\ClassController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EbookCommentController;
+use App\Http\Controllers\Admin\EbookCommentReportController;
 use App\Http\Controllers\Admin\EbookReportController;
 use App\Http\Controllers\Admin\EbookController;
 use App\Http\Controllers\Admin\SubjectController;
@@ -21,7 +22,8 @@ Route::get('/ebook/{ebook}', [LibraryController::class, 'ebook'])->name('ebooks.
 Route::get('/ebook/{ebook}/baca', [LibraryController::class, 'reader'])->name('ebooks.reader');
 Route::get('/ebook/{ebook}/download', [LibraryController::class, 'download'])->name('ebooks.download');
 Route::post('/ebook/{ebook}/laporan', [LibraryController::class, 'storeReport'])->middleware('throttle:5,1')->name('ebooks.reports.store');
-Route::post('/ebook/{ebook}/komentar', [LibraryController::class, 'storeComment'])->middleware('throttle:10,1')->name('ebooks.comments.store');
+Route::post('/ebook/{ebook}/komentar', [LibraryController::class, 'storeComment'])->middleware('throttle:comment-submissions')->name('ebooks.comments.store');
+Route::post('/komentar/{comment}/laporkan', [LibraryController::class, 'storeCommentReport'])->middleware('throttle:comment-reports')->name('comments.reports.store');
 Route::view('/favorit', 'public.favorites')->name('favorites');
 Route::get('/komentar-siswa', [LibraryController::class, 'comments'])->name('comments.index');
 
@@ -42,5 +44,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/komentar-e-book', [EbookCommentController::class, 'index'])->name('ebook-comments.index');
         Route::patch('/komentar-e-book/{comment}', [EbookCommentController::class, 'update'])->name('ebook-comments.update');
         Route::delete('/komentar-e-book/{comment}', [EbookCommentController::class, 'destroy'])->name('ebook-comments.destroy');
+        Route::get('/laporan-komentar', [EbookCommentReportController::class, 'index'])->name('comment-reports.index');
+        Route::patch('/laporan-komentar/{report}', [EbookCommentReportController::class, 'update'])->name('comment-reports.update');
     });
 });

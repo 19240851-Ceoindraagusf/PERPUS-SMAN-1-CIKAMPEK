@@ -64,6 +64,7 @@
                     <article class="border-bottom pb-3 mb-3">
                         <div class="d-flex justify-content-between gap-3"><strong>{{ $comment->display_name }}</strong><time class="small text-muted" datetime="{{ $comment->created_at->toDateString() }}">{{ $comment->created_at->translatedFormat('d M Y') }}</time></div>
                         <p class="mb-0 mt-1">{{ $comment->message }}</p>
+                        <details class="mt-2"><summary class="small text-muted" role="button">Laporkan komentar</summary><form method="POST" action="{{ route('comments.reports.store', $comment) }}" class="d-flex flex-wrap gap-2 mt-2">@csrf<div class="visually-hidden" aria-hidden="true"><label>Website <input tabindex="-1" autocomplete="off" name="website"></label></div><select class="form-select form-select-sm" name="reason" style="max-width: 190px"><option value="spam">Spam</option><option value="abusive">Tidak pantas</option><option value="irrelevant">Tidak relevan</option><option value="other">Lainnya</option></select><button class="btn btn-sm btn-outline-danger" type="submit">Kirim laporan</button></form></details>
                     </article>
                 @empty
                     <p class="text-muted mb-0">Belum ada komentar. Jadilah siswa pertama yang berbagi pengalaman belajar.</p>

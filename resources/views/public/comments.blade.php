@@ -18,7 +18,7 @@
                     <time class="small text-muted" datetime="{{ $comment->created_at->toDateString() }}">{{ $comment->created_at->translatedFormat('d M Y') }}</time>
                 </div>
                 <p class="mb-2">{{ $comment->message }}</p>
-                <a class="small text-decoration-none" href="{{ route('ebooks.show', $comment->ebook) }}">Lihat e-book dan komentar lainnya →</a>
+                <div class="d-flex flex-wrap align-items-center gap-3"><a class="small text-decoration-none" href="{{ route('ebooks.show', $comment->ebook) }}">Lihat e-book dan komentar lainnya →</a><details><summary class="small text-muted" role="button">Laporkan komentar</summary><form method="POST" action="{{ route('comments.reports.store', $comment) }}" class="d-flex flex-wrap gap-2 mt-2">@csrf<div class="visually-hidden" aria-hidden="true"><label>Website <input tabindex="-1" autocomplete="off" name="website"></label></div><select class="form-select form-select-sm" name="reason" style="max-width: 190px"><option value="spam">Spam</option><option value="abusive">Tidak pantas</option><option value="irrelevant">Tidak relevan</option><option value="other">Lainnya</option></select><button class="btn btn-sm btn-outline-danger" type="submit">Kirim laporan</button></form></details></div>
             </div></div></article>
         @empty
             <div class="col-12"><div class="empty-state"><h2 class="h5">Belum ada komentar</h2><p class="text-muted mb-0">Komentar siswa akan muncul di sini setelah dikirim dari halaman detail e-book.</p></div></div>

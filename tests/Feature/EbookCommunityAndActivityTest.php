@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\ClassModel;
 use App\Models\Ebook;
 use App\Models\EbookComment;
+use App\Models\EbookCommentReport;
 use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -72,8 +73,13 @@ class EbookCommunityAndActivityTest extends TestCase
             ->assertSee('Anisa')
             ->assertSee('Materi klasifikasi makhluk hidup sangat membantu untuk belajar mandiri.');
 
+        $this->post(route('comments.reports.store', $comment), ['reason' => 'irrelevant'])
+            ->assertSessionHas('success');
+        $this->assertDatabaseHas('ebook_comment_reports', ['ebook_comment_id' => $comment->id, 'reason' => 'irrelevant', 'status' => 'open']);
+
         $admin = User::factory()->create(['role' => 'admin']);
         $this->actingAs($admin)->get(route('admin.ebook-comments.index'))->assertOk()->assertSee('Anisa');
+        $this->get(route('admin.comment-reports.index'))->assertOk()->assertSee('Tidak relevan');
         $this->patch(route('admin.ebook-comments.update', $comment), ['is_approved' => false])->assertSessionHas('success');
 
         $this->get(route('ebooks.show', $ebook))

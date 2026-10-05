@@ -16,8 +16,8 @@
     <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body d-flex justify-content-between"><div><div class="text-muted">Total E-Book</div><div class="h3 mb-0">{{ $stats['ebooks'] }}</div></div><div class="stat-icon">E</div></div></div></div>
     <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body d-flex justify-content-between"><div><div class="text-muted">Mulai Dibaca</div><div class="h3 mb-0">{{ $stats['reads'] }}</div><div class="small text-muted">{{ $stats['downloads'] }} unduhan</div></div><div class="stat-icon">B</div></div></div></div>
 </div>
-@if($stats['open_reports'] || $stats['pending_comments'])
-    <div class="alert alert-warning d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4"><span><strong>Perlu perhatian:</strong> {{ $stats['open_reports'] }} laporan e-book dan {{ $stats['pending_comments'] }} komentar menunggu.</span><span class="d-flex gap-2"><a class="btn btn-sm btn-outline-dark" href="{{ route('admin.ebook-reports.index') }}">Lihat laporan</a><a class="btn btn-sm btn-outline-dark" href="{{ route('admin.ebook-comments.index') }}">Moderasi komentar</a></span></div>
+@if($stats['open_reports'] || $stats['open_comment_reports'] || $stats['new_comments'])
+    <div class="alert alert-warning d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4"><span><strong>Notifikasi baru:</strong> {{ $stats['new_comments'] }} komentar baru, {{ $stats['open_reports'] }} laporan e-book, dan {{ $stats['open_comment_reports'] }} laporan komentar.</span><span class="d-flex gap-2"><a class="btn btn-sm btn-outline-dark" href="{{ route('admin.ebook-comments.index') }}">Lihat komentar</a><a class="btn btn-sm btn-outline-dark" href="{{ route('admin.comment-reports.index') }}">Lihat laporan komentar</a></span></div>
 @endif
 <section class="audit-summary mb-4">
     <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">

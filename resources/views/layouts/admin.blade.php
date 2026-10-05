@@ -71,6 +71,7 @@
             <a class="nav-link {{ request()->routeIs('admin.access-logs.*') ? 'active' : '' }}" href="{{ route('admin.access-logs.index') }}">Access Logs</a>
             <a class="nav-link {{ request()->routeIs('admin.ebook-reports.*') ? 'active' : '' }}" href="{{ route('admin.ebook-reports.index') }}">Laporan E-Book</a>
             <a class="nav-link {{ request()->routeIs('admin.ebook-comments.*') ? 'active' : '' }}" href="{{ route('admin.ebook-comments.index') }}">Moderasi Komentar</a>
+            <a class="nav-link {{ request()->routeIs('admin.comment-reports.*') ? 'active' : '' }}" href="{{ route('admin.comment-reports.index') }}">Laporan Komentar</a>
         </nav>
         <form method="POST" action="{{ route('admin.logout') }}" class="mt-4">
             @csrf

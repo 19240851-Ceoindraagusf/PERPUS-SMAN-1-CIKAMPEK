@@ -7,6 +7,7 @@ use App\Models\AccessLog;
 use App\Models\ClassModel;
 use App\Models\Ebook;
 use App\Models\EbookComment;
+use App\Models\EbookCommentReport;
 use App\Models\EbookReport;
 use App\Models\Subject;
 use Illuminate\Support\Facades\Storage;
@@ -23,7 +24,8 @@ class DashboardController extends Controller
             'reads' => AccessLog::where('action', 'read')->count(),
             'downloads' => AccessLog::where('action', 'download')->count(),
             'open_reports' => EbookReport::whereIn('status', ['open', 'in_progress'])->count(),
-            'pending_comments' => EbookComment::where('is_approved', false)->count(),
+            'new_comments' => EbookComment::whereNull('seen_by_admin_at')->count(),
+            'open_comment_reports' => EbookCommentReport::where('status', 'open')->count(),
         ];
 
         $latestEbooks = Ebook::with('subject.class')->latest()->limit(5)->get();

@@ -21,6 +21,8 @@ class EbookCommentController extends Controller
             ->paginate(15)
             ->withQueryString();
 
+        EbookComment::whereNull('seen_by_admin_at')->update(['seen_by_admin_at' => now()]);
+
         return view('admin.ebook-comments.index', compact('comments', 'approval'));
     }
 

@@ -7,6 +7,7 @@ use App\Models\AccessLog;
 use App\Models\ClassModel;
 use App\Models\Ebook;
 use App\Models\EbookComment;
+use App\Models\EbookCommentReport;
 use App\Models\EbookReport;
 use App\Models\Subject;
 use Illuminate\Http\RedirectResponse;
@@ -377,7 +378,11 @@ class LibraryController extends Controller
 
         $validated = $request->validateWithBag('comment', [
             'display_name' => ['required', 'string', 'min:2', 'max:80'],
-            'message' => ['required', 'string', 'min:5', 'max:1000'],
+            'message' => ['required', 'string', 'min:5', 'max:1000', function (string $attribute, mixed $value, \Closure $fail): void {
+                if ($this->containsBlockedTerm((string) $value)) {
+                    $fail('Komentar mengandung kata yang tidak diperbolehkan.');
+                }
+            }],
             'website' => ['prohibited'],
         ]);
 
@@ -389,6 +394,24 @@ class LibraryController extends Controller
         ]);
 
         return back()->with('success', 'Komentar Anda sudah dikirim dan langsung tampil untuk siswa lain.');
+    }
+
+    public function storeCommentReport(Request $request, EbookComment $comment): RedirectResponse
+    {
+        abort_unless($comment->is_approved && $comment->ebook?->is_active, 404);
+
+        $validated = $request->validateWithBag('commentReport', [
+            'reason' => ['required', 'in:spam,abusive,irrelevant,other'],
+            'website' => ['prohibited'],
+        ]);
+
+        EbookCommentReport::firstOrCreate([
+            'ebook_comment_id' => $comment->id,
+            'reason' => $validated['reason'],
+            'status' => 'open',
+        ]);
+
+        return back()->with('success', 'Laporan komentar telah dikirim untuk ditinjau petugas.');
     }
 
     public function comments(): View
@@ -428,6 +451,20 @@ class LibraryController extends Controller
                 'user_agent' => $request->userAgent(),
             ]);
         }
+    }
+
+    private function containsBlockedTerm(string $message): bool
+    {
+        $normalizedMessage = mb_strtolower($message);
+
+        foreach (config('library.comment_blocked_terms', []) as $term) {
+            $term = mb_strtolower(trim((string) $term));
+            if ($term !== '' && preg_match('/(?<![\\p{L}\\p{N}])'.preg_quote($term, '/').'(?![\\p{L}\\p{N}])/u', $normalizedMessage)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function anonymizeIpAddress(?string $ipAddress): ?string

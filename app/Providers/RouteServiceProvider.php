@@ -27,6 +27,12 @@ class RouteServiceProvider extends ServiceProvider
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
+        RateLimiter::for('comment-submissions', function (Request $request) {
+            return Limit::perDay(5)->by('comment:'.$request->session()->getId());
+        });
+        RateLimiter::for('comment-reports', function (Request $request) {
+            return Limit::perDay(10)->by('comment-report:'.$request->session()->getId());
+        });
 
         $this->routes(function () {
             Route::middleware('api')
