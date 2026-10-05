@@ -39,10 +39,9 @@
             </div>
             <div class="col-lg-5 hero-collection ps-lg-5">
                 <div class="ps-lg-2">
-                    <div class="hero-visual">
-                        <div class="hero-book hero-book-left"><small>SMAN 1</small><strong>Belajar<br>Lebih Mudah</strong><small>CIKAMPEK</small></div>
-                        <div class="hero-book hero-book-main"><small>PERPUSTAKAAN</small><strong>Jelajahi<br>Pengetahuan</strong><small>KOLEKSI DIGITAL</small></div>
-                        <div class="hero-book hero-book-right"><small>RUANG</small><strong>Baca.<br>Tumbuh.</strong><small>2026</small></div>
+                    <div class="school-photo">
+                        <img src="{{ asset('images/gedung-sman-1-cikampek.png') }}" alt="Gedung utama SMAN 1 Cikampek" fetchpriority="high">
+                        <div class="school-photo-caption">SMAN 1 Cikampek</div>
                     </div>
                     <p class="eyebrow mb-2 mt-2">Koleksi kami</p>
                     <h2 class="h5 mb-3">Pilih kelasmu, lalu mulai belajar.</h2>

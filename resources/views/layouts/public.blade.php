@@ -61,13 +61,10 @@
         .hero-search .form-control, .hero-search .form-select { min-height: 52px; }
         .hero-search .btn { min-height: 52px; }
         .hero-collection { border-left: 1px solid rgba(255, 255, 255, .25); position: relative; z-index: 1; }
-        .hero-visual { min-height: 260px; position: relative; }
-        .hero-book { position: absolute; width: 152px; aspect-ratio: 3/4; border-radius: 12px; box-shadow: 0 22px 32px rgba(0,0,0,.22); padding: 1.1rem; display: flex; flex-direction: column; justify-content: space-between; }
-        .hero-book-main { background: #fff8e9; color: #123f72; left: 50%; transform: translateX(-52%) rotate(5deg); top: 7px; }
-        .hero-book-left { background: #156f55; color: #fff; left: 7%; top: 54px; transform: rotate(-12deg); }
-        .hero-book-right { background: #2364b2; color: #fff; right: 4%; top: 57px; transform: rotate(13deg); }
-        .hero-book small { font-size: .62rem; letter-spacing: .08em; font-weight: 700; }
-        .hero-book strong { font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.2; font-size: 1.1rem; }
+        .school-photo { position: relative; overflow: hidden; min-height: 260px; border: 1px solid rgba(255,255,255,.3); border-radius: 18px; box-shadow: 0 22px 32px rgba(0,0,0,.22); }
+        .school-photo img { width: 100%; height: 260px; object-fit: cover; object-position: center; display: block; }
+        .school-photo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 42%, rgba(7, 42, 38, .72)); pointer-events: none; }
+        .school-photo-caption { position: absolute; z-index: 1; right: 1rem; bottom: .85rem; left: 1rem; color: #fff; font-weight: 700; text-shadow: 0 1px 8px rgba(0,0,0,.48); }
         .hero-stat { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.18); border-radius: 12px; padding: .8rem; }
         .quick-chip { border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.1); color: #fff; border-radius: 99px; padding: .3rem .65rem; font-size: .8rem; text-decoration: none; transition: .18s ease; }
         .quick-chip:hover { background: #fff; color: var(--school-green); }
@@ -117,8 +114,8 @@
             .display-5 { font-size: 2rem; }
             .search-panel .btn { width: 100%; }
             .hero-collection { border-left: 0; border-top: 1px solid rgba(255, 255, 255, .25); padding-top: 1.5rem; }
-            .hero-visual { min-height: 220px; max-width: 330px; margin: 0 auto; }
-            .hero-book { width: 128px; }
+            .school-photo { min-height: 220px; max-width: 430px; margin: 0 auto; }
+            .school-photo img { height: 220px; }
             .book-row-cover { width: 76px; flex-basis: 76px; }
             .study-banner { align-items: flex-start; flex-direction: column; }
         }
