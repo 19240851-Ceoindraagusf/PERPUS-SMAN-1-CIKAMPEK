@@ -6,22 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class AccessLog extends Model
+class EbookReport extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'ebook_id',
-        'action',
-        'accessed_at',
-        'ip_address',
-        'visitor_hash',
-        'user_agent',
-    ];
-
-    protected $casts = [
-        'accessed_at' => 'datetime',
-    ];
+    protected $fillable = ['ebook_id', 'reporter_name', 'category', 'message', 'status'];
 
     public function ebook(): BelongsTo
     {

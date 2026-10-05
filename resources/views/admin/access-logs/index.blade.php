@@ -9,10 +9,10 @@
         <h2 class="h5">E-Book Paling Banyak Dibaca</h2>
         <div class="table-responsive">
             <table class="table mb-0 align-middle">
-                <thead><tr><th>E-Book</th><th>Jumlah Akses</th></tr></thead>
+                <thead><tr><th>E-Book</th><th>Mulai Dibaca</th></tr></thead>
                 <tbody>
                 @forelse($popularEbooks as $ebook)
-                    <tr><td>{{ $ebook->title }}</td><td>{{ $ebook->access_logs_count }}</td></tr>
+                    <tr><td>{{ $ebook->title }}</td><td>{{ $ebook->reads_count }}</td></tr>
                 @empty
                     <tr><td colspan="2" class="text-muted">Belum ada data akses.</td></tr>
                 @endforelse
@@ -24,10 +24,10 @@
 <div class="card border-0 shadow-sm">
     <div class="table-responsive">
         <table class="table mb-0 align-middle">
-            <thead><tr><th>Waktu</th><th>E-Book</th><th>IP Address</th><th>User Agent</th></tr></thead>
+            <thead><tr><th>Aksi / Waktu</th><th>E-Book</th><th>IP Address</th><th>User Agent</th></tr></thead>
             <tbody>
             @forelse($accessLogs as $log)
-                <tr><td>{{ $log->accessed_at?->format('d M Y H:i') }}</td><td>{{ $log->ebook->title ?? '-' }}</td><td>{{ $log->ip_address ?: '-' }}</td><td class="text-truncate" style="max-width: 360px;">{{ $log->user_agent ?: '-' }}</td></tr>
+                <tr><td><span class="badge text-bg-light">{{ ['view' => 'Detail', 'read' => 'Baca', 'download' => 'Unduh'][$log->action] ?? $log->action }}</span><div class="small text-muted mt-1">{{ $log->accessed_at?->format('d M Y H:i') }}</div></td><td>{{ $log->ebook->title ?? '-' }}</td><td>{{ $log->ip_address ?: '-' }}</td><td class="text-truncate" style="max-width: 360px;">{{ $log->user_agent ?: '-' }}</td></tr>
             @empty
                 <tr><td colspan="4" class="text-muted">Belum ada data akses.</td></tr>
             @endforelse

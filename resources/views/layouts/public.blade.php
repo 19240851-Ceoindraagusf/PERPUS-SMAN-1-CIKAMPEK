@@ -135,6 +135,7 @@
             <div class="navbar-nav ms-auto gap-lg-2 mt-3 mt-lg-0">
                 <a class="nav-link nav-pill {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">Beranda</a>
                 <a class="nav-link nav-pill {{ request()->routeIs('library') || request()->routeIs('classes.*') || request()->routeIs('subjects.*') || request()->routeIs('ebooks.*') ? 'active' : '' }}" href="{{ route('library') }}">Perpustakaan</a>
+                <a class="nav-link nav-pill {{ request()->routeIs('comments.*') ? 'active' : '' }}" href="{{ route('comments.index') }}">Komentar Siswa</a>
                 <a class="nav-link nav-pill {{ request()->routeIs('favorites') ? 'active' : '' }}" href="{{ route('favorites') }}">Favorit</a>
                 <a class="nav-link nav-pill" href="{{ route('admin.login') }}">Admin</a>
             </div>

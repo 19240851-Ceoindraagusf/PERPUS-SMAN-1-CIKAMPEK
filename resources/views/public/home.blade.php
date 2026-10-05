@@ -56,7 +56,7 @@
                             <div class="hero-stat"><div class="h4 fw-bold mb-0">{{ $stats['ebooks'] }}</div><div class="small opacity-75">E-book</div></div>
                         </div>
                         <div class="col-6">
-                            <div class="hero-stat"><div class="h4 fw-bold mb-0">{{ $stats['accesses'] }}</div><div class="small opacity-75">Total akses</div></div>
+                            <div class="hero-stat"><div class="h4 fw-bold mb-0">{{ $stats['reads'] }}</div><div class="small opacity-75">Mulai dibaca</div></div>
                         </div>
                     </div>
                     <a href="{{ route('library') }}" class="btn btn-light mt-4">Jelajahi Semua Koleksi</a>
@@ -164,7 +164,7 @@
                         <div class="card-body">
                             <span class="badge badge-soft mb-2">Kelas {{ $ebook->subject->class->name ?? '-' }}</span>
                             <h3 class="h6 book-title mb-2">{{ $ebook->title }}</h3>
-                            <p class="book-meta text-muted small mb-0">{{ $ebook->author ?: 'Penulis belum diisi' }}<br>{{ $ebook->access_logs_count }} kali dibuka</p>
+                            <p class="book-meta text-muted small mb-0">{{ $ebook->author ?: 'Penulis belum diisi' }}<br>{{ $ebook->reads_count }} kali dibaca</p>
                         </div>
                     </a>
                     <div class="card-footer book-card-footer"><a href="{{ route('ebooks.show', $ebook) }}" class="small fw-semibold text-decoration-none">Baca E-Book</a><span class="small text-muted">PDF</span></div>

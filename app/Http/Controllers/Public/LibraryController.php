@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\AccessLog;
 use App\Models\ClassModel;
 use App\Models\Ebook;
+use App\Models\EbookComment;
+use App\Models\EbookReport;
 use App\Models\Subject;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
@@ -50,7 +52,7 @@ class LibraryController extends Controller
                 ->whereRaw("LOWER(name) NOT IN ('ipa', 'ilmu pengetahuan alam', 'ips', 'ilmu pengetahuan sosial')")
                 ->count(),
             'ebooks' => Ebook::where('is_active', true)->count(),
-            'accesses' => AccessLog::count(),
+            'reads' => AccessLog::where('action', 'read')->count(),
         ];
 
         $latestEbooks = Ebook::with('subject.class')
@@ -61,8 +63,8 @@ class LibraryController extends Controller
 
         $popularEbooks = Ebook::with('subject.class')
             ->where('is_active', true)
-            ->withCount('accessLogs')
-            ->orderByDesc('access_logs_count')
+            ->withCount(['accessLogs as reads_count' => fn ($query) => $query->where('action', 'read')])
+            ->orderByDesc('reads_count')
             ->latest()
             ->limit(4)
             ->get();
@@ -131,8 +133,8 @@ class LibraryController extends Controller
             ->when($selectedSubject, fn ($query) => $query->whereHas('subject', fn ($subjectQuery) => $subjectQuery->where('name', $selectedSubject)))
             ->when($selectedYear, fn ($query) => $query->where('publication_year', $selectedYear))
             ->when($selectedAuthor, fn ($query) => $query->where('author', $selectedAuthor))
-            ->withCount('accessLogs')
-            ->when($sort === 'popular', fn ($query) => $query->orderByDesc('access_logs_count')->latest())
+            ->withCount(['accessLogs as reads_count' => fn ($query) => $query->where('action', 'read')])
+            ->when($sort === 'popular', fn ($query) => $query->orderByDesc('reads_count')->latest())
             ->when($sort === 'title', fn ($query) => $query->orderBy('title'))
             ->when($sort === 'newest', fn ($query) => $query->latest())
             ->paginate(12)
@@ -294,14 +296,12 @@ class LibraryController extends Controller
     {
         abort_unless($ebook->is_active, 404);
 
-        $ebook->load('subject.class')->loadCount('accessLogs');
-
-        AccessLog::create([
-            'ebook_id' => $ebook->id,
-            'accessed_at' => now(),
-            'ip_address' => $this->anonymizeIpAddress($request->ip()),
-            'user_agent' => $request->userAgent(),
+        $ebook->load('subject.class')->loadCount([
+            'accessLogs as reads_count' => fn ($query) => $query->where('action', 'read'),
+            'comments as approved_comments_count' => fn ($query) => $query->where('is_approved', true),
         ]);
+
+        $this->recordActivity($request, $ebook, 'view');
 
         $relatedEbooks = Ebook::with('subject.class')
             ->where('is_active', true)
@@ -311,23 +311,30 @@ class LibraryController extends Controller
             ->limit(4)
             ->get();
 
-        return view('public.ebook', compact('ebook', 'relatedEbooks'));
+        $comments = $ebook->comments()
+            ->where('is_approved', true)
+            ->latest()
+            ->paginate(8, ['*'], 'comments_page');
+
+        return view('public.ebook', compact('ebook', 'relatedEbooks', 'comments'));
     }
 
-    public function reader(Ebook $ebook): View
+    public function reader(Request $request, Ebook $ebook): View
     {
         abort_unless($ebook->is_active, 404);
         abort_unless($ebook->file_path && Storage::disk('public')->exists($ebook->file_path), 404);
 
         $ebook->load('subject.class');
+        $this->recordActivity($request, $ebook, 'read');
 
         return view('public.reader', compact('ebook'));
     }
 
-    public function download(Ebook $ebook): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    public function download(Request $request, Ebook $ebook): \Symfony\Component\HttpFoundation\BinaryFileResponse
     {
         abort_unless($ebook->is_active, 404);
         abort_unless($ebook->file_path && Storage::disk('public')->exists($ebook->file_path), 404);
+        $this->recordActivity($request, $ebook, 'download');
 
         $safeName = preg_replace('/[^A-Za-z0-9._-]+/', '-', $ebook->title ?: 'ebook');
 
@@ -340,6 +347,87 @@ class LibraryController extends Controller
                 'Pragma' => 'no-cache',
             ]
         );
+    }
+
+    public function storeReport(Request $request, Ebook $ebook): RedirectResponse
+    {
+        abort_unless($ebook->is_active, 404);
+
+        $validated = $request->validateWithBag('report', [
+            'reporter_name' => ['nullable', 'string', 'max:80'],
+            'category' => ['required', 'in:pdf_broken,wrong_content,metadata,cover,other'],
+            'message' => ['required', 'string', 'min:10', 'max:1500'],
+            'website' => ['prohibited'],
+        ]);
+
+        EbookReport::create([
+            'ebook_id' => $ebook->id,
+            'reporter_name' => filled($validated['reporter_name'] ?? null) ? trim($validated['reporter_name']) : null,
+            'category' => $validated['category'],
+            'message' => trim($validated['message']),
+            'status' => 'open',
+        ]);
+
+        return back()->with('success', 'Laporan Anda sudah dikirim. Terima kasih membantu memperbaiki koleksi.');
+    }
+
+    public function storeComment(Request $request, Ebook $ebook): RedirectResponse
+    {
+        abort_unless($ebook->is_active, 404);
+
+        $validated = $request->validateWithBag('comment', [
+            'display_name' => ['required', 'string', 'min:2', 'max:80'],
+            'message' => ['required', 'string', 'min:5', 'max:1000'],
+            'website' => ['prohibited'],
+        ]);
+
+        EbookComment::create([
+            'ebook_id' => $ebook->id,
+            'display_name' => trim($validated['display_name']),
+            'message' => trim($validated['message']),
+            'is_approved' => true,
+        ]);
+
+        return back()->with('success', 'Komentar Anda sudah dikirim dan langsung tampil untuk siswa lain.');
+    }
+
+    public function comments(): View
+    {
+        $comments = EbookComment::query()
+            ->with('ebook.subject.class')
+            ->where('is_approved', true)
+            ->latest()
+            ->paginate(15);
+
+        return view('public.comments', compact('comments'));
+    }
+
+    private function recordActivity(Request $request, Ebook $ebook, string $action): void
+    {
+        $token = $request->session()->get('library_activity_token');
+        if (! $token) {
+            $token = bin2hex(random_bytes(32));
+            $request->session()->put('library_activity_token', $token);
+        }
+
+        $visitorHash = hash('sha256', $token);
+        $alreadyRecorded = AccessLog::query()
+            ->where('ebook_id', $ebook->id)
+            ->where('action', $action)
+            ->where('visitor_hash', $visitorHash)
+            ->where('accessed_at', '>=', now()->startOfDay())
+            ->exists();
+
+        if (! $alreadyRecorded) {
+            AccessLog::create([
+                'ebook_id' => $ebook->id,
+                'action' => $action,
+                'accessed_at' => now(),
+                'ip_address' => $this->anonymizeIpAddress($request->ip()),
+                'visitor_hash' => $visitorHash,
+                'user_agent' => $request->userAgent(),
+            ]);
+        }
     }
 
     private function anonymizeIpAddress(?string $ipAddress): ?string

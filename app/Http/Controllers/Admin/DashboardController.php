@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\AccessLog;
 use App\Models\ClassModel;
 use App\Models\Ebook;
+use App\Models\EbookComment;
+use App\Models\EbookReport;
 use App\Models\Subject;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -18,11 +20,14 @@ class DashboardController extends Controller
             'classes' => ClassModel::count(),
             'subjects' => Subject::count(),
             'ebooks' => Ebook::count(),
-            'accesses' => AccessLog::count(),
+            'reads' => AccessLog::where('action', 'read')->count(),
+            'downloads' => AccessLog::where('action', 'download')->count(),
+            'open_reports' => EbookReport::whereIn('status', ['open', 'in_progress'])->count(),
+            'pending_comments' => EbookComment::where('is_approved', false)->count(),
         ];
 
         $latestEbooks = Ebook::with('subject.class')->latest()->limit(5)->get();
-        $popularEbooks = Ebook::with('subject.class')->withCount('accessLogs')->orderByDesc('access_logs_count')->limit(5)->get();
+        $popularEbooks = Ebook::with('subject.class')->withCount(['accessLogs as reads_count' => fn ($query) => $query->where('action', 'read')])->orderByDesc('reads_count')->limit(5)->get();
         $latestAccessLogs = AccessLog::with('ebook.subject.class')->latest('accessed_at')->limit(5)->get();
         $topClasses = ClassModel::query()
             ->withCount('subjects')
@@ -39,6 +44,7 @@ class DashboardController extends Controller
             ->where('is_active', true)
             ->withCount(['ebooks as access_count' => fn ($query) => $query
                 ->join('access_logs', 'ebooks.id', '=', 'access_logs.ebook_id')
+                ->where('access_logs.action', 'read')
                 ->where('ebooks.is_active', true)
                 ->where('subjects.is_active', true)])
             ->orderByDesc('access_count')
@@ -48,6 +54,7 @@ class DashboardController extends Controller
         $weekStart = now()->subDays(6)->startOfDay();
         $accessesByDay = AccessLog::query()
             ->where('accessed_at', '>=', $weekStart)
+            ->whereIn('action', ['read', 'download'])
             ->get()
             ->groupBy(fn (AccessLog $log) => optional($log->accessed_at)->format('Y-m-d'));
         $weeklyAccesses = collect(range(0, 6))->map(function (int $offset) use ($weekStart, $accessesByDay) {

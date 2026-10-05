@@ -14,8 +14,11 @@
     <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body d-flex justify-content-between"><div><div class="text-muted">Total Kelas</div><div class="h3 mb-0">{{ $stats['classes'] }}</div></div><div class="stat-icon">K</div></div></div></div>
     <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body d-flex justify-content-between"><div><div class="text-muted">Mata Pelajaran</div><div class="h3 mb-0">{{ $stats['subjects'] }}</div></div><div class="stat-icon">M</div></div></div></div>
     <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body d-flex justify-content-between"><div><div class="text-muted">Total E-Book</div><div class="h3 mb-0">{{ $stats['ebooks'] }}</div></div><div class="stat-icon">E</div></div></div></div>
-    <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body d-flex justify-content-between"><div><div class="text-muted">Total Akses</div><div class="h3 mb-0">{{ $stats['accesses'] }}</div></div><div class="stat-icon">A</div></div></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body d-flex justify-content-between"><div><div class="text-muted">Mulai Dibaca</div><div class="h3 mb-0">{{ $stats['reads'] }}</div><div class="small text-muted">{{ $stats['downloads'] }} unduhan</div></div><div class="stat-icon">B</div></div></div></div>
 </div>
+@if($stats['open_reports'] || $stats['pending_comments'])
+    <div class="alert alert-warning d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4"><span><strong>Perlu perhatian:</strong> {{ $stats['open_reports'] }} laporan e-book dan {{ $stats['pending_comments'] }} komentar menunggu.</span><span class="d-flex gap-2"><a class="btn btn-sm btn-outline-dark" href="{{ route('admin.ebook-reports.index') }}">Lihat laporan</a><a class="btn btn-sm btn-outline-dark" href="{{ route('admin.ebook-comments.index') }}">Moderasi komentar</a></span></div>
+@endif
 <section class="audit-summary mb-4">
     <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
         <div>
@@ -62,7 +65,7 @@
 <div class="row g-4">
     <div class="col-lg-7">
         <div class="admin-card card h-100"><div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-3"><div><h2 class="h5 mb-1">Tren akses 7 hari terakhir</h2><p class="small text-muted mb-0">Jumlah halaman e-book yang dibuka.</p></div><span class="badge text-bg-success">{{ $weeklyAccesses->sum('count') }} akses</span></div>
+            <div class="d-flex justify-content-between align-items-center mb-3"><div><h2 class="h5 mb-1">Tren belajar 7 hari terakhir</h2><p class="small text-muted mb-0">Pembacaan dan unduhan unik per siswa/per hari.</p></div><span class="badge text-bg-success">{{ $weeklyAccesses->sum('count') }} aktivitas</span></div>
             @php($chartMax = max(1, $weeklyAccesses->max('count')))
             <div class="activity-chart">
                 @foreach($weeklyAccesses as $day)
@@ -109,7 +112,7 @@
                                 <span class="fw-semibold d-block">{{ $ebook->title }}</span>
                                 <span class="text-muted small">{{ $ebook->subject->name ?? '-' }}</span>
                             </span>
-                            <span class="badge text-bg-success align-self-center">{{ $ebook->access_logs_count }}</span>
+                            <span class="badge text-bg-success align-self-center">{{ $ebook->reads_count }}</span>
                         </li>
                     @empty
                         <li class="list-group-item px-0 text-muted">Belum ada data akses.</li>
@@ -168,7 +171,7 @@
                             <tr>
                                 <th>E-Book</th>
                                 <th>Kelas / Mapel</th>
-                                <th>Waktu</th>
+                                <th>Aksi / Waktu</th>
                                 <th>IP</th>
                             </tr>
                         </thead>
@@ -177,7 +180,7 @@
                                 <tr>
                                     <td>{{ $log->ebook->title ?? '-' }}</td>
                                     <td class="text-muted">Kelas {{ $log->ebook->subject->class->name ?? '-' }} / {{ $log->ebook->subject->name ?? '-' }}</td>
-                                    <td>{{ optional($log->accessed_at)->format('d M Y H:i') }}</td>
+                                    <td><span class="badge text-bg-light">{{ ['view' => 'Detail', 'read' => 'Baca', 'download' => 'Unduh'][$log->action] ?? $log->action }}</span><div class="small text-muted mt-1">{{ optional($log->accessed_at)->format('d M Y H:i') }}</div></td>
                                     <td class="text-muted">{{ $log->ip_address ?: '-' }}</td>
                                 </tr>
                             @empty

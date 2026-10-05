@@ -4,6 +4,8 @@ use App\Http\Controllers\Admin\AccessLogController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\ClassController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\EbookCommentController;
+use App\Http\Controllers\Admin\EbookReportController;
 use App\Http\Controllers\Admin\EbookController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Public\LibraryController;
@@ -18,7 +20,10 @@ Route::get('/kelas/{class}/mata-pelajaran/{subject}', [LibraryController::class,
 Route::get('/ebook/{ebook}', [LibraryController::class, 'ebook'])->name('ebooks.show');
 Route::get('/ebook/{ebook}/baca', [LibraryController::class, 'reader'])->name('ebooks.reader');
 Route::get('/ebook/{ebook}/download', [LibraryController::class, 'download'])->name('ebooks.download');
+Route::post('/ebook/{ebook}/laporan', [LibraryController::class, 'storeReport'])->middleware('throttle:5,1')->name('ebooks.reports.store');
+Route::post('/ebook/{ebook}/komentar', [LibraryController::class, 'storeComment'])->middleware('throttle:10,1')->name('ebooks.comments.store');
 Route::view('/favorit', 'public.favorites')->name('favorites');
+Route::get('/komentar-siswa', [LibraryController::class, 'comments'])->name('comments.index');
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -32,5 +37,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('subjects', SubjectController::class)->except('show');
         Route::resource('ebooks', EbookController::class)->except('show');
         Route::get('/access-logs', [AccessLogController::class, 'index'])->name('access-logs.index');
+        Route::get('/laporan-e-book', [EbookReportController::class, 'index'])->name('ebook-reports.index');
+        Route::patch('/laporan-e-book/{report}', [EbookReportController::class, 'update'])->name('ebook-reports.update');
+        Route::get('/komentar-e-book', [EbookCommentController::class, 'index'])->name('ebook-comments.index');
+        Route::patch('/komentar-e-book/{comment}', [EbookCommentController::class, 'update'])->name('ebook-comments.update');
+        Route::delete('/komentar-e-book/{comment}', [EbookCommentController::class, 'destroy'])->name('ebook-comments.destroy');
     });
 });

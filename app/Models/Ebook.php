@@ -36,4 +36,14 @@ class Ebook extends Model
     {
         return $this->hasMany(AccessLog::class);
     }
+
+    public function reports(): HasMany
+    {
+        return $this->hasMany(EbookReport::class);
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(EbookComment::class);
+    }
 }

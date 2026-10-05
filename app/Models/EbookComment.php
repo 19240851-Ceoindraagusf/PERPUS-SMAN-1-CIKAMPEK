@@ -6,22 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class AccessLog extends Model
+class EbookComment extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'ebook_id',
-        'action',
-        'accessed_at',
-        'ip_address',
-        'visitor_hash',
-        'user_agent',
-    ];
+    protected $fillable = ['ebook_id', 'display_name', 'message', 'is_approved'];
 
-    protected $casts = [
-        'accessed_at' => 'datetime',
-    ];
+    protected $casts = ['is_approved' => 'boolean'];
 
     public function ebook(): BelongsTo
     {
