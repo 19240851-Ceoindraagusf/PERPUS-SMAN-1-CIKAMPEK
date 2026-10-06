@@ -10,7 +10,7 @@ class EbookComment extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['ebook_id', 'display_name', 'message', 'is_approved', 'seen_by_admin_at'];
+    protected $fillable = ['ebook_id', 'display_name', 'message', 'rating', 'is_approved', 'seen_by_admin_at'];
 
     protected $casts = ['is_approved' => 'boolean', 'seen_by_admin_at' => 'datetime'];
 

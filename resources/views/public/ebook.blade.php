@@ -39,6 +39,12 @@
                 <div class="col-sm-6"><div class="metric"><div class="small text-muted">Penerbit</div><div class="fw-semibold">{{ $ebook->publisher ?: '-' }}</div></div></div>
                 <div class="col-sm-6"><div class="metric"><div class="small text-muted">Tahun</div><div class="fw-semibold">{{ $ebook->publication_year ?: '-' }}</div></div></div>
                 <div class="col-sm-6"><div class="metric"><div class="small text-muted">Mulai dibaca</div><div class="fw-semibold">{{ $ebook->reads_count }} kali</div></div></div>
+                @php
+                    $avgRating = $ebook->comments()->whereNotNull('rating')->avg('rating');
+                @endphp
+                @if($avgRating)
+                <div class="col-sm-6"><div class="metric"><div class="small text-muted">Rating Pembaca</div><div class="fw-semibold">{{ number_format($avgRating, 1) }} / 5 ⭐</div></div></div>
+                @endif
             </div>
 
             @if($ebook->file_path)
@@ -46,7 +52,10 @@
                     <a href="{{ route('ebooks.reader', $ebook) }}" class="btn btn-success flex-fill">Baca Sekarang</a>
                     <a href="{{ route('ebooks.download', $ebook) }}" class="btn btn-outline-success flex-fill">Download</a>
                 </div>
-                <button type="button" class="btn btn-outline-success mt-2 w-100" data-favorite-button data-ebook-id="{{ $ebook->id }}" data-ebook-title="{{ $ebook->title }}" data-ebook-subject="{{ $ebook->subject->name }}" data-ebook-class="{{ $ebook->subject->class->name }}" data-ebook-url="{{ route('ebooks.show', $ebook) }}" data-ebook-reader-url="{{ route('ebooks.reader', $ebook) }}">♡ Simpan ke favorit</button>
+                <div class="d-flex flex-column flex-sm-row gap-2 mt-2">
+                    <button type="button" class="btn btn-outline-success flex-fill" data-favorite-button data-ebook-id="{{ $ebook->id }}" data-ebook-title="{{ $ebook->title }}" data-ebook-subject="{{ $ebook->subject->name }}" data-ebook-class="{{ $ebook->subject->class->name }}" data-ebook-url="{{ route('ebooks.show', $ebook) }}" data-ebook-reader-url="{{ route('ebooks.reader', $ebook) }}">♡ Simpan ke favorit</button>
+                    <button type="button" class="btn btn-outline-primary flex-fill" id="btn-offline" data-pdf-url="{{ asset('storage/' . $ebook->file_path) }}">⬇️ Simpan Offline</button>
+                </div>
             @else
                 <div class="alert alert-warning mb-0">File PDF belum tersedia.</div>
             @endif
@@ -62,7 +71,14 @@
                 </div>
                 @forelse($comments as $comment)
                     <article class="border-bottom pb-3 mb-3">
-                        <div class="d-flex justify-content-between gap-3"><strong>{{ $comment->display_name }}</strong><time class="small text-muted" datetime="{{ $comment->created_at->toDateString() }}">{{ $comment->created_at->translatedFormat('d M Y') }}</time></div>
+                        <div class="d-flex justify-content-between gap-3">
+                            <strong>{{ $comment->display_name }} 
+                                @if($comment->rating)
+                                    <span class="text-warning">{{ str_repeat('★', $comment->rating) }}{{ str_repeat('☆', 5 - $comment->rating) }}</span>
+                                @endif
+                            </strong>
+                            <time class="small text-muted" datetime="{{ $comment->created_at->toDateString() }}">{{ $comment->created_at->translatedFormat('d M Y') }}</time>
+                        </div>
                         <p class="mb-0 mt-1">{{ $comment->message }}</p>
                         <details class="mt-2"><summary class="small text-muted" role="button">Laporkan komentar</summary><form method="POST" action="{{ route('comments.reports.store', $comment) }}" class="d-flex flex-wrap gap-2 mt-2">@csrf<div class="visually-hidden" aria-hidden="true"><label>Website <input tabindex="-1" autocomplete="off" name="website"></label></div><select class="form-select form-select-sm" name="reason" style="max-width: 190px"><option value="spam">Spam</option><option value="abusive">Tidak pantas</option><option value="irrelevant">Tidak relevan</option><option value="other">Lainnya</option></select><button class="btn btn-sm btn-outline-danger" type="submit">Kirim laporan</button></form></details>
                     </article>
@@ -77,6 +93,18 @@
                     @csrf
                     <div class="visually-hidden" aria-hidden="true"><label>Website <input tabindex="-1" autocomplete="off" name="website"></label></div>
                     <div class="mb-3"><label class="form-label" for="display_name">Nama panggilan</label><input class="form-control @error('display_name', 'comment') is-invalid @enderror" id="display_name" name="display_name" value="{{ old('display_name') }}" maxlength="80" required>@error('display_name', 'comment')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
+                    <div class="mb-3">
+                        <label class="form-label" for="rating">Rating (opsional)</label>
+                        <select class="form-select @error('rating', 'comment') is-invalid @enderror" id="rating" name="rating">
+                            <option value="">-- Pilih Rating --</option>
+                            <option value="5" {{ old('rating') == 5 ? 'selected' : '' }}>⭐⭐⭐⭐⭐ Sangat Bagus</option>
+                            <option value="4" {{ old('rating') == 4 ? 'selected' : '' }}>⭐⭐⭐⭐ Bagus</option>
+                            <option value="3" {{ old('rating') == 3 ? 'selected' : '' }}>⭐⭐⭐ Cukup</option>
+                            <option value="2" {{ old('rating') == 2 ? 'selected' : '' }}>⭐⭐ Kurang</option>
+                            <option value="1" {{ old('rating') == 1 ? 'selected' : '' }}>⭐ Sangat Kurang</option>
+                        </select>
+                        @error('rating', 'comment')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
                     <div class="mb-3"><label class="form-label" for="comment_message">Komentar</label><textarea class="form-control @error('message', 'comment') is-invalid @enderror" id="comment_message" name="message" rows="4" maxlength="1000" required>{{ old('message') }}</textarea>@error('message', 'comment')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
                     <button class="btn btn-success" type="submit">Kirim komentar</button>
                 </form>
@@ -120,3 +148,42 @@
     @endif
 </section>
 @endsection
+
+@push('scripts')
+<script>
+    const btnOffline = document.getElementById('btn-offline');
+    if (btnOffline) {
+        const pdfUrl = btnOffline.dataset.pdfUrl;
+        
+        // Check if already cached
+        if ('caches' in window) {
+            caches.open('perpus-sman1-static-v2').then(cache => {
+                cache.match(pdfUrl).then(response => {
+                    if (response) {
+                        btnOffline.textContent = '✅ Tersedia Offline';
+                        btnOffline.classList.replace('btn-outline-primary', 'btn-primary');
+                        btnOffline.disabled = true;
+                    }
+                });
+            });
+            
+            btnOffline.addEventListener('click', async () => {
+                btnOffline.textContent = '⏳ Menyimpan...';
+                try {
+                    const cache = await caches.open('perpus-sman1-static-v2');
+                    await cache.add(pdfUrl);
+                    btnOffline.textContent = '✅ Tersedia Offline';
+                    btnOffline.classList.replace('btn-outline-primary', 'btn-primary');
+                    btnOffline.disabled = true;
+                } catch (error) {
+                    console.error('Failed to cache PDF:', error);
+                    btnOffline.textContent = '❌ Gagal Menyimpan';
+                    setTimeout(() => btnOffline.textContent = '⬇️ Simpan Offline', 3000);
+                }
+            });
+        } else {
+            btnOffline.style.display = 'none';
+        }
+    }
+</script>
+@endpush

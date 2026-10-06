@@ -14,8 +14,14 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET' || event.request.destination === 'document') return;
   const url = new URL(event.request.url);
+  
+  if (url.pathname.startsWith('/storage/')) {
+    event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request)));
+    return;
+  }
+
   // Search results, e-books, and other application routes must always use fresh data.
-  if (url.origin !== self.location.origin || url.pathname === '/saran-pencarian' || url.pathname.startsWith('/ebook') || url.pathname.startsWith('/storage/')) return;
+  if (url.origin !== self.location.origin || url.pathname === '/saran-pencarian' || url.pathname.startsWith('/ebook')) return;
   const isStaticAsset = /\.(?:css|js|png|jpe?g|svg|webp|woff2?)$/i.test(url.pathname);
   if (!isStaticAsset) return;
   event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request).then((response) => {

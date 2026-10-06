@@ -378,6 +378,7 @@ class LibraryController extends Controller
 
         $validated = $request->validateWithBag('comment', [
             'display_name' => ['required', 'string', 'min:2', 'max:80'],
+            'rating' => ['nullable', 'integer', 'min:1', 'max:5'],
             'message' => ['required', 'string', 'min:5', 'max:1000', function (string $attribute, mixed $value, \Closure $fail): void {
                 if ($this->containsBlockedTerm((string) $value)) {
                     $fail('Komentar mengandung kata yang tidak diperbolehkan.');
@@ -390,6 +391,7 @@ class LibraryController extends Controller
             'ebook_id' => $ebook->id,
             'display_name' => trim($validated['display_name']),
             'message' => trim($validated['message']),
+            'rating' => $validated['rating'] ?? null,
             'is_approved' => true,
         ]);
 
