@@ -36,7 +36,15 @@
         .brand-name { line-height: 1.05; }
         .nav-pill { border-radius: 10px; color: var(--school-ink); padding: .5rem .9rem; font-weight: 600; }
         .nav-pill:hover, .nav-pill.active { background: var(--school-soft); color: var(--school-green); }
-        .hero { background: radial-gradient(circle at 85% 22%, #2aa782 0, transparent 23%), linear-gradient(120deg, #0d5d46, #123f72); color: #fff; overflow: hidden; position: relative; }
+        .hero {
+            background: linear-gradient(135deg, rgba(15, 107, 79, 0.82), rgba(18, 63, 114, 0.85)), url('{{ asset("images/gedung-sman-1-cikampek.png") }}') center/cover no-repeat;
+            color: #fff;
+            overflow: hidden;
+            position: relative;
+            padding-top: 3.5rem !important;
+            padding-bottom: 3.5rem !important;
+            min-height: 480px;
+        }
         .hero::after { content: ''; position: absolute; width: 420px; height: 420px; border: 1px solid rgba(255,255,255,.13); border-radius: 50%; right: -120px; bottom: -260px; }
         .hero-panel { background: rgba(255, 255, 255, .14); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, .26); border-radius: 16px; }
         .section-title { max-width: 680px; }

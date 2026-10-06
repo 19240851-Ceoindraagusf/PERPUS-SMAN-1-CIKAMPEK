@@ -16,8 +16,8 @@
         body {
             min-height: 100vh;
             background:
-                linear-gradient(135deg, rgba(15, 107, 79, .92), rgba(25, 86, 163, .88)),
-                url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1600&q=80') center/cover;
+                linear-gradient(135deg, rgba(15, 107, 79, .88), rgba(25, 86, 163, .90)),
+                url('{{ asset("images/gedung-sman-1-cikampek.png") }}') center/cover no-repeat;
             color: var(--school-ink);
         }
         .login-shell { min-height: 100vh; padding: 2rem 0; }
@@ -40,9 +40,12 @@
         .login-card {
             width: 100%;
             max-width: 430px;
-            border: 1px solid rgba(255, 255, 255, .7);
-            border-radius: 8px;
-            box-shadow: 0 24px 60px rgba(15, 35, 63, .28);
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 16px;
+            box-shadow: 0 24px 60px rgba(15, 35, 63, 0.35);
         }
         .form-control, .form-check-input, .btn { border-radius: 8px; }
         .form-control {

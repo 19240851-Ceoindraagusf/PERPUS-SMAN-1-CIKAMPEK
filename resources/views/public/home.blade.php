@@ -39,11 +39,7 @@
             </div>
             <div class="col-lg-5 hero-collection ps-lg-5">
                 <div class="ps-lg-2">
-                    <div class="school-photo">
-                        <img src="{{ asset('images/gedung-sman-1-cikampek.png') }}" alt="Gedung utama SMAN 1 Cikampek" fetchpriority="high">
-                        <div class="school-photo-caption">SMAN 1 Cikampek</div>
-                    </div>
-                    <p class="eyebrow mb-2 mt-2">Koleksi kami</p>
+                    <p class="eyebrow mb-2">Koleksi kami</p>
                     <h2 class="h5 mb-3">Pilih kelasmu, lalu mulai belajar.</h2>
                     <div class="row g-2">
                         <div class="col-6">
