@@ -126,6 +126,8 @@
             .school-photo img { height: 220px; }
             .book-row-cover { width: 76px; flex-basis: 76px; }
             .study-banner { align-items: flex-start; flex-direction: column; }
+            .reader-shell { padding: 0.25rem; border-radius: 8px; }
+            .reader-frame { height: 85vh; border-radius: 6px; }
         }
     </style>
 </head>
