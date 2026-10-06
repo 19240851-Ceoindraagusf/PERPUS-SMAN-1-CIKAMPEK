@@ -39,14 +39,14 @@
         .hero {
             background: linear-gradient(135deg, rgba(15, 107, 79, 0.82), rgba(18, 63, 114, 0.85)), url('{{ asset("images/gedung-sman-1-cikampek.png") }}') center/cover no-repeat;
             color: #fff;
-            overflow: hidden;
+            overflow: visible;
             position: relative;
             padding-top: 3.5rem !important;
             padding-bottom: 3.5rem !important;
             min-height: 480px;
         }
         .hero::after { content: ''; position: absolute; width: 420px; height: 420px; border: 1px solid rgba(255,255,255,.13); border-radius: 50%; right: -120px; bottom: -260px; }
-        .hero-panel { background: rgba(255, 255, 255, .14); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, .26); border-radius: 16px; }
+        .hero-panel { background: rgba(255, 255, 255, .14); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, .26); border-radius: 16px; position: relative; z-index: 1060; }
         .section-title { max-width: 680px; }
         .info-card, .card {
             border: 1px solid var(--school-line); border-radius: 16px;
@@ -58,7 +58,7 @@
         .icon-box { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: var(--school-soft); color: var(--school-green); font-weight: 800; }
         .class-card:nth-child(3n+2) .icon-box { background: #edf3ff; color: var(--school-blue); }
         .class-card:nth-child(3n) .icon-box { background: #fff4df; color: #b66a00; }
-        .search-panel { background: #fff; border: 1px solid var(--school-line); border-radius: 16px; padding: 1rem; }
+        .search-panel { background: #fff; border: 1px solid var(--school-line); border-radius: 16px; padding: 1rem; position: relative; z-index: 1060; }
         .badge-soft { background: var(--school-soft); color: var(--school-green); }
         .btn-success { background: var(--school-green); border-color: var(--school-green); }
         .btn-outline-success { color: var(--school-green); border-color: var(--school-green); }
@@ -110,7 +110,7 @@
         .study-banner { border: 1px solid var(--school-line); border-radius: 18px; background: linear-gradient(115deg, #eff8f4, #f7fbff); padding: 1.5rem; display: flex; gap: 1rem; justify-content: space-between; align-items: center; }
         .study-banner .eyebrow { color: var(--school-green); }
         .subject-icon { font-size: 1.3rem; }
-        .search-suggestions { position: absolute; z-index: 1050; top: calc(100% + .25rem); left: 0; right: 0; max-height: 360px; overflow-y: auto; overscroll-behavior: contain; background: #fff; border: 1px solid var(--school-line); border-radius: 12px; box-shadow: 0 14px 30px rgba(15,35,63,.14); }
+        .search-suggestions { position: absolute; z-index: 1090; top: calc(100% + .25rem); left: 0; right: 0; max-height: 360px; overflow-y: auto; overscroll-behavior: contain; background: #fff; border: 1px solid var(--school-line); border-radius: 12px; box-shadow: 0 14px 30px rgba(15,35,63,.22); }
         .search-suggestion-heading { position: sticky; top: 0; z-index: 1; padding: .55rem .85rem; background: #f7faf9; border-bottom: 1px solid var(--school-line); color: var(--school-muted); font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
         .search-suggestion { display: block; padding: .7rem .85rem; color: var(--school-ink); text-decoration: none; }
         .search-suggestion:hover, .search-suggestion:focus, .search-suggestion.active { background: var(--school-soft); color: var(--school-green); }
