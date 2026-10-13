@@ -64,43 +64,65 @@
 
 <section class="container pt-5" data-home-recent hidden>
     <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
-        <div class="section-title"><p class="eyebrow mb-1">Belajarmu</p><h2 class="h4 mb-1">Lanjutkan Belajar</h2><p class="text-muted mb-0">Buku yang terakhir kamu buka pada perangkat ini.</p></div>
-        <a href="{{ route('favorites') }}" class="btn btn-outline-success">Lihat semua</a>
+        <div class="section-title">
+            <span class="badge px-3 py-2 rounded-pill mb-2" style="background: rgba(15, 107, 79, 0.12); color: var(--school-green); font-weight: 700; font-size: 0.78rem; letter-spacing: 0.05em; text-transform: uppercase;">
+                <i class="bi bi-clock-history me-1"></i> Ruang Belajar Mandiri
+            </span>
+            <h2 class="h3 fw-bold mb-1">Lanjutkan Belajar</h2>
+            <p class="text-muted mb-0">Lanjutkan membaca buku digital dari sesi terakhirmu pada perangkat ini.</p>
+        </div>
+        <a href="{{ route('favorites') }}" class="btn btn-outline-success rounded-pill px-4">
+            <i class="bi bi-bookmark-heart me-1"></i> Semua Favorit & Riwayat
+        </a>
     </div>
-    <div class="row g-3" data-home-recent-list></div>
+    <div class="row g-4" data-home-recent-list></div>
 </section>
 
 <section class="container pt-5">
-    <div class="study-banner">
-        <div><p class="eyebrow mb-1">Koleksi pilihan</p><h2 class="h4 mb-2">Siapkan belajar lebih terarah</h2><p class="mb-0 text-muted">Gunakan filter kelas dan mata pelajaran untuk menemukan materi yang sesuai dengan kebutuhan belajarmu.</p></div>
-        <a href="{{ route('library', ['sort' => 'popular']) }}" class="btn btn-success">Lihat buku populer</a>
+    <div class="study-banner-premium p-4 p-md-5 rounded-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 shadow-sm">
+        <div class="d-flex align-items-center gap-3">
+            <div class="icon-box text-white flex-shrink-0 shadow" style="width: 56px; height: 56px; border-radius: 16px; font-size: 1.6rem; background: linear-gradient(135deg, #0f6b4f, #10b981);">
+                <i class="bi bi-compass-fill"></i>
+            </div>
+            <div>
+                <span class="badge px-3 py-1 rounded-pill mb-1" style="background: rgba(15,107,79,0.12); color: var(--school-green); font-weight: 700; font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase;">
+                    Koleksi Kurikulum Digital
+                </span>
+                <h2 class="h4 fw-bold mb-1">Siapkan Belajar Lebih Terarah & Efektif</h2>
+                <p class="mb-0 text-muted">Gunakan filter tingkatan kelas dan mata pelajaran untuk menemukan materi e-book yang sesuai dengan kebutuhan belajarmu.</p>
+            </div>
+        </div>
+        <a href="{{ route('library', ['sort' => 'popular']) }}" class="btn btn-success rounded-pill px-4 py-2 fw-semibold text-nowrap flex-shrink-0 shadow-sm">
+            <i class="bi bi-fire me-1"></i> Lihat Buku Populer
+        </a>
     </div>
 </section>
 
-<section class="container py-5">
+<section class="container py-5" id="pilih-kelas">
     <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
         <div class="section-title">
-            <p class="eyebrow mb-1">Temukan materi</p>
-            <h2 class="h4 mb-1">Pilih Kelas</h2>
-            <p class="text-muted mb-0">Lanjutkan ke mata pelajaran dan buku digital untuk kelasmu.</p>
+            <span class="badge px-3 py-2 rounded-pill mb-2" style="background: rgba(15, 107, 79, 0.12); color: var(--school-green); font-weight: 700; font-size: 0.78rem; letter-spacing: 0.05em; text-transform: uppercase;">
+                <i class="bi bi-grid-fill me-1"></i> Direktori Kurikulum
+            </span>
+            <h2 class="h3 fw-bold mb-1">Pilih Kelas</h2>
+            <p class="text-muted mb-0">Temukan mata pelajaran dan buku digital kurikulum merdeka sesuai jenjang kelasmu.</p>
         </div>
-        <a href="{{ route('library') }}" class="btn btn-outline-success">Lihat Semua</a>
-    </div>
-    <div class="row g-3">
-        @forelse($classes as $class)
-            <div class="col-md-6 col-lg-4 class-card">
-                <a class="info-card card text-decoration-none text-dark h-100" href="{{ route('classes.show', $class) }}">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
-                            <div class="icon-box">{{ $class->name }}</div>
-                            <span class="badge badge-soft">{{ $class->subjects_count }} mapel</span>
-                        </div>
-                        <h3 class="h5 mb-1">Kelas {{ $class->name }}</h3>
-                        <p class="text-muted mb-3">{{ $class->description ?: 'Koleksi materi pembelajaran digital.' }}</p>
-                        <div class="d-flex align-items-center justify-content-between gap-2 mt-3"><div class="small text-muted">{{ $class->ebooks_count }} e-book tersedia</div><span class="small fw-semibold text-success">Lihat mapel →</span></div>
-                    </div>
-                </a>
+        <div class="d-flex align-items-center gap-2">
+            <div class="class-filter-btn-group" role="tablist" aria-label="Filter Tingkat Kelas">
+                <button type="button" class="class-filter-pill active" data-filter-class="all">Semua</button>
+                <button type="button" class="class-filter-pill" data-filter-class="X">Kelas X</button>
+                <button type="button" class="class-filter-pill" data-filter-class="XI">Kelas XI</button>
+                <button type="button" class="class-filter-pill" data-filter-class="XII">Kelas XII</button>
             </div>
+            <a href="{{ route('library') }}" class="btn btn-outline-success d-none d-md-inline-flex align-items-center gap-1">
+                <span>Semua Koleksi</span>
+                <i class="bi bi-chevron-right small"></i>
+            </a>
+        </div>
+    </div>
+    <div class="row g-4" id="classGrid">
+        @forelse($classes as $class)
+            @include('public._class_card', ['class' => $class])
         @empty
             <div class="col-12"><div class="alert alert-info">Data kelas belum tersedia.</div></div>
         @endforelse
@@ -110,27 +132,44 @@
 <section class="container pb-5">
     <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
         <div class="section-title">
-            <p class="eyebrow mb-1">Koleksi terbaru</p>
-            <h2 class="h4 mb-1">E-Book Baru Ditambahkan</h2>
-            <p class="text-muted mb-0">Buku digital yang siap dibaca atau diunduh.</p>
+            <span class="badge px-3 py-2 rounded-pill mb-2" style="background: rgba(37, 99, 235, 0.12); color: #2563eb; font-weight: 700; font-size: 0.78rem; letter-spacing: 0.05em; text-transform: uppercase;">
+                <i class="bi bi-sparkles me-1"></i> Rilisan Terbaru
+            </span>
+            <h2 class="h3 fw-bold mb-1">E-Book Baru Ditambahkan</h2>
+            <p class="text-muted mb-0">Buku pelajaran digital dan materi kurikulum terbitan terbaru yang siap dipelajari.</p>
         </div>
+        <a href="{{ route('library', ['sort' => 'newest']) }}" class="btn btn-outline-primary rounded-pill px-4">
+            <span>Lihat Semua Terbaru</span> <i class="bi bi-arrow-right small ms-1"></i>
+        </a>
     </div>
-    <div class="row g-3">
+    <div class="row g-4">
         @forelse($latestEbooks as $ebook)
             <div class="col-6 col-md-4 col-lg-3">
-                <article class="collection-card info-card card h-100">
-                    <a class="text-decoration-none text-dark" href="{{ route('ebooks.show', $ebook) }}">
-                        <div class="book-card-image">
-                            <span class="badge text-bg-light text-success book-badge">Terbaru</span>
+                <article class="ebook-modern-card card h-100">
+                    <a class="text-decoration-none text-dark d-flex flex-column h-100" href="{{ route('ebooks.show', $ebook) }}">
+                        <div class="ebook-cover-wrapper position-relative">
+                            <span class="ebook-floating-badge badge-new">
+                                <i class="bi bi-stars me-1"></i> Baru
+                            </span>
                             @include('public._book-cover', ['ebook' => $ebook])
                         </div>
-                        <div class="card-body">
-                            <span class="badge badge-soft mb-2">Kelas {{ $ebook->subject->class->name ?? '-' }}</span>
-                            <h3 class="h6 book-title mb-2">{{ $ebook->title }}</h3>
-                            <p class="book-meta text-muted small mb-0">{{ $ebook->author ?: 'Penulis belum diisi' }}<br>{{ $ebook->publication_year ?: 'Tahun belum diisi' }}</p>
+                        <div class="ebook-card-content d-flex flex-column flex-grow-1 p-3">
+                            <div class="d-flex flex-wrap align-items-center gap-1 mb-2">
+                                <span class="badge badge-soft">Kelas {{ $ebook->subject->class->name ?? '-' }}</span>
+                                <span class="badge text-bg-light border small text-muted text-truncate" style="max-width: 120px;">{{ $ebook->subject->name ?? 'Mapel' }}</span>
+                            </div>
+                            <h3 class="ebook-card-title h6 mb-1" title="{{ $ebook->title }}">{{ $ebook->title }}</h3>
+                            <div class="ebook-card-meta small text-muted mb-3">
+                                <div class="text-truncate mb-1"><i class="bi bi-person me-1"></i> {{ $ebook->author ?: 'SMAN 1 Cikampek' }}</div>
+                                <div class="text-truncate"><i class="bi bi-calendar3 me-1"></i> {{ $ebook->publication_year ?: 'Kurikulum Merdeka' }}</div>
+                            </div>
+                            <div class="ebook-card-actions mt-auto pt-2 border-top d-flex align-items-center justify-content-between gap-1">
+                                <span class="btn btn-sm btn-success rounded-pill px-3 fw-semibold w-100 d-inline-flex align-items-center justify-content-center gap-1">
+                                    <i class="bi bi-book-half"></i> <span>Baca E-Book</span>
+                                </span>
+                            </div>
                         </div>
                     </a>
-                    <div class="card-footer book-card-footer"><a href="{{ route('ebooks.show', $ebook) }}" class="small fw-semibold text-decoration-none">Baca E-Book</a><span class="small text-muted">PDF</span></div>
                 </article>
             </div>
         @empty
@@ -142,28 +181,46 @@
 <section class="container pb-5">
     <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
         <div class="section-title">
-            <p class="eyebrow mb-1">Pilihan siswa</p>
-            <h2 class="h4 mb-1">Paling Sering Dibaca</h2>
-            <p class="text-muted mb-0">Koleksi yang paling banyak diakses oleh pembaca.</p>
+            <span class="badge px-3 py-2 rounded-pill mb-2" style="background: rgba(217, 119, 6, 0.12); color: #d97706; font-weight: 700; font-size: 0.78rem; letter-spacing: 0.05em; text-transform: uppercase;">
+                <i class="bi bi-fire me-1"></i> Favorit Siswa
+            </span>
+            <h2 class="h3 fw-bold mb-1">Paling Sering Dibaca</h2>
+            <p class="text-muted mb-0">Koleksi buku favorit yang paling banyak diakses dan dipelajari oleh pembaca.</p>
         </div>
-        <a href="{{ route('library') }}" class="btn btn-outline-success">Lihat Katalog</a>
+        <a href="{{ route('library', ['sort' => 'popular']) }}" class="btn btn-outline-warning text-dark fw-semibold rounded-pill px-4">
+            <span>Lihat Katalog Populer</span> <i class="bi bi-arrow-right small ms-1"></i>
+        </a>
     </div>
-    <div class="row g-3">
+    <div class="row g-4">
         @forelse($popularEbooks as $ebook)
             <div class="col-6 col-md-4 col-lg-3">
-                <article class="collection-card info-card card h-100">
-                    <a class="text-decoration-none text-dark" href="{{ route('ebooks.show', $ebook) }}">
-                        <div class="book-card-image">
-                            <span class="badge text-bg-warning book-badge">Populer</span>
+                <article class="ebook-modern-card card h-100">
+                    <a class="text-decoration-none text-dark d-flex flex-column h-100" href="{{ route('ebooks.show', $ebook) }}">
+                        <div class="ebook-cover-wrapper position-relative">
+                            <span class="ebook-floating-badge badge-popular">
+                                <i class="bi bi-fire me-1"></i> Populer
+                            </span>
                             @include('public._book-cover', ['ebook' => $ebook])
                         </div>
-                        <div class="card-body">
-                            <span class="badge badge-soft mb-2">Kelas {{ $ebook->subject->class->name ?? '-' }}</span>
-                            <h3 class="h6 book-title mb-2">{{ $ebook->title }}</h3>
-                            <p class="book-meta text-muted small mb-0">{{ $ebook->author ?: 'Penulis belum diisi' }}<br>{{ $ebook->reads_count }} kali dibaca</p>
+                        <div class="ebook-card-content d-flex flex-column flex-grow-1 p-3">
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-1 mb-2">
+                                <span class="badge badge-soft">Kelas {{ $ebook->subject->class->name ?? '-' }}</span>
+                                <span class="badge rounded-pill text-bg-warning fw-bold text-dark" style="font-size: 0.72rem;">
+                                    <i class="bi bi-eye-fill me-1"></i> {{ $ebook->reads_count }}x
+                                </span>
+                            </div>
+                            <h3 class="ebook-card-title h6 mb-1" title="{{ $ebook->title }}">{{ $ebook->title }}</h3>
+                            <div class="ebook-card-meta small text-muted mb-3">
+                                <div class="text-truncate mb-1"><i class="bi bi-person me-1"></i> {{ $ebook->author ?: 'SMAN 1 Cikampek' }}</div>
+                                <div class="text-truncate"><i class="bi bi-book me-1"></i> {{ $ebook->subject->name ?? 'Mata Pelajaran' }}</div>
+                            </div>
+                            <div class="ebook-card-actions mt-auto pt-2 border-top d-flex align-items-center justify-content-between gap-1">
+                                <span class="btn btn-sm btn-success rounded-pill px-3 fw-semibold w-100 d-inline-flex align-items-center justify-content-center gap-1">
+                                    <i class="bi bi-book-half"></i> <span>Baca E-Book</span>
+                                </span>
+                            </div>
                         </div>
                     </a>
-                    <div class="card-footer book-card-footer"><a href="{{ route('ebooks.show', $ebook) }}" class="small fw-semibold text-decoration-none">Baca E-Book</a><span class="small text-muted">PDF</span></div>
                 </article>
             </div>
         @empty
@@ -172,3 +229,37 @@
     </div>
 </section>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const filterButtons = document.querySelectorAll('[data-filter-class]');
+        const classCols = document.querySelectorAll('.class-card-col');
+
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = btn.getAttribute('data-filter-class');
+
+                filterButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                classCols.forEach(col => {
+                    const level = col.getAttribute('data-class-level');
+                    if (target === 'all' || level === target) {
+                        col.classList.remove('is-hidden');
+                        col.style.opacity = '0';
+                        col.style.transform = 'translateY(8px)';
+                        requestAnimationFrame(() => {
+                            col.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+                            col.style.opacity = '1';
+                            col.style.transform = 'translateY(0)';
+                        });
+                    } else {
+                        col.classList.add('is-hidden');
+                    }
+                });
+            });
+        });
+    });
+</script>
+@endpush

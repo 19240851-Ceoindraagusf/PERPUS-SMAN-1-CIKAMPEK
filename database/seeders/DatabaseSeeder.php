@@ -18,11 +18,30 @@ class DatabaseSeeder extends Seeder
         User::firstOrCreate(
             ['email' => 'admin@perpus.test'],
             [
-                'name' => 'Admin Perpustakaan',
+                'name'     => 'Admin Perpustakaan',
                 'password' => Hash::make('password'),
-                'role' => 'admin',
+                'role'     => 'admin',
             ]
         );
+
+        User::firstOrCreate(
+            ['email' => 'admin_fahmi@perpus.sch.id'],
+            [
+                'name'     => 'Admin Fahmi',
+                'password' => Hash::make('fahmi12345'),
+                'role'     => 'admin',
+            ]
+        );
+
+        User::firstOrCreate(
+            ['email' => 'admin_arisandi@perpus.sch.id'],
+            [
+                'name'     => 'Admin Arisandi',
+                'password' => Hash::make('arisandi12345'),
+                'role'     => 'admin',
+            ]
+        );
+
 
         $classes = [
             ['name' => 'X', 'description' => 'Kelas X'],

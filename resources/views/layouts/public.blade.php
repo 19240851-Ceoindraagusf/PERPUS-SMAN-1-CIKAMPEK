@@ -15,6 +15,7 @@
     <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
     <link rel="apple-touch-icon" href="{{ asset('images/logo-perpus-sman-1-cikampek.jpeg') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
         :root {
@@ -45,7 +46,7 @@
             padding-bottom: 3.5rem !important;
             min-height: 480px;
         }
-        .hero::after { content: ''; position: absolute; width: 420px; height: 420px; border: 1px solid rgba(255,255,255,.13); border-radius: 50%; right: -120px; bottom: -260px; }
+        .hero::after { content: ''; position: absolute; width: 420px; height: 420px; border: 1px solid rgba(255,255,255,.13); border-radius: 50%; right: -120px; bottom: -260px; pointer-events: none; }
         .hero-panel { background: rgba(255, 255, 255, .14); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, .26); border-radius: 16px; position: relative; z-index: 1060; }
         .section-title { max-width: 680px; }
         .info-card, .card {
@@ -58,6 +59,425 @@
         .icon-box { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: var(--school-soft); color: var(--school-green); font-weight: 800; }
         .class-card:nth-child(3n+2) .icon-box { background: #edf3ff; color: var(--school-blue); }
         .class-card:nth-child(3n) .icon-box { background: #fff4df; color: #b66a00; }
+
+        /* ==========================================================================
+           CLASS THEMES & COLOR CODING (PILIH KELAS)
+           ========================================================================== */
+        .class-theme-emerald {
+            --cls-primary: #059669;
+            --cls-primary-hover: #047857;
+            --cls-bg-soft: #ecfdf5;
+            --cls-border: #a7f3d0;
+            --cls-glow: rgba(5, 150, 105, 0.2);
+            --cls-gradient: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            --cls-badge-bg: #d1fae5;
+            --cls-badge-text: #065f46;
+        }
+        .class-theme-blue {
+            --cls-primary: #2563eb;
+            --cls-primary-hover: #1d4ed8;
+            --cls-bg-soft: #eff6ff;
+            --cls-border: #bfdbfe;
+            --cls-glow: rgba(37, 99, 235, 0.2);
+            --cls-gradient: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+            --cls-badge-bg: #dbeafe;
+            --cls-badge-text: #1e40af;
+        }
+        .class-theme-amber {
+            --cls-primary: #d97706;
+            --cls-primary-hover: #b45309;
+            --cls-bg-soft: #fffbeb;
+            --cls-border: #fde68a;
+            --cls-glow: rgba(217, 119, 6, 0.2);
+            --cls-gradient: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+            --cls-badge-bg: #fef3c7;
+            --cls-badge-text: #92400e;
+        }
+        .class-theme-purple {
+            --cls-primary: #7c3aed;
+            --cls-primary-hover: #6d28d9;
+            --cls-bg-soft: #f5f3ff;
+            --cls-border: #ddd6fe;
+            --cls-glow: rgba(124, 58, 237, 0.2);
+            --cls-gradient: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%);
+            --cls-badge-bg: #ede9fe;
+            --cls-badge-text: #5b21b6;
+        }
+        .class-theme-cyan {
+            --cls-primary: #0284c7;
+            --cls-primary-hover: #0369a1;
+            --cls-bg-soft: #f0f9ff;
+            --cls-border: #bae6fd;
+            --cls-glow: rgba(2, 132, 199, 0.2);
+            --cls-gradient: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
+            --cls-badge-bg: #e0f2fe;
+            --cls-badge-text: #075985;
+        }
+        .class-theme-indigo {
+            --cls-primary: #4f46e5;
+            --cls-primary-hover: #4338ca;
+            --cls-bg-soft: #eef2ff;
+            --cls-border: #c7d2fe;
+            --cls-glow: rgba(79, 70, 229, 0.2);
+            --cls-gradient: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);
+            --cls-badge-bg: #e0e7ff;
+            --cls-badge-text: #3730a3;
+        }
+        .class-theme-orange {
+            --cls-primary: #ea580c;
+            --cls-primary-hover: #c2410c;
+            --cls-bg-soft: #fff7ed;
+            --cls-border: #fed7aa;
+            --cls-glow: rgba(234, 88, 12, 0.2);
+            --cls-gradient: linear-gradient(135deg, #c2410c 0%, #f97316 100%);
+            --cls-badge-bg: #ffedd5;
+            --cls-badge-text: #9a3412;
+        }
+        .class-theme-rose {
+            --cls-primary: #e11d48;
+            --cls-primary-hover: #be123c;
+            --cls-bg-soft: #fff1f2;
+            --cls-border: #fecdd3;
+            --cls-glow: rgba(225, 29, 72, 0.2);
+            --cls-gradient: linear-gradient(135deg, #be123c 0%, #fb7185 100%);
+            --cls-badge-bg: #ffe4e6;
+            --cls-badge-text: #9f1239;
+        }
+        .class-theme-crimson {
+            --cls-primary: #dc2626;
+            --cls-primary-hover: #b91c1c;
+            --cls-bg-soft: #fef2f2;
+            --cls-border: #fecaca;
+            --cls-glow: rgba(220, 38, 38, 0.2);
+            --cls-gradient: linear-gradient(135deg, #b91c1c 0%, #ef4444 100%);
+            --cls-badge-bg: #fee2e2;
+            --cls-badge-text: #991b1b;
+        }
+
+        /* Dark mode theme adjustments */
+        [data-bs-theme="dark"] .class-theme-emerald {
+            --cls-bg-soft: rgba(5, 150, 105, 0.14);
+            --cls-border: rgba(5, 150, 105, 0.35);
+            --cls-badge-bg: rgba(5, 150, 105, 0.25);
+            --cls-badge-text: #6ee7b7;
+        }
+        [data-bs-theme="dark"] .class-theme-blue {
+            --cls-bg-soft: rgba(37, 99, 235, 0.14);
+            --cls-border: rgba(37, 99, 235, 0.35);
+            --cls-badge-bg: rgba(37, 99, 235, 0.25);
+            --cls-badge-text: #93c5fd;
+        }
+        [data-bs-theme="dark"] .class-theme-amber {
+            --cls-bg-soft: rgba(217, 119, 6, 0.14);
+            --cls-border: rgba(217, 119, 6, 0.35);
+            --cls-badge-bg: rgba(217, 119, 6, 0.25);
+            --cls-badge-text: #fcd34d;
+        }
+        [data-bs-theme="dark"] .class-theme-purple {
+            --cls-bg-soft: rgba(124, 58, 237, 0.14);
+            --cls-border: rgba(124, 58, 237, 0.35);
+            --cls-badge-bg: rgba(124, 58, 237, 0.25);
+            --cls-badge-text: #c4b5fd;
+        }
+        [data-bs-theme="dark"] .class-theme-cyan {
+            --cls-bg-soft: rgba(2, 132, 199, 0.14);
+            --cls-border: rgba(2, 132, 199, 0.35);
+            --cls-badge-bg: rgba(2, 132, 199, 0.25);
+            --cls-badge-text: #7dd3fc;
+        }
+        [data-bs-theme="dark"] .class-theme-indigo {
+            --cls-bg-soft: rgba(79, 70, 229, 0.14);
+            --cls-border: rgba(79, 70, 229, 0.35);
+            --cls-badge-bg: rgba(79, 70, 229, 0.25);
+            --cls-badge-text: #a5b4fc;
+        }
+        [data-bs-theme="dark"] .class-theme-orange {
+            --cls-bg-soft: rgba(234, 88, 12, 0.14);
+            --cls-border: rgba(234, 88, 12, 0.35);
+            --cls-badge-bg: rgba(234, 88, 12, 0.25);
+            --cls-badge-text: #fdba74;
+        }
+        [data-bs-theme="dark"] .class-theme-rose {
+            --cls-bg-soft: rgba(225, 29, 72, 0.14);
+            --cls-border: rgba(225, 29, 72, 0.35);
+            --cls-badge-bg: rgba(225, 29, 72, 0.25);
+            --cls-badge-text: #fda4af;
+        }
+        [data-bs-theme="dark"] .class-theme-crimson {
+            --cls-bg-soft: rgba(220, 38, 38, 0.14);
+            --cls-border: rgba(220, 38, 38, 0.35);
+            --cls-badge-bg: rgba(220, 38, 38, 0.25);
+            --cls-badge-text: #fca5a5;
+        }
+
+        /* Class Filter Button Group */
+        .class-filter-btn-group {
+            display: inline-flex;
+            background: #e9eff5;
+            padding: 4px;
+            border-radius: 999px;
+            gap: 4px;
+            border: 1px solid var(--school-line);
+        }
+        [data-bs-theme="dark"] .class-filter-btn-group {
+            background: #1a2739;
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+        .class-filter-pill {
+            border: none;
+            background: transparent;
+            color: var(--school-muted);
+            font-size: 0.825rem;
+            font-weight: 700;
+            padding: 6px 16px;
+            border-radius: 999px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .class-filter-pill:hover {
+            color: var(--school-ink);
+        }
+        .class-filter-pill.active {
+            background: #ffffff;
+            color: var(--school-green);
+            box-shadow: 0 3px 10px rgba(15, 35, 63, 0.12);
+        }
+        [data-bs-theme="dark"] .class-filter-pill:hover {
+            color: #f1f5f9;
+        }
+        [data-bs-theme="dark"] .class-filter-pill.active {
+            background: #25354c;
+            color: #6ee7b7;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .class-card-col {
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+        .class-card-col.is-hidden {
+            display: none !important;
+        }
+
+        /* Premium Class Card Component */
+        .class-card-premium {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+            background: #ffffff;
+            border: 1px solid var(--cls-border, var(--school-line));
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 18px rgba(15, 35, 63, 0.04);
+            transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), 
+                        box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), 
+                        border-color 0.25s ease;
+        }
+        [data-bs-theme="dark"] .class-card-premium {
+            background: #141f2e;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
+        }
+        .class-card-premium:hover {
+            transform: translateY(-6px);
+            border-color: var(--cls-primary);
+            box-shadow: 0 18px 38px var(--cls-glow), 0 4px 12px rgba(15, 35, 63, 0.08);
+        }
+        [data-bs-theme="dark"] .class-card-premium:hover {
+            box-shadow: 0 18px 38px var(--cls-glow), 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Top Accent Stripe */
+        .class-card-top-accent {
+            height: 6px;
+            width: 100%;
+            background: var(--cls-gradient);
+        }
+
+        /* Inner Content */
+        .class-card-inner {
+            padding: 1.45rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Icon Box */
+        .class-icon-wrapper {
+            width: 50px;
+            height: 50px;
+            border-radius: 16px;
+            background: var(--cls-gradient);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.45rem;
+            box-shadow: 0 8px 18px var(--cls-glow);
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .class-card-premium:hover .class-icon-wrapper {
+            transform: scale(1.1) rotate(-3deg);
+        }
+
+        /* Stream Pill */
+        .class-stream-pill {
+            display: inline-block;
+            padding: 0.35rem 0.8rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            border-radius: 999px;
+            background: var(--cls-badge-bg);
+            color: var(--cls-badge-text);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        /* Watermark Number */
+        .class-watermark-num {
+            position: absolute;
+            right: 0;
+            top: -26px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 4.6rem;
+            font-weight: 900;
+            line-height: 1;
+            color: var(--cls-primary);
+            opacity: 0.06;
+            pointer-events: none;
+            user-select: none;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+        .class-card-premium:hover .class-watermark-num {
+            opacity: 0.13;
+            transform: translateY(-4px);
+        }
+
+        /* Level micro label */
+        .class-level-micro {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--cls-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        /* Title */
+        .class-card-heading {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--school-ink);
+            margin: 0;
+            line-height: 1.25;
+            letter-spacing: -0.01em;
+        }
+        [data-bs-theme="dark"] .class-card-heading {
+            color: #f1f5f9;
+        }
+
+        /* Description */
+        .class-card-description {
+            font-size: 0.885rem;
+            line-height: 1.5;
+            color: var(--school-muted);
+            margin-top: 0.5rem;
+            margin-bottom: 1.25rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 2.65rem;
+        }
+        [data-bs-theme="dark"] .class-card-description {
+            color: #94a3b8;
+        }
+
+        /* Meta chips */
+        .class-card-meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
+        }
+        .class-meta-chip {
+            display: inline-flex;
+            align-items: center;
+            background: var(--cls-bg-soft);
+            color: var(--cls-primary);
+            border-radius: 10px;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid var(--cls-border);
+        }
+        .class-meta-chip strong {
+            font-weight: 800;
+            margin-right: 0.25rem;
+        }
+
+        /* Footer Action */
+        .class-card-footer-action {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid var(--school-line);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--cls-primary);
+            transition: color 0.2s ease;
+        }
+        [data-bs-theme="dark"] .class-card-footer-action {
+            border-top-color: rgba(255, 255, 255, 0.08);
+        }
+        .class-card-footer-action .action-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--cls-bg-soft);
+            color: var(--cls-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
+                        background 0.25s ease, 
+                        color 0.25s ease;
+        }
+        .class-card-premium:hover .class-card-footer-action .action-icon {
+            transform: translateX(5px);
+            background: var(--cls-primary);
+            color: #ffffff;
+        }
+
+        /* Class Page Hero Banner */
+        .class-hero-banner {
+            background: var(--cls-gradient);
+            color: #ffffff;
+            box-shadow: 0 12px 28px var(--cls-glow);
+            position: relative;
+        }
+        .class-hero-banner .class-stream-pill {
+            background: rgba(255, 255, 255, 0.22);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.35);
+            backdrop-filter: blur(4px);
+        }
+        .class-hero-banner .class-meta-chip {
+            background: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.28);
+            backdrop-filter: blur(4px);
+        }
+        .class-hero-banner .btn-outline-light:hover {
+            background: #ffffff;
+            color: var(--cls-primary);
+        }
         .search-panel { background: #fff; border: 1px solid var(--school-line); border-radius: 16px; padding: 1rem; position: relative; z-index: 1060; }
         .badge-soft { background: var(--school-soft); color: var(--school-green); }
         .btn-success { background: var(--school-green); border-color: var(--school-green); }
@@ -115,6 +535,757 @@
         .search-suggestion { display: block; padding: .7rem .85rem; color: var(--school-ink); text-decoration: none; }
         .search-suggestion:hover, .search-suggestion:focus, .search-suggestion.active { background: var(--school-soft); color: var(--school-green); }
         .search-all-results { display: block; position: sticky; bottom: 0; padding: .7rem .85rem; background: #fff; border-top: 1px solid var(--school-line); color: var(--school-green); font-size: .875rem; font-weight: 700; text-decoration: none; }
+        /* ==========================================================================
+           FAVORITES & SAVED BOOKS PAGE STYLING
+           ========================================================================== */
+        .favorites-hero {
+            background: linear-gradient(135deg, #0f6b4f 0%, #164e63 50%, #1956a3 100%);
+            color: #ffffff;
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 16px 36px rgba(15, 35, 63, 0.15);
+        }
+        .favorites-hero::after {
+            content: '';
+            position: absolute;
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+            top: -100px;
+            right: -60px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .favorites-hero-stat {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 14px;
+            padding: 0.75rem 1.25rem;
+            backdrop-filter: blur(8px);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+        .favorites-hero-stat .stat-num {
+            font-size: 1.5rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+        .favorites-panel-card {
+            border: 1px solid var(--school-line);
+            border-radius: 20px;
+            background: #ffffff;
+            box-shadow: 0 4px 20px rgba(15, 35, 63, 0.04);
+            overflow: hidden;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        [data-bs-theme="dark"] .favorites-panel-card {
+            background: #141f2e;
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        }
+        .favorites-panel-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--school-line);
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        [data-bs-theme="dark"] .favorites-panel-header {
+            background: #182638;
+            border-bottom-color: rgba(255, 255, 255, 0.08);
+        }
+        .favorites-panel-body {
+            padding: 1.25rem;
+            flex-grow: 1;
+        }
+        .saved-book-card-premium {
+            background: #ffffff;
+            border: 1px solid var(--school-line);
+            border-radius: 16px;
+            padding: 0.9rem 1.1rem;
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 2px 8px rgba(15, 35, 63, 0.03);
+        }
+        [data-bs-theme="dark"] .saved-book-card-premium {
+            background: #19273a;
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+        .saved-book-card-premium:hover {
+            transform: translateY(-3px);
+            border-color: rgba(15, 107, 79, 0.45);
+            box-shadow: 0 10px 24px rgba(15, 35, 63, 0.08);
+        }
+        [data-bs-theme="dark"] .saved-book-card-premium:hover {
+            border-color: rgba(110, 231, 183, 0.4);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+        }
+        .saved-book-thumb-wrapper {
+            width: 50px;
+            height: 66px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #e2e8f0;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+        }
+        .saved-book-thumb-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .saved-book-thumb-fallback {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f6b4f 0%, #1956a3 100%);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+        .saved-book-title {
+            color: var(--school-ink);
+            font-size: 0.95rem;
+            line-height: 1.3;
+            transition: color 0.18s ease;
+        }
+        [data-bs-theme="dark"] .saved-book-title {
+            color: #f1f5f9;
+        }
+        .saved-book-title:hover {
+            color: var(--school-green);
+        }
+        [data-bs-theme="dark"] .saved-book-title:hover {
+            color: #6ee7b7;
+        }
+        .saved-empty-state {
+            padding: 3rem 1.5rem;
+        }
+        .saved-empty-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: rgba(15, 107, 79, 0.08);
+            color: var(--school-green);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.85rem;
+        }
+        /* ==========================================================================
+           SUBJECT (MATA PELAJARAN) THEMES & CARDS
+           ========================================================================== */
+        .subject-theme-blue {
+            --sbj-primary: #2563eb;
+            --sbj-gradient: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+            --sbj-soft: #eff6ff;
+            --sbj-border: #bfdbfe;
+            --sbj-glow: rgba(37, 99, 235, 0.2);
+            --sbj-badge-bg: #dbeafe;
+            --sbj-badge-text: #1e40af;
+        }
+        .subject-theme-cyan {
+            --sbj-primary: #0284c7;
+            --sbj-gradient: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+            --sbj-soft: #f0f9ff;
+            --sbj-border: #bae6fd;
+            --sbj-glow: rgba(2, 132, 199, 0.2);
+            --sbj-badge-bg: #e0f2fe;
+            --sbj-badge-text: #075985;
+        }
+        .subject-theme-teal {
+            --sbj-primary: #0d9488;
+            --sbj-gradient: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+            --sbj-soft: #f0fdfa;
+            --sbj-border: #99f6e4;
+            --sbj-glow: rgba(13, 148, 136, 0.2);
+            --sbj-badge-bg: #ccfbf1;
+            --sbj-badge-text: #115e59;
+        }
+        .subject-theme-emerald {
+            --sbj-primary: #059669;
+            --sbj-gradient: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            --sbj-soft: #ecfdf5;
+            --sbj-border: #a7f3d0;
+            --sbj-glow: rgba(5, 150, 105, 0.2);
+            --sbj-badge-bg: #d1fae5;
+            --sbj-badge-text: #065f46;
+        }
+        .subject-theme-amber {
+            --sbj-primary: #d97706;
+            --sbj-gradient: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+            --sbj-soft: #fffbeb;
+            --sbj-border: #fde68a;
+            --sbj-glow: rgba(217, 119, 6, 0.2);
+            --sbj-badge-bg: #fef3c7;
+            --sbj-badge-text: #92400e;
+        }
+        .subject-theme-orange {
+            --sbj-primary: #ea580c;
+            --sbj-gradient: linear-gradient(135deg, #c2410c 0%, #f97316 100%);
+            --sbj-soft: #fff7ed;
+            --sbj-border: #fed7aa;
+            --sbj-glow: rgba(234, 88, 12, 0.2);
+            --sbj-badge-bg: #ffedd5;
+            --sbj-badge-text: #9a3412;
+        }
+        .subject-theme-rose {
+            --sbj-primary: #e11d48;
+            --sbj-gradient: linear-gradient(135deg, #be123c 0%, #fb7185 100%);
+            --sbj-soft: #fff1f2;
+            --sbj-border: #fecdd3;
+            --sbj-glow: rgba(225, 29, 72, 0.2);
+            --sbj-badge-bg: #ffe4e6;
+            --sbj-badge-text: #9f1239;
+        }
+        .subject-theme-purple {
+            --sbj-primary: #7c3aed;
+            --sbj-gradient: linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%);
+            --sbj-soft: #f5f3ff;
+            --sbj-border: #ddd6fe;
+            --sbj-glow: rgba(124, 58, 237, 0.2);
+            --sbj-badge-bg: #ede9fe;
+            --sbj-badge-text: #5b21b6;
+        }
+        .subject-theme-indigo {
+            --sbj-primary: #4f46e5;
+            --sbj-gradient: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);
+            --sbj-soft: #eef2ff;
+            --sbj-border: #c7d2fe;
+            --sbj-glow: rgba(79, 70, 229, 0.2);
+            --sbj-badge-bg: #e0e7ff;
+            --sbj-badge-text: #3730a3;
+        }
+        .subject-theme-crimson {
+            --sbj-primary: #dc2626;
+            --sbj-gradient: linear-gradient(135deg, #b91c1c 0%, #ef4444 100%);
+            --sbj-soft: #fef2f2;
+            --sbj-border: #fecaca;
+            --sbj-glow: rgba(220, 38, 38, 0.2);
+            --sbj-badge-bg: #fee2e2;
+            --sbj-badge-text: #991b1b;
+        }
+
+        /* Dark mode overrides for subjects */
+        [data-bs-theme="dark"] .subject-theme-blue { --sbj-soft: rgba(37, 99, 235, 0.14); --sbj-border: rgba(37, 99, 235, 0.35); --sbj-badge-bg: rgba(37, 99, 235, 0.25); --sbj-badge-text: #93c5fd; }
+        [data-bs-theme="dark"] .subject-theme-cyan { --sbj-soft: rgba(2, 132, 199, 0.14); --sbj-border: rgba(2, 132, 199, 0.35); --sbj-badge-bg: rgba(2, 132, 199, 0.25); --sbj-badge-text: #7dd3fc; }
+        [data-bs-theme="dark"] .subject-theme-teal { --sbj-soft: rgba(13, 148, 136, 0.14); --sbj-border: rgba(13, 148, 136, 0.35); --sbj-badge-bg: rgba(13, 148, 136, 0.25); --sbj-badge-text: #5eead4; }
+        [data-bs-theme="dark"] .subject-theme-emerald { --sbj-soft: rgba(5, 150, 105, 0.14); --sbj-border: rgba(5, 150, 105, 0.35); --sbj-badge-bg: rgba(5, 150, 105, 0.25); --sbj-badge-text: #6ee7b7; }
+        [data-bs-theme="dark"] .subject-theme-amber { --sbj-soft: rgba(217, 119, 6, 0.14); --sbj-border: rgba(217, 119, 6, 0.35); --sbj-badge-bg: rgba(217, 119, 6, 0.25); --sbj-badge-text: #fcd34d; }
+        [data-bs-theme="dark"] .subject-theme-orange { --sbj-soft: rgba(234, 88, 12, 0.14); --sbj-border: rgba(234, 88, 12, 0.35); --sbj-badge-bg: rgba(234, 88, 12, 0.25); --sbj-badge-text: #fdba74; }
+        [data-bs-theme="dark"] .subject-theme-rose { --sbj-soft: rgba(225, 29, 72, 0.14); --sbj-border: rgba(225, 29, 72, 0.35); --sbj-badge-bg: rgba(225, 29, 72, 0.25); --sbj-badge-text: #fda4af; }
+        [data-bs-theme="dark"] .subject-theme-purple { --sbj-soft: rgba(124, 58, 237, 0.14); --sbj-border: rgba(124, 58, 237, 0.35); --sbj-badge-bg: rgba(124, 58, 237, 0.25); --sbj-badge-text: #c4b5fd; }
+        [data-bs-theme="dark"] .subject-theme-indigo { --sbj-soft: rgba(79, 70, 229, 0.14); --sbj-border: rgba(79, 70, 229, 0.35); --sbj-badge-bg: rgba(79, 70, 229, 0.25); --sbj-badge-text: #a5b4fc; }
+        [data-bs-theme="dark"] .subject-theme-crimson { --sbj-soft: rgba(220, 38, 38, 0.14); --sbj-border: rgba(220, 38, 38, 0.35); --sbj-badge-bg: rgba(220, 38, 38, 0.25); --sbj-badge-text: #fca5a5; }
+
+        /* Subject Card Component */
+        .subject-card-col {
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+        .subject-card-col.is-hidden {
+            display: none !important;
+        }
+        .subject-card-premium {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+            background: #ffffff;
+            border: 1px solid var(--sbj-border, var(--school-line));
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 18px rgba(15, 35, 63, 0.04);
+            transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), 
+                        box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), 
+                        border-color 0.25s ease;
+        }
+        [data-bs-theme="dark"] .subject-card-premium {
+            background: #141f2e;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
+        }
+        .subject-card-premium:hover {
+            transform: translateY(-6px);
+            border-color: var(--sbj-primary);
+            box-shadow: 0 18px 36px var(--sbj-glow), 0 4px 12px rgba(15, 35, 63, 0.08);
+        }
+        [data-bs-theme="dark"] .subject-card-premium:hover {
+            box-shadow: 0 18px 36px var(--sbj-glow), 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+        .subject-card-top-accent {
+            height: 6px;
+            width: 100%;
+            background: var(--sbj-gradient);
+        }
+        .subject-card-inner {
+            padding: 1.45rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            position: relative;
+            z-index: 1;
+        }
+        .subject-icon-box {
+            width: 50px;
+            height: 50px;
+            border-radius: 16px;
+            background: var(--sbj-gradient);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.45rem;
+            box-shadow: 0 8px 18px var(--sbj-glow);
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .subject-card-premium:hover .subject-icon-box {
+            transform: scale(1.1) rotate(-3deg);
+        }
+        .subject-cluster-badge {
+            display: inline-block;
+            padding: 0.35rem 0.8rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            border-radius: 999px;
+            background: var(--sbj-badge-bg);
+            color: var(--sbj-badge-text);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .subject-card-class-tag {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--sbj-primary);
+            margin-bottom: 0.25rem;
+        }
+        .subject-card-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--school-ink);
+            margin: 0;
+            line-height: 1.25;
+            letter-spacing: -0.01em;
+        }
+        [data-bs-theme="dark"] .subject-card-title {
+            color: #f1f5f9;
+        }
+        .subject-card-desc {
+            font-size: 0.885rem;
+            line-height: 1.5;
+            color: var(--school-muted);
+            margin-top: 0.5rem;
+            margin-bottom: 1.25rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 2.65rem;
+        }
+        [data-bs-theme="dark"] .subject-card-desc {
+            color: #94a3b8;
+        }
+        .subject-card-stats-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
+        }
+        .subject-stat-pill {
+            display: inline-flex;
+            align-items: center;
+            background: var(--sbj-soft);
+            color: var(--sbj-primary);
+            border-radius: 10px;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid var(--sbj-border);
+        }
+        .subject-stat-status {
+            font-size: 0.78rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+        }
+        .subject-stat-status.status-available {
+            color: #059669;
+        }
+        [data-bs-theme="dark"] .subject-stat-status.status-available {
+            color: #34d399;
+        }
+        .subject-stat-status.status-empty {
+            color: var(--school-muted);
+        }
+        .subject-card-action-footer {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid var(--school-line);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--sbj-primary);
+            transition: color 0.2s ease;
+        }
+        [data-bs-theme="dark"] .subject-card-action-footer {
+            border-top-color: rgba(255, 255, 255, 0.08);
+        }
+        .subject-card-action-footer .action-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--sbj-soft);
+            color: var(--sbj-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
+                        background 0.25s ease, 
+                        color 0.25s ease;
+        }
+        .subject-card-premium:hover .subject-card-action-footer .action-icon {
+            transform: translateX(5px);
+            background: var(--sbj-primary);
+            color: #ffffff;
+        }
+
+        /* Subject Detail Hero Banner */
+        .subject-hero-banner {
+            background: var(--sbj-gradient);
+            color: #ffffff;
+            box-shadow: 0 12px 30px var(--sbj-glow);
+            position: relative;
+            overflow: hidden;
+        }
+        .subject-hero-banner .subject-cluster-badge {
+            background: rgba(255, 255, 255, 0.22);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.35);
+            backdrop-filter: blur(4px);
+        }
+        .subject-hero-banner .subject-stat-pill {
+            background: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.28);
+            backdrop-filter: blur(4px);
+        }
+
+        /* ==========================================================================
+           MODERN E-BOOK CARDS & DASHBOARD ENHANCEMENTS
+           ========================================================================== */
+        .ebook-modern-card {
+            background: #ffffff;
+            border: 1px solid var(--school-line);
+            border-radius: 20px;
+            overflow: hidden;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 18px rgba(15, 35, 63, 0.04);
+            transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), 
+                        box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), 
+                        border-color 0.25s ease;
+        }
+        [data-bs-theme="dark"] .ebook-modern-card {
+            background: #141f2e;
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
+        }
+        .ebook-modern-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--school-green);
+            box-shadow: 0 18px 36px rgba(15, 35, 63, 0.12), 0 2px 8px rgba(0,0,0,0.04);
+        }
+        [data-bs-theme="dark"] .ebook-modern-card:hover {
+            border-color: #6ee7b7;
+            box-shadow: 0 18px 36px rgba(0, 0, 0, 0.45);
+        }
+        .ebook-cover-wrapper {
+            position: relative;
+            overflow: hidden;
+            background: #e7edf4;
+            aspect-ratio: 3 / 4;
+        }
+        .ebook-cover-wrapper img, 
+        .ebook-cover-wrapper .book-cover,
+        .ebook-cover-wrapper .book-cover-placeholder {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.35s ease;
+        }
+        .ebook-modern-card:hover .ebook-cover-wrapper img,
+        .ebook-modern-card:hover .ebook-cover-wrapper .book-cover {
+            transform: scale(1.05);
+        }
+        .ebook-floating-badge {
+            position: absolute;
+            top: 0.75rem;
+            left: 0.75rem;
+            z-index: 2;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            border-radius: 999px;
+            letter-spacing: 0.03em;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(8px);
+        }
+        .ebook-floating-badge.badge-new {
+            background: rgba(15, 107, 79, 0.92);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .ebook-floating-badge.badge-popular {
+            background: rgba(217, 119, 6, 0.92);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .ebook-card-content {
+            padding: 1.15rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        .ebook-card-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            line-height: 1.35;
+            color: var(--school-ink);
+            margin-bottom: 0.35rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 2.6rem;
+            transition: color 0.2s ease;
+        }
+        .ebook-card-title a {
+            color: inherit;
+            text-decoration: none;
+        }
+        [data-bs-theme="dark"] .ebook-card-title {
+            color: #f1f5f9;
+        }
+        .ebook-modern-card:hover .ebook-card-title,
+        .ebook-card-title a:hover {
+            color: var(--school-green);
+        }
+        [data-bs-theme="dark"] .ebook-modern-card:hover .ebook-card-title,
+        [data-bs-theme="dark"] .ebook-card-title a:hover {
+            color: #6ee7b7;
+        }
+        .ebook-card-meta {
+            font-size: 0.8rem;
+            color: var(--school-muted);
+            margin-bottom: 0.85rem;
+        }
+        .ebook-card-actions {
+            margin-top: auto;
+            padding-top: 0.85rem;
+            border-top: 1px solid var(--school-line);
+        }
+        [data-bs-theme="dark"] .ebook-card-actions {
+            border-top-color: rgba(255, 255, 255, 0.08);
+        }
+
+        /* Study Banner Premium */
+        .study-banner-premium {
+            background: linear-gradient(135deg, #eff8f4 0%, #f0f7ff 100%);
+            border: 1px solid var(--school-line);
+        }
+        [data-bs-theme="dark"] .study-banner-premium {
+            background: linear-gradient(135deg, #13222e 0%, #162438 100%);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        /* Recent Dashboard Card */
+        .recent-dashboard-card {
+            background: #ffffff;
+            border: 1px solid var(--school-line);
+            border-radius: 18px;
+            box-shadow: 0 4px 16px rgba(15, 35, 63, 0.04);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        [data-bs-theme="dark"] .recent-dashboard-card {
+            background: #141f2e;
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+        .recent-dashboard-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--school-green);
+            box-shadow: 0 14px 28px rgba(15, 35, 63, 0.08);
+        }
+
+        /* ==========================================================================
+           LIBRARY CATALOG & HERO BANNER
+           ========================================================================== */
+        .library-hero-banner {
+            background: linear-gradient(135deg, #0f6b4f 0%, #0d543e 40%, #1956a3 100%);
+            color: #ffffff;
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 16px 36px rgba(15, 35, 63, 0.14);
+        }
+        .library-hero-banner::after {
+            content: '';
+            position: absolute;
+            width: 340px;
+            height: 340px;
+            background: radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 70%);
+            top: -120px;
+            right: -80px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .library-filter-panel {
+            background: #ffffff;
+            border: 1px solid var(--school-line);
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(15, 35, 63, 0.04);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        [data-bs-theme="dark"] .library-filter-panel {
+            background: #141f2e;
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        }
+        .active-filter-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: var(--school-soft);
+            color: var(--school-green);
+            border: 1px solid rgba(15, 107, 79, 0.25);
+            border-radius: 999px;
+            padding: 0.28rem 0.75rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+        [data-bs-theme="dark"] .active-filter-chip {
+            background: rgba(15, 107, 79, 0.2);
+            color: #6ee7b7;
+            border-color: rgba(110, 231, 183, 0.3);
+        }
+
+        /* ==========================================================================
+           COMMENTS & REVIEWS MODERN STYLING
+           ========================================================================== */
+        .comments-hero-banner {
+            background: linear-gradient(135deg, #0f6b4f 0%, #164e63 45%, #1956a3 100%);
+            color: #ffffff;
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 16px 36px rgba(15, 35, 63, 0.14);
+        }
+        .comments-hero-banner::after {
+            content: '';
+            position: absolute;
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, rgba(255,255,255,0.16) 0%, transparent 70%);
+            top: -100px;
+            right: -60px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .comment-card-modern {
+            background: #ffffff;
+            border: 1px solid var(--school-line);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 18px rgba(15, 35, 63, 0.04);
+            transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease, border-color 0.2s ease;
+        }
+        [data-bs-theme="dark"] .comment-card-modern {
+            background: #141f2e;
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+        }
+        .comment-card-modern:hover {
+            transform: translateY(-3px);
+            border-color: var(--school-green);
+            box-shadow: 0 12px 28px rgba(15, 35, 63, 0.09);
+        }
+        [data-bs-theme="dark"] .comment-card-modern:hover {
+            border-color: #6ee7b7;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+        }
+        .comment-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.15rem;
+            color: #ffffff;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+        .comment-bubble {
+            background: #f8fafc;
+            border: 1px solid rgba(226, 232, 240, 0.85);
+            border-radius: 14px;
+            padding: 1rem 1.25rem;
+            color: var(--school-ink);
+            font-size: 0.95rem;
+            line-height: 1.55;
+            position: relative;
+        }
+        [data-bs-theme="dark"] .comment-bubble {
+            background: #182638;
+            border-color: rgba(255, 255, 255, 0.07);
+            color: #e2e8f0;
+        }
+        .comment-book-banner {
+            background: linear-gradient(135deg, rgba(15, 107, 79, 0.06) 0%, rgba(25, 86, 163, 0.06) 100%);
+            border: 1px dashed rgba(15, 107, 79, 0.25);
+            border-radius: 12px;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+        [data-bs-theme="dark"] .comment-book-banner {
+            background: rgba(15, 107, 79, 0.12);
+            border-color: rgba(110, 231, 183, 0.2);
+        }
+        .comment-book-banner:hover {
+            background: rgba(15, 107, 79, 0.1);
+            border-color: var(--school-green);
+        }
+        .comment-report-accordion summary {
+            cursor: pointer;
+            list-style: none;
+            user-select: none;
+        }
+        .comment-report-accordion summary::-webkit-details-marker {
+            display: none;
+        }
+        .comment-report-card {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            border-radius: 14px;
+            padding: 0.85rem 1rem;
+            box-shadow: 0 4px 14px rgba(220, 38, 38, 0.06);
+        }
+        [data-bs-theme="dark"] .comment-report-card {
+            background: #241416;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
         @media (max-width: 575.98px) {
             .brand-mark { width: 48px; height: 48px; font-size: .85rem; }
             .brand-name { font-size: .92rem; }
@@ -128,6 +1299,9 @@
             .study-banner { align-items: flex-start; flex-direction: column; }
             .reader-shell { padding: 0.25rem; border-radius: 8px; }
             .reader-frame { height: 85vh; border-radius: 6px; }
+            .favorites-hero { padding: 1.75rem 1.25rem; }
+            .library-hero-banner { padding: 1.75rem 1.25rem; }
+            .comments-hero-banner { padding: 1.75rem 1.25rem; }
         }
     </style>
 </head>
@@ -183,11 +1357,13 @@
             className: element.dataset.ebookClass,
             url: element.dataset.ebookUrl,
             readerUrl: element.dataset.ebookReaderUrl,
+            coverUrl: element.dataset.ebookCover || '',
+            author: element.dataset.ebookAuthor || '',
         });
         const isFavorite = (book) => read(favoriteKey).some((item) => item.id === book.id);
         const updateFavoriteButton = (button) => {
             const saved = isFavorite(bookFrom(button));
-            button.textContent = saved ? '✓ Tersimpan di favorit' : '♡ Simpan ke favorit';
+            button.innerHTML = saved ? '<i class="bi bi-bookmark-check-fill me-1"></i> Tersimpan di favorit' : '<i class="bi bi-bookmark-heart me-1"></i> Simpan ke favorit';
             button.classList.toggle('btn-success', saved);
             button.classList.toggle('btn-outline-success', !saved);
         };
@@ -198,43 +1374,215 @@
                 const items = read(favoriteKey);
                 write(favoriteKey, isFavorite(book) ? items.filter((item) => item.id !== book.id) : [book, ...items]);
                 updateFavoriteButton(button);
+                updateFavoritesBadges();
             });
         });
         document.querySelectorAll('[data-ebook-record]').forEach((element) => {
             const book = bookFrom(element);
             const items = read(recentKey).filter((item) => item.id !== book.id);
-            write(recentKey, [{ ...book, openedAt: new Date().toISOString() }, ...items].slice(0, 8));
+            write(recentKey, [{ ...book, openedAt: new Date().toISOString() }, ...items].slice(0, 10));
+            updateFavoritesBadges();
         });
+
+        const updateFavoritesBadges = () => {
+            const favCount = read(favoriteKey).length;
+            const recentCount = read(recentKey).length;
+            
+            const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+            setTxt('heroFavCount', favCount);
+            setTxt('heroRecentCount', recentCount);
+            setTxt('tabFavCount', favCount);
+            setTxt('tabRecentCount', recentCount);
+            setTxt('panelFavBadge', `${favCount} e-book`);
+            setTxt('panelRecentBadge', `${recentCount} e-book`);
+        };
+
         const renderSavedBooks = (target, items, emptyText, allowRemove) => {
             if (!target) return;
             target.replaceChildren();
-            if (!items.length) { target.textContent = emptyText; target.classList.add('text-muted'); return; }
-            target.classList.remove('text-muted');
+            if (!items.length) {
+                const emptyWrap = document.createElement('div');
+                emptyWrap.className = 'saved-empty-state text-center';
+                const icon = allowRemove ? 'bi-bookmark-heart' : 'bi-clock-history';
+                const emptyTitle = allowRemove ? 'Belum Ada Buku Favorit' : 'Belum Ada Riwayat Membaca';
+                const emptyDesc = allowRemove 
+                    ? 'Buku pelajaran yang kamu tandai sebagai favorit akan tersimpan di sini agar mudah diakses kapan saja.'
+                    : 'Buku digital yang kamu buka dan baca akan otomatis tercatat di sini.';
+                emptyWrap.innerHTML = `
+                    <div class="saved-empty-icon mb-3">
+                        <i class="bi ${icon}"></i>
+                    </div>
+                    <h3 class="h6 fw-bold mb-1">${emptyTitle}</h3>
+                    <p class="small text-muted mb-3 mx-auto" style="max-width: 320px;">${emptyDesc}</p>
+                    <a href="{{ route('library') }}" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                        <i class="bi bi-compass me-1"></i> Jelajahi Katalog Buku
+                    </a>
+                `;
+                target.append(emptyWrap);
+                return;
+            }
+
             items.forEach((book) => {
-                const card = document.createElement('article'); card.className = 'saved-book-card';
-                const title = document.createElement('a'); title.href = book.url; title.className = 'fw-semibold text-decoration-none d-block mb-1'; title.textContent = book.title;
-                const meta = document.createElement('p'); meta.className = 'small text-muted mb-3'; meta.textContent = `Kelas ${book.className} / ${book.subject}`;
-                const open = document.createElement('a'); open.href = book.readerUrl || book.url; open.className = 'btn btn-sm btn-success'; open.textContent = 'Baca';
-                card.append(title, meta, open);
-                if (allowRemove) { const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'btn btn-sm btn-link text-danger ms-2'; remove.textContent = 'Hapus'; remove.addEventListener('click', () => { write(favoriteKey, read(favoriteKey).filter((item) => item.id !== book.id)); renderSavedBooks(target, read(favoriteKey), emptyText, true); }); card.append(remove); }
+                const card = document.createElement('article');
+                card.className = 'saved-book-card-premium d-flex align-items-center gap-3 mb-3';
+
+                // Thumbnail / Cover
+                const thumb = document.createElement('div');
+                thumb.className = 'saved-book-thumb-wrapper flex-shrink-0';
+                if (book.coverUrl) {
+                    thumb.innerHTML = `<img src="${book.coverUrl}" class="saved-book-thumb-img" alt="${book.title}" loading="lazy">`;
+                } else {
+                    thumb.innerHTML = `<div class="saved-book-thumb-fallback"><i class="bi bi-journal-text"></i></div>`;
+                }
+
+                // Info Details
+                const info = document.createElement('div');
+                info.className = 'flex-grow-1 min-w-0';
+
+                const metaRow = document.createElement('div');
+                metaRow.className = 'd-flex align-items-center gap-2 mb-1';
+                metaRow.innerHTML = `
+                    <span class="badge badge-soft">Kelas ${book.className || '-'}</span>
+                    <span class="small text-muted text-truncate">${book.subject || ''}</span>
+                `;
+
+                const titleLink = document.createElement('a');
+                titleLink.href = book.url;
+                titleLink.className = 'saved-book-title text-decoration-none fw-bold d-block text-truncate mb-1';
+                titleLink.textContent = book.title;
+
+                const bottomMeta = document.createElement('div');
+                bottomMeta.className = 'small text-muted d-flex align-items-center gap-1';
+                bottomMeta.innerHTML = `<i class="bi bi-file-earmark-pdf text-danger"></i> <span>E-Book Digital</span>`;
+
+                info.append(metaRow, titleLink, bottomMeta);
+
+                // Action Buttons
+                const actions = document.createElement('div');
+                actions.className = 'd-flex align-items-center gap-2 flex-shrink-0';
+
+                const readBtn = document.createElement('a');
+                readBtn.href = book.readerUrl || book.url;
+                readBtn.className = 'btn btn-sm btn-success d-inline-flex align-items-center gap-1 px-3';
+                readBtn.innerHTML = `<i class="bi bi-book-half"></i> <span class="d-none d-sm-inline">Baca</span>`;
+                actions.append(readBtn);
+
+                if (allowRemove) {
+                    const removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.className = 'btn btn-sm btn-outline-danger d-inline-flex align-items-center justify-content-center';
+                    removeBtn.title = 'Hapus dari favorit';
+                    removeBtn.innerHTML = `<i class="bi bi-trash3"></i>`;
+                    removeBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        write(favoriteKey, read(favoriteKey).filter((item) => item.id !== book.id));
+                        card.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+                        card.style.opacity = '0';
+                        card.style.transform = 'translateX(20px)';
+                        setTimeout(() => {
+                            renderSavedBooks(target, read(favoriteKey), emptyText, true);
+                            updateFavoritesBadges();
+                        }, 200);
+                    });
+                    actions.append(removeBtn);
+                }
+
+                card.append(thumb, info, actions);
                 target.append(card);
             });
         };
-        renderSavedBooks(document.querySelector('[data-favorites-list]'), read(favoriteKey), 'Belum ada buku favorit. Simpan buku dari halaman detail e-book.', true);
-        renderSavedBooks(document.querySelector('[data-recent-list]'), read(recentKey), 'Belum ada buku yang dibuka pada perangkat ini.', false);
+
+        const favListEl = document.querySelector('[data-favorites-list]');
+        const recentListEl = document.querySelector('[data-recent-list]');
+        if (favListEl) renderSavedBooks(favListEl, read(favoriteKey), '', true);
+        if (recentListEl) renderSavedBooks(recentListEl, read(recentKey), '', false);
+        updateFavoritesBadges();
+
+        // Clear Recent Books button handler
+        const clearRecentBtn = document.getElementById('clearRecentBtn');
+        if (clearRecentBtn) {
+            clearRecentBtn.addEventListener('click', () => {
+                if (!read(recentKey).length) return;
+                if (confirm('Bersihkan seluruh riwayat buku yang terakhir dibuka?')) {
+                    write(recentKey, []);
+                    if (recentListEl) renderSavedBooks(recentListEl, [], '', false);
+                    updateFavoritesBadges();
+                }
+            });
+        }
+
+        // Tab Switching on Favorites Page
+        const favTabs = document.querySelectorAll('[data-fav-tab]');
+        const panelFav = document.getElementById('panelFavorites');
+        const panelRec = document.getElementById('panelRecent');
+        if (favTabs.length && panelFav && panelRec) {
+            favTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    favTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    const mode = tab.getAttribute('data-fav-tab');
+
+                    if (mode === 'favorites') {
+                        panelFav.classList.remove('d-none');
+                        panelFav.className = 'col-12';
+                        panelRec.classList.add('d-none');
+                    } else if (mode === 'recent') {
+                        panelRec.classList.remove('d-none');
+                        panelRec.className = 'col-12';
+                        panelFav.classList.add('d-none');
+                    } else {
+                        panelFav.classList.remove('d-none');
+                        panelFav.className = 'col-lg-6';
+                        panelRec.classList.remove('d-none');
+                        panelRec.className = 'col-lg-6';
+                    }
+                });
+            });
+        }
+
         const homeRecent = document.querySelector('[data-home-recent]');
         const homeRecentList = document.querySelector('[data-home-recent-list]');
         const recentBooks = read(recentKey).slice(0, 4);
         if (homeRecent && homeRecentList && recentBooks.length) {
             homeRecent.hidden = false;
+            homeRecentList.replaceChildren();
             recentBooks.forEach((book) => {
-                const column = document.createElement('div'); column.className = 'col-12 col-sm-6 col-lg-3';
-                const card = document.createElement('article'); card.className = 'saved-book-card h-100 d-flex flex-column';
-                const kicker = document.createElement('span'); kicker.className = 'badge badge-soft align-self-start mb-2'; kicker.textContent = `Kelas ${book.className}`;
-                const title = document.createElement('a'); title.href = book.url; title.className = 'fw-semibold text-decoration-none mb-1'; title.textContent = book.title;
-                const meta = document.createElement('p'); meta.className = 'small text-muted mb-3'; meta.textContent = book.subject;
-                const open = document.createElement('a'); open.href = book.readerUrl || book.url; open.className = 'btn btn-sm btn-success mt-auto'; open.textContent = 'Lanjut baca';
-                card.append(kicker, title, meta, open); column.append(card); homeRecentList.append(column);
+                const column = document.createElement('div');
+                column.className = 'col-12 col-sm-6 col-lg-3';
+                const card = document.createElement('article');
+                card.className = 'recent-dashboard-card h-100 d-flex flex-column';
+                
+                const thumbPart = document.createElement('div');
+                thumbPart.className = 'p-3 pb-2 d-flex gap-3 align-items-center';
+                const thumbImg = book.coverUrl 
+                    ? `<img src="${book.coverUrl}" class="rounded-3 shadow-sm flex-shrink-0" style="width: 48px; height: 64px; object-fit: cover;" alt="${book.title}" loading="lazy">`
+                    : `<div class="rounded-3 shadow-sm flex-shrink-0 d-flex align-items-center justify-content-center text-white" style="width: 48px; height: 64px; background: linear-gradient(135deg, #0f6b4f, #1956a3); font-size: 1.25rem;"><i class="bi bi-book"></i></div>`;
+                
+                thumbPart.innerHTML = `
+                    ${thumbImg}
+                    <div class="min-w-0">
+                        <span class="badge badge-soft mb-1" style="font-size: 0.72rem;">Kelas ${book.className || '-'}</span>
+                        <div class="small text-muted text-truncate" style="font-size: 0.75rem;">${book.subject || 'E-Book Digital'}</div>
+                    </div>
+                `;
+
+                const bodyPart = document.createElement('div');
+                bodyPart.className = 'p-3 pt-0 d-flex flex-column flex-grow-1';
+                bodyPart.innerHTML = `
+                    <h3 class="h6 fw-bold mb-2 text-truncate" title="${book.title}">
+                        <a href="${book.url}" class="text-decoration-none text-dark">${book.title}</a>
+                    </h3>
+                    <div class="d-flex align-items-center gap-1 text-success fw-semibold small mb-3" style="font-size: 0.75rem;">
+                        <i class="bi bi-clock-history"></i> Terakhir dibuka
+                    </div>
+                    <a href="${book.readerUrl || book.url}" class="btn btn-sm btn-success mt-auto rounded-pill fw-semibold d-flex align-items-center justify-content-center gap-1">
+                        <i class="bi bi-book-half"></i> <span>Lanjut Baca</span>
+                    </a>
+                `;
+
+                card.append(thumbPart, bodyPart);
+                column.append(card);
+                homeRecentList.append(column);
             });
         }
         document.querySelectorAll('[data-smart-search]').forEach((input) => {

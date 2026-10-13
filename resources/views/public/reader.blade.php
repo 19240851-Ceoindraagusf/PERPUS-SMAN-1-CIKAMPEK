@@ -3,7 +3,7 @@
 @section('title', 'Baca ' . $ebook->title)
 
 @section('content')
-<section class="container px-2 px-md-3 py-3 py-md-5" data-ebook-record data-ebook-id="{{ $ebook->id }}" data-ebook-title="{{ $ebook->title }}" data-ebook-subject="{{ $ebook->subject->name }}" data-ebook-class="{{ $ebook->subject->class->name }}" data-ebook-url="{{ route('ebooks.show', $ebook) }}" data-ebook-reader-url="{{ route('ebooks.reader', $ebook) }}">
+<section class="container px-2 px-md-3 py-3 py-md-5" data-ebook-record data-ebook-id="{{ $ebook->id }}" data-ebook-title="{{ $ebook->title }}" data-ebook-subject="{{ $ebook->subject->name }}" data-ebook-class="{{ $ebook->subject->class->name }}" data-ebook-url="{{ route('ebooks.show', $ebook) }}" data-ebook-reader-url="{{ route('ebooks.reader', $ebook) }}" data-ebook-cover="{{ $ebook->cover_path ? asset('storage/' . $ebook->cover_path) : '' }}" data-ebook-author="{{ $ebook->author ?: '' }}">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
             <a href="{{ route('ebooks.show', $ebook) }}" class="small text-decoration-none">← Kembali ke detail</a>
@@ -11,7 +11,7 @@
             <p class="text-muted small mb-0">{{ $ebook->subject->name }} · Kelas {{ $ebook->subject->class->name }}</p>
         </div>
         <div class="d-flex flex-wrap gap-2">
-            <button type="button" class="btn btn-outline-success" data-favorite-button data-ebook-id="{{ $ebook->id }}" data-ebook-title="{{ $ebook->title }}" data-ebook-subject="{{ $ebook->subject->name }}" data-ebook-class="{{ $ebook->subject->class->name }}" data-ebook-url="{{ route('ebooks.show', $ebook) }}" data-ebook-reader-url="{{ route('ebooks.reader', $ebook) }}">♡ Favorit</button>
+            <button type="button" class="btn btn-outline-success" data-favorite-button data-ebook-id="{{ $ebook->id }}" data-ebook-title="{{ $ebook->title }}" data-ebook-subject="{{ $ebook->subject->name }}" data-ebook-class="{{ $ebook->subject->class->name }}" data-ebook-url="{{ route('ebooks.show', $ebook) }}" data-ebook-reader-url="{{ route('ebooks.reader', $ebook) }}" data-ebook-cover="{{ $ebook->cover_path ? asset('storage/' . $ebook->cover_path) : '' }}" data-ebook-author="{{ $ebook->author ?: '' }}">♡ Favorit</button>
             <button type="button" class="btn btn-outline-secondary" data-reader-theme>Mode gelap</button>
             <button type="button" class="btn btn-outline-secondary" data-reader-fullscreen>Layar penuh</button>
             <a href="{{ route('ebooks.download', $ebook) }}" class="btn btn-success">Download PDF</a>

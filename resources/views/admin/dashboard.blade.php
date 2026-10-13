@@ -11,11 +11,71 @@
     <a href="{{ route('admin.ebooks.create') }}" class="btn btn-success">Tambah E-Book</a>
 </div>
 <div class="row g-3 mb-4">
-    <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body d-flex justify-content-between"><div><div class="text-muted">Total Kelas</div><div class="h3 mb-0">{{ $stats['classes'] }}</div></div><div class="stat-icon">K</div></div></div></div>
-    <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body d-flex justify-content-between"><div><div class="text-muted">Mata Pelajaran</div><div class="h3 mb-0">{{ $stats['subjects'] }}</div></div><div class="stat-icon">M</div></div></div></div>
-    <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body d-flex justify-content-between"><div><div class="text-muted">Total E-Book</div><div class="h3 mb-0">{{ $stats['ebooks'] }}</div></div><div class="stat-icon">E</div></div></div></div>
-    <div class="col-sm-6 col-xl-3"><div class="admin-card stat-card card"><div class="card-body d-flex justify-content-between"><div><div class="text-muted">Mulai Dibaca</div><div class="h3 mb-0">{{ $stats['reads'] }}</div><div class="small text-muted">{{ $stats['downloads'] }} unduhan</div></div><div class="stat-icon">B</div></div></div></div>
+    {{-- Kartu 1: Total Kelas --}}
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card stat-card-green shadow">
+            <div class="card-body d-flex justify-content-between align-items-center p-4">
+                <div>
+                    <div class="stat-label">Total Kelas</div>
+                    <div class="stat-value counter" data-target="{{ $stats['classes'] }}">0</div>
+                    <div class="stat-sub"><i class="bi bi-building me-1"></i>Kelas aktif tersedia</div>
+                </div>
+                <div class="stat-icon-box">
+                    <i class="bi bi-building-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Kartu 2: Mata Pelajaran --}}
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card stat-card-blue shadow">
+            <div class="card-body d-flex justify-content-between align-items-center p-4">
+                <div>
+                    <div class="stat-label">Mata Pelajaran</div>
+                    <div class="stat-value counter" data-target="{{ $stats['subjects'] }}">0</div>
+                    <div class="stat-sub"><i class="bi bi-journal-bookmark me-1"></i>Mapel terdaftar</div>
+                </div>
+                <div class="stat-icon-box">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Kartu 3: Total E-Book --}}
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card stat-card-purple shadow">
+            <div class="card-body d-flex justify-content-between align-items-center p-4">
+                <div>
+                    <div class="stat-label">Total E-Book</div>
+                    <div class="stat-value counter" data-target="{{ $stats['ebooks'] }}">0</div>
+                    <div class="stat-sub"><i class="bi bi-book me-1"></i>Koleksi digital</div>
+                </div>
+                <div class="stat-icon-box">
+                    <i class="bi bi-book-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Kartu 4: Total Dibaca --}}
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card stat-card-amber shadow">
+            <div class="card-body d-flex justify-content-between align-items-center p-4">
+                <div>
+                    <div class="stat-label">Mulai Dibaca</div>
+                    <div class="stat-value counter" data-target="{{ $stats['reads'] }}">0</div>
+                    <div class="stat-sub"><i class="bi bi-download me-1"></i>{{ $stats['downloads'] }} unduhan</div>
+                </div>
+                <div class="stat-icon-box">
+                    <i class="bi bi-eye-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
 @if($stats['open_reports'] || $stats['open_comment_reports'] || $stats['new_comments'])
     <div class="alert alert-warning d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4"><span><strong>Notifikasi baru:</strong> {{ $stats['new_comments'] }} komentar baru, {{ $stats['open_reports'] }} laporan e-book, dan {{ $stats['open_comment_reports'] }} laporan komentar.</span><span class="d-flex gap-2"><a class="btn btn-sm btn-outline-dark" href="{{ route('admin.ebook-comments.index') }}">Lihat komentar</a><a class="btn btn-sm btn-outline-dark" href="{{ route('admin.comment-reports.index') }}">Lihat laporan komentar</a></span></div>
 @endif
@@ -194,3 +254,43 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+// ===== ANIMASI COUNTER ANGKA STAT CARDS =====
+document.addEventListener('DOMContentLoaded', function () {
+    const counters = document.querySelectorAll('.counter');
+    const duration = 1200; // ms
+
+    const animateCounter = (el) => {
+        const target = parseInt(el.getAttribute('data-target'), 10);
+        const start  = 0;
+        const step   = target / (duration / 16);
+        let current  = start;
+
+        const update = () => {
+            current += step;
+            if (current < target) {
+                el.textContent = Math.floor(current).toLocaleString('id-ID');
+                requestAnimationFrame(update);
+            } else {
+                el.textContent = target.toLocaleString('id-ID');
+            }
+        };
+        update();
+    };
+
+    // Gunakan IntersectionObserver agar counter jalan saat terlihat
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                animateCounter(entry.target);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.3 });
+
+    counters.forEach(counter => observer.observe(counter));
+});
+</script>
+@endpush
