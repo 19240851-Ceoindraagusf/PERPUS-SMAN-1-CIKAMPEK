@@ -53,7 +53,10 @@ class EbookController extends Controller
     {
         $classOrder = "CASE WHEN name = 'X' THEN 1 WHEN name LIKE 'XI%' THEN 2 WHEN name LIKE 'XII%' THEN 3 ELSE 4 END";
         $classes = ClassModel::orderByRaw($classOrder)->orderBy('name')->get();
-        $subjects = Subject::with('class')->orderBy('name')->get();
+        $subjects = Subject::with('class')
+            ->whereRaw("LOWER(name) NOT IN ('ipa', 'ilmu pengetahuan alam', 'ips', 'ilmu pengetahuan sosial')")
+            ->orderBy('name')
+            ->get();
 
         return view('admin.ebooks.create', compact('classes', 'subjects'));
     }
@@ -92,6 +95,7 @@ class EbookController extends Controller
         $ebook = Ebook::create($validated);
         $subject->description = $metadataExtractor->buildSubjectDescription($subject->name, $metadata['title'], $metadata['description']);
         $subject->save();
+        $this->spreadEbookToUmbrellaSubjects($ebook, $subject, $metadataExtractor);
         $this->syncGroupCoverForEbook($ebook, $ebook->cover_path);
         $this->syncSubjectStatus($ebook->subject_id);
 
@@ -102,7 +106,10 @@ class EbookController extends Controller
     {
         $classOrder = "CASE WHEN name = 'X' THEN 1 WHEN name LIKE 'XI%' THEN 2 WHEN name LIKE 'XII%' THEN 3 ELSE 4 END";
         $classes = ClassModel::orderByRaw($classOrder)->orderBy('name')->get();
-        $subjects = Subject::with('class')->orderBy('name')->get();
+        $subjects = Subject::with('class')
+            ->whereRaw("LOWER(name) NOT IN ('ipa', 'ilmu pengetahuan alam', 'ips', 'ilmu pengetahuan sosial')")
+            ->orderBy('name')
+            ->get();
 
         return view('admin.ebooks.edit', compact('ebook', 'classes', 'subjects'));
     }
@@ -208,6 +215,74 @@ class EbookController extends Controller
         ]);
     }
 
+    /**
+     * Sebarkan ebook ke sub-mapel cabang jika subject yang dipilih admin
+     * adalah umbrella IPA/IPS (biasa maupun varian seperti "IPA Revisi").
+     *
+     * Contoh:
+     *  - Subject "IPA"        → sebarkan ke "Kimia", "Fisika", "Biologi"
+     *  - Subject "IPA Revisi" → sebarkan ke "IPA Revisi/Kimia", "IPA Revisi/Fisika", "IPA Revisi/Biologi"
+     *  - Subject "IPS"        → sebarkan ke "Sosiologi", "Geografi", "Ekonomi"
+     *  - Subject "IPS Revisi" → sebarkan ke "IPS Revisi/Sosiologi", "IPS Revisi/Geografi", "IPS Revisi/Ekonomi"
+     *
+     * Sub-mapel dibuat otomatis jika belum ada.
+     */
+    private function spreadEbookToUmbrellaSubjects(
+        Ebook $ebook,
+        Subject $subject,
+        EbookMetadataExtractor $metadataExtractor,
+    ): void {
+        [$umbrellaPrefix, $branchNames] = $this->groupSubjectNamesForSharedCover($subject);
+
+        if ($branchNames === []) {
+            return;
+        }
+
+        $isVariant = $umbrellaPrefix !== null;
+
+        foreach ($branchNames as $branchName) {
+            // Nama sub-mapel: "Kimia" untuk IPA biasa, "IPA Revisi/Kimia" untuk varian
+            $subjectName = $isVariant
+                ? $umbrellaPrefix.'/'.$branchName
+                : $branchName;
+
+            $branchSubject = Subject::firstOrCreate(
+                [
+                    'class_id' => $subject->class_id,
+                    'name'     => $subjectName,
+                ],
+                [
+                    'code'        => null,
+                    'description' => 'Mata pelajaran dibuat otomatis dari '.($umbrellaPrefix ?? ($subject->name)).'. Berisi materi '.$branchName.'.',
+                    'is_active'   => false,
+                ]
+            );
+
+            // Jangan duplikasi jika ebook sudah ada di sub-mapel ini
+            $alreadyExists = Ebook::where('subject_id', $branchSubject->id)
+                ->where('file_path', $ebook->file_path)
+                ->exists();
+
+            if ($alreadyExists) {
+                continue;
+            }
+
+            $branchEbook = Ebook::create([
+                'subject_id'       => $branchSubject->id,
+                'title'            => $metadataExtractor->titleForSelectedSubject($ebook->title, $subjectName),
+                'description'      => $ebook->description,
+                'author'           => $ebook->author,
+                'publisher'        => $ebook->publisher,
+                'publication_year' => $ebook->publication_year,
+                'file_path'        => $ebook->file_path,
+                'cover_path'       => $ebook->cover_path,
+                'is_active'        => $ebook->is_active,
+            ]);
+
+            $this->syncSubjectStatus($branchSubject->id);
+        }
+    }
+
     private function syncGroupCoverForEbook(Ebook $ebook, ?string $coverPath): void
     {
         if (! $coverPath || ! $ebook->subject_id) {
@@ -246,46 +321,81 @@ class EbookController extends Controller
 
     private function sharedCoverMatchPatterns(Subject $subject): array
     {
-        $groupNames = $this->groupSubjectNamesForSharedCover($subject);
+        [$umbrellaPrefix, $branchNames] = $this->groupSubjectNamesForSharedCover($subject);
 
-        if ($groupNames === []) {
+        if ($branchNames === []) {
             return [];
         }
 
         $patterns = [];
 
-        foreach ($groupNames as $groupName) {
-            $normalized = mb_strtolower(trim($groupName));
+        foreach ($branchNames as $branchName) {
+            $normalized = mb_strtolower(trim($branchName));
 
             if ($normalized === '') {
                 continue;
             }
 
-            $patterns[] = $normalized;
-            $patterns[] = mb_strtolower('IPA / '.$groupName);
-            $patterns[] = mb_strtolower('IPA/'.$groupName);
-            $patterns[] = mb_strtolower('IPS / '.$groupName);
-            $patterns[] = mb_strtolower('IPS/'.$groupName);
+            if ($umbrellaPrefix !== null) {
+                // Grup revisi: hanya match sub-mapel dalam grup yang sama persis
+                // Contoh: "IPA Revisi" -> hanya match "IPA Revisi/Fisika", "IPA Revisi / Kimia", dll.
+                $prefix = mb_strtolower(trim($umbrellaPrefix));
+                $patterns[] = $prefix.' / '.$normalized;
+                $patterns[] = $prefix.'/'.$normalized;
+                $patterns[] = $prefix.' '.$normalized;
+            } else {
+                // Grup IPA/IPS biasa: match nama cabang murni DAN dengan prefix IPA/IPS biasa
+                $patterns[] = $normalized;
+                $patterns[] = mb_strtolower('IPA / '.$branchName);
+                $patterns[] = mb_strtolower('IPA/'.$branchName);
+                $patterns[] = mb_strtolower('IPS / '.$branchName);
+                $patterns[] = mb_strtolower('IPS/'.$branchName);
+            }
         }
 
         return array_values(array_unique($patterns));
     }
 
+    /**
+     * Kembalikan [umbrellaPrefix, branchNames] untuk subject ini.
+     *
+     * - Jika subject adalah IPA/IPS biasa (nama persis "IPA" atau "IPS"),
+     *   umbrellaPrefix = null dan branchNames berisi mapel cabang biasa.
+     * - Jika subject adalah varian ("IPA Revisi", "IPS Revisi", dll.),
+     *   umbrellaPrefix = nama subject itu sendiri, dan branchNames berisi
+     *   nama cabang TANPA prefix (Fisika, Kimia, Biologi / Ekonomi, dst.).
+     *   Cover akan disync hanya ke sub-mapel dalam grup itu
+     *   ("IPA Revisi/Fisika", "IPA Revisi / Kimia", dst.).
+     *
+     * @return array{0: ?string, 1: string[]}
+     */
     private function groupSubjectNamesForSharedCover(Subject $subject): array
     {
         $normalizedName = mb_strtolower(trim($subject->name));
 
-        if (str_contains($normalizedName, 'ipa')) {
-            return ['Biologi', 'Fisika', 'Kimia'];
+        // Cek IPA varian ("ipa revisi", "ipa revisi 2013", dll.) — harus bukan persis "ipa"
+        if (preg_match('/^ipa(?:\s|$)/u', $normalizedName) && $normalizedName !== 'ipa') {
+            return [$subject->name, ['Biologi', 'Fisika', 'Kimia']];
         }
 
-        if (str_contains($normalizedName, 'ips')) {
-            return ['Ekonomi', 'Geografi', 'Sosiologi'];
+        // IPA biasa (persis "ipa" atau "ilmu pengetahuan alam")
+        if ($normalizedName === 'ipa' || $normalizedName === 'ilmu pengetahuan alam') {
+            return [null, ['Biologi', 'Fisika', 'Kimia']];
+        }
+
+        // Cek IPS varian ("ips revisi", "ips revisi 2013", dll.) — harus bukan persis "ips"
+        if (preg_match('/^ips(?:\s|$)/u', $normalizedName) && $normalizedName !== 'ips') {
+            return [$subject->name, ['Ekonomi', 'Geografi', 'Sosiologi']];
+        }
+
+        // IPS biasa (persis "ips" atau "ilmu pengetahuan sosial")
+        if ($normalizedName === 'ips' || $normalizedName === 'ilmu pengetahuan sosial') {
+            return [null, ['Ekonomi', 'Geografi', 'Sosiologi']];
         }
 
         // Mapel cabang memiliki cover masing-masing. Hanya ebook mapel
         // gabungan yang diawali IPA atau IPS yang boleh membagikan cover.
-        return [];
+        return [null, []];
     }
 
     private function resolveSubjectFromMetadata(array $metadata): ?Subject
