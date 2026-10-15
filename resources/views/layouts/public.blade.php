@@ -29,7 +29,17 @@
         body { background: #f6f8fb; color: var(--school-ink); font-family: 'DM Sans', sans-serif; }
         h1, h2, h3, .brand-name { font-family: 'Plus Jakarta Sans', sans-serif; }
         a { color: var(--school-blue); }
-        .navbar { box-shadow: 0 1px 0 rgba(16, 35, 63, .06); }
+        .navbar {
+            box-shadow: 0 1px 0 rgba(16, 35, 63, .06);
+            position: sticky;
+            top: 0;
+            z-index: 1040;
+            background-color: #ffffff;
+        }
+        [data-bs-theme="dark"] .navbar {
+            background-color: #111a28 !important;
+            border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+        }
         .brand-mark {
             width: 56px; height: 56px; border-radius: 50%; object-fit: cover;
             box-shadow: 0 5px 14px rgba(15, 35, 63, .18);
@@ -40,14 +50,14 @@
         .hero {
             background: linear-gradient(135deg, rgba(15, 107, 79, 0.82), rgba(18, 63, 114, 0.85)), url('{{ asset("images/gedung-sman-1-cikampek.png") }}') center/cover no-repeat;
             color: #fff;
-            overflow: visible;
             position: relative;
+            z-index: 1;
             padding-top: 3.5rem !important;
             padding-bottom: 3.5rem !important;
             min-height: 480px;
         }
-        .hero::after { content: ''; position: absolute; width: 420px; height: 420px; border: 1px solid rgba(255,255,255,.13); border-radius: 50%; right: -120px; bottom: -260px; pointer-events: none; }
-        .hero-panel { background: rgba(255, 255, 255, .14); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, .26); border-radius: 16px; position: relative; z-index: 1060; }
+        .hero::after { content: ''; position: absolute; width: 420px; height: 420px; border: 1px solid rgba(255,255,255,.13); border-radius: 50%; right: -120px; bottom: -260px; pointer-events: none; z-index: 0; }
+        .hero-panel { background: rgba(255, 255, 255, .14); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, .26); border-radius: 16px; position: relative; z-index: 2; }
         .section-title { max-width: 680px; }
         .info-card, .card {
             border: 1px solid var(--school-line); border-radius: 16px;
