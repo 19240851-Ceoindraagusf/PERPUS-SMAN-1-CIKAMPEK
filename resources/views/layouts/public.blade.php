@@ -26,6 +26,10 @@
             --school-soft: #eef6f3;
             --school-line: #d8e2ee;
         }
+        html, body {
+            overflow-x: hidden;
+            max-width: 100%;
+        }
         body { background: #f6f8fb; color: var(--school-ink); font-family: 'DM Sans', sans-serif; }
         h1, h2, h3, .brand-name { font-family: 'Plus Jakarta Sans', sans-serif; }
         a { color: var(--school-blue); }
@@ -51,6 +55,7 @@
             background: linear-gradient(135deg, rgba(15, 107, 79, 0.82), rgba(18, 63, 114, 0.85)), url('{{ asset("images/gedung-sman-1-cikampek.png") }}') center/cover no-repeat;
             color: #fff;
             position: relative;
+            overflow: hidden;
             z-index: 1;
             padding-top: 3.5rem !important;
             padding-bottom: 3.5rem !important;
