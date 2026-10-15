@@ -1337,9 +1337,6 @@
                 <a class="nav-link nav-pill {{ request()->routeIs('comments.*') ? 'active' : '' }}" href="{{ route('comments.index') }}">Komentar Siswa</a>
                 <a class="nav-link nav-pill {{ request()->routeIs('favorites') ? 'active' : '' }}" href="{{ route('favorites') }}">Favorit</a>
                 <a class="nav-link nav-pill" href="{{ route('admin.login') }}">Admin</a>
-                <button type="button" class="btn btn-sm btn-outline-secondary ms-lg-2 mt-2 mt-lg-0" id="darkModeToggle" aria-label="Toggle Dark Mode">
-                    🌓 Mode
-                </button>
             </div>
         </div>
     </div>
@@ -1674,18 +1671,10 @@
     })();
 </script>
 <script>
-    (() => {
-        const toggle = document.getElementById('darkModeToggle');
-        const html = document.documentElement;
-        const currentTheme = localStorage.getItem('theme') || 'light';
-        html.setAttribute('data-bs-theme', currentTheme);
-        
-        toggle.addEventListener('click', () => {
-            const newTheme = html.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-bs-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-        });
-    })();
+    try {
+        localStorage.removeItem('theme');
+        document.documentElement.setAttribute('data-bs-theme', 'light');
+    } catch (e) {}
 </script>
 <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('{{ asset('sw.js') }}').catch(() => {});</script>
 @stack('scripts')
