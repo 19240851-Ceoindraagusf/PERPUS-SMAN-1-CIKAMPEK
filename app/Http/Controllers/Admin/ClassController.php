@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\ClassModel;
 use App\Services\EbookFileCleanup;
 use Illuminate\Http\RedirectResponse;
@@ -33,7 +34,8 @@ class ClassController extends Controller
             'description' => ['nullable', 'string'],
         ]);
 
-        ClassModel::create($validated);
+        $class = ClassModel::create($validated);
+        AuditLog::record('Create', 'Menambahkan kelas ' . $class->name, $class);
 
         return redirect()->route('admin.classes.index')->with('success', 'Kelas berhasil ditambahkan.');
     }
@@ -51,6 +53,7 @@ class ClassController extends Controller
         ]);
 
         $class->update($validated);
+        AuditLog::record('Update', 'Memperbarui data kelas ' . $class->name, $class);
 
         return redirect()->route('admin.classes.index')->with('success', 'Kelas berhasil diperbarui.');
     }
@@ -63,12 +66,15 @@ class ClassController extends Controller
             ]);
         }
 
+        $className = $class->name;
+
         $class->subjects()->with('ebooks')->get()->each(function ($subject) use ($ebookFileCleanup) {
             $subject->ebooks->each(fn ($ebook) => $ebookFileCleanup->delete($ebook));
             $subject->delete();
         });
 
         $class->delete();
+        AuditLog::record('Delete', 'Menghapus kelas ' . $className . ' beserta mata pelajaran dan e-book terkait');
 
         return redirect()->route('admin.classes.index')->with('success', 'Kelas beserta mata pelajaran dan e-book terkait berhasil dihapus.');
     }

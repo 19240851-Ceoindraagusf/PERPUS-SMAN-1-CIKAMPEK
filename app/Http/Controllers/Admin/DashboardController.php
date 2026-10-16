@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AccessLog;
+use App\Models\AuditLog;
 use App\Models\ClassModel;
 use App\Models\Ebook;
 use App\Models\EbookComment;
@@ -31,6 +32,7 @@ class DashboardController extends Controller
         $latestEbooks = Ebook::with('subject.class')->latest()->limit(5)->get();
         $popularEbooks = Ebook::with('subject.class')->withCount(['accessLogs as reads_count' => fn ($query) => $query->where('action', 'read')])->orderByDesc('reads_count')->limit(5)->get();
         $latestAccessLogs = AccessLog::with('ebook.subject.class')->latest('accessed_at')->limit(5)->get();
+        $latestAuditLogs = AuditLog::latest()->limit(6)->get();
         $topClasses = ClassModel::query()
             ->withCount('subjects')
             ->withCount(['subjects as ebooks_count' => fn ($query) => $query
@@ -123,6 +125,6 @@ class DashboardController extends Controller
             ->take(12)
             ->values();
 
-        return view('admin.dashboard', compact('stats', 'latestEbooks', 'popularEbooks', 'latestAccessLogs', 'topClasses', 'topSubjects', 'weeklyAccesses', 'collectionHealth', 'collectionAudit', 'auditEbooks'));
+        return view('admin.dashboard', compact('stats', 'latestEbooks', 'popularEbooks', 'latestAccessLogs', 'latestAuditLogs', 'topClasses', 'topSubjects', 'weeklyAccesses', 'collectionHealth', 'collectionAudit', 'auditEbooks'));
     }
 }

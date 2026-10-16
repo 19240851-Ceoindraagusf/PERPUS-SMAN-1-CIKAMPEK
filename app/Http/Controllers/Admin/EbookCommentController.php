@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\EbookComment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,14 +29,22 @@ class EbookCommentController extends Controller
 
     public function update(Request $request, EbookComment $comment): RedirectResponse
     {
-        $comment->update(['is_approved' => $request->boolean('is_approved')]);
+        $isApproved = $request->boolean('is_approved');
+        $comment->update(['is_approved' => $isApproved]);
+        $comment->load('ebook');
+        $actionName = $isApproved ? 'Menyetujui' : 'Menolak';
+        AuditLog::record('Approve', $actionName . ' komentar siswa "' . $comment->student_name . '" pada e-book "' . ($comment->ebook?->title ?? 'E-book') . '"', $comment);
 
         return back()->with('success', 'Status komentar diperbarui.');
     }
 
     public function destroy(EbookComment $comment): RedirectResponse
     {
+        $comment->load('ebook');
+        $studentName = $comment->student_name;
+        $ebookTitle = $comment->ebook?->title ?? 'E-book';
         $comment->delete();
+        AuditLog::record('Delete', 'Menghapus komentar siswa "' . $studentName . '" pada e-book "' . $ebookTitle . '"');
 
         return back()->with('success', 'Komentar dihapus.');
     }

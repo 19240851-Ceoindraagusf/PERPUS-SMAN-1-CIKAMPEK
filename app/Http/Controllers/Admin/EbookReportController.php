@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\EbookReport;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,6 +28,8 @@ class EbookReportController extends Controller
     {
         $validated = $request->validate(['status' => ['required', 'in:open,in_progress,resolved']]);
         $report->update($validated);
+        $report->load('ebook');
+        AuditLog::record('Update status', 'Memperbarui status laporan e-book "' . ($report->ebook?->title ?? 'E-book') . '" menjadi ' . $validated['status'], $report);
 
         return back()->with('success', 'Status laporan diperbarui.');
     }

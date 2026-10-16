@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\EbookCommentReport;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,6 +28,7 @@ class EbookCommentReportController extends Controller
     {
         $validated = $request->validate(['status' => ['required', 'in:open,resolved']]);
         $report->update($validated);
+        AuditLog::record('Update status', 'Memperbarui status laporan komentar menjadi ' . $validated['status'], $report);
 
         return back()->with('success', 'Status laporan komentar diperbarui.');
     }

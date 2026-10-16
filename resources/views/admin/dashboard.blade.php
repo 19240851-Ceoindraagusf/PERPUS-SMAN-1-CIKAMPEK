@@ -224,27 +224,41 @@
     <div class="col-12">
         <div class="admin-card card">
             <div class="card-body">
-                <h2 class="h5">Aktivitas Akses Terbaru</h2>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h2 class="h5 mb-1">Log Aktivitas Terakhir</h2>
+                        <p class="small text-muted mb-0">Riwayat aksi admin seperti menambah, mengedit, dan menghapus e-book atau data perpustakaan.</p>
+                    </div>
+                    <a href="{{ route('admin.audit-logs.index') }}" class="btn btn-sm btn-outline-success">
+                        <i class="bi bi-clock-history me-1"></i> Lihat Semua Log
+                    </a>
+                </div>
                 <div class="table-responsive">
                     <table class="table align-middle mb-0">
                         <thead>
-                            <tr>
-                                <th>E-Book</th>
-                                <th>Kelas / Mapel</th>
-                                <th>Aksi / Waktu</th>
-                                <th>IP</th>
+                            <tr class="text-uppercase text-muted" style="font-size: 0.78rem; letter-spacing: 0.05em; border-bottom: 2px solid #edf2f7;">
+                                <th style="font-weight: 700; width: 16%;">WAKTU</th>
+                                <th style="font-weight: 700; width: 18%;">USER</th>
+                                <th style="font-weight: 700; width: 14%;">AKSI</th>
+                                <th style="font-weight: 700; width: 38%;">AKTIVITAS</th>
+                                <th style="font-weight: 700; width: 14%;">IP</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($latestAccessLogs as $log)
-                                <tr>
-                                    <td>{{ $log->ebook->title ?? '-' }}</td>
-                                    <td class="text-muted">Kelas {{ $log->ebook->subject->class->name ?? '-' }} / {{ $log->ebook->subject->name ?? '-' }}</td>
-                                    <td><span class="badge text-bg-light">{{ ['view' => 'Detail', 'read' => 'Baca', 'download' => 'Unduh'][$log->action] ?? $log->action }}</span><div class="small text-muted mt-1">{{ optional($log->accessed_at)->format('d M Y H:i') }}</div></td>
-                                    <td class="text-muted">{{ $log->ip_address ?: '-' }}</td>
+                            @forelse($latestAuditLogs as $log)
+                                <tr style="border-bottom: 1px solid #f1f4f8;">
+                                    <td class="text-nowrap" style="color: #4b5563; font-size: 0.88rem;">{{ $log->created_at ? $log->created_at->format('d/m/Y H:i') : '-' }}</td>
+                                    <td class="fw-semibold text-dark" style="font-size: 0.88rem;">{{ $log->user_name ?? ($log->user?->name ?? 'Admin Perpustakaan') }}</td>
+                                    <td>
+                                        <span class="badge border border-secondary-subtle bg-white text-dark fw-medium px-2 py-1 rounded" style="font-size: 0.78rem;">
+                                            {{ $log->action }}
+                                        </span>
+                                    </td>
+                                    <td style="color: #374151; font-size: 0.88rem;">{{ $log->description }}</td>
+                                    <td class="text-muted" style="font-size: 0.85rem;">{{ $log->ip_address ?: '-' }}</td>
                                 </tr>
                             @empty
-                                <tr><td colspan="4" class="text-muted">Belum ada aktivitas akses.</td></tr>
+                                <tr><td colspan="5" class="text-muted text-center py-4">Belum ada aktivitas yang tercatat.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

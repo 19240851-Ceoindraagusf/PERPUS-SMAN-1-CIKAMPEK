@@ -334,9 +334,9 @@
 
             <div class="sidebar-nav-label">Monitoring</div>
 
-            <a class="nav-link {{ request()->routeIs('admin.access-logs.*') ? 'active' : '' }}"
-               href="{{ route('admin.access-logs.index') }}">
-                <i class="bi bi-activity"></i> Access Logs
+            <a class="nav-link {{ request()->routeIs('admin.audit-logs.*', 'admin.access-logs.*') ? 'active' : '' }}"
+               href="{{ route('admin.audit-logs.index') }}">
+                <i class="bi bi-activity"></i> Audit Log
             </a>
 
             <div class="sidebar-nav-label">Laporan</div>

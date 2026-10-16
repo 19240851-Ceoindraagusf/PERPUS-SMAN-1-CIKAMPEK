@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AccessLogController;
+use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\ClassController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -26,6 +27,7 @@ Route::post('/ebook/{ebook}/komentar', [LibraryController::class, 'storeComment'
 Route::post('/komentar/{comment}/laporkan', [LibraryController::class, 'storeCommentReport'])->middleware('throttle:comment-reports')->name('comments.reports.store');
 Route::view('/favorit', 'public.favorites')->name('favorites');
 Route::get('/komentar-siswa', [LibraryController::class, 'comments'])->name('comments.index');
+Route::get('/audit-logs', fn () => redirect()->route('admin.audit-logs.index'));
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -38,7 +40,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('classes', ClassController::class)->except('show');
         Route::resource('subjects', SubjectController::class)->except('show');
         Route::resource('ebooks', EbookController::class)->except('show');
-        Route::get('/access-logs', [AccessLogController::class, 'index'])->name('access-logs.index');
+        Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+        Route::get('/access-logs', [AuditLogController::class, 'index'])->name('access-logs.index');
         Route::get('/laporan-e-book', [EbookReportController::class, 'index'])->name('ebook-reports.index');
         Route::patch('/laporan-e-book/{report}', [EbookReportController::class, 'update'])->name('ebook-reports.update');
         Route::get('/komentar-e-book', [EbookCommentController::class, 'index'])->name('ebook-comments.index');

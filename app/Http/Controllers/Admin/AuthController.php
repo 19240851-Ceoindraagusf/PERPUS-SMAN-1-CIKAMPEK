@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -35,6 +36,8 @@ class AuthController extends Controller
                 return back()->withErrors(['email' => 'Akun ini tidak memiliki akses admin.']);
             }
 
+            AuditLog::record('Login', 'Admin (' . Auth::user()->name . ') berhasil login ke sistem');
+
             return redirect()->intended(route('admin.dashboard'));
         }
 
@@ -43,6 +46,9 @@ class AuthController extends Controller
 
     public function logout(Request $request): RedirectResponse
     {
+        $userName = Auth::user()?->name ?: 'Admin Perpustakaan';
+        AuditLog::record('Logout', 'Admin (' . $userName . ') keluar dari sistem', null, $userName);
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

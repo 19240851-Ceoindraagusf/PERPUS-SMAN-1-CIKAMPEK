@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\ClassModel;
 use App\Models\Ebook;
 use App\Models\Subject;
@@ -93,6 +94,7 @@ class EbookController extends Controller
         unset($validated['file'], $validated['cover']);
 
         $ebook = Ebook::create($validated);
+        AuditLog::record('Create', 'Menambahkan e-book "' . $ebook->title . '"', $ebook);
         $subject->description = $metadataExtractor->buildSubjectDescription($subject->name, $metadata['title'], $metadata['description']);
         $subject->save();
         $this->spreadEbookToUmbrellaSubjects($ebook, $subject, $metadataExtractor);
@@ -155,6 +157,7 @@ class EbookController extends Controller
         $oldSubjectId = $ebook->subject_id;
 
         $ebook->update($validated);
+        AuditLog::record('Update', 'Memperbarui data e-book "' . $ebook->title . '"', $ebook);
         $this->syncGroupCoverForEbook($ebook, $ebook->cover_path);
 
         $updatedSubject = Subject::findOrFail($ebook->subject_id);
@@ -186,12 +189,14 @@ class EbookController extends Controller
             ]);
         }
 
+        $title = $ebook->title;
         $subjectId = $ebook->subject_id;
 
         $this->deleteStoredFileIfUnused($ebook->file_path, $ebook->id);
         $this->deleteStoredFileIfUnused($ebook->cover_path, $ebook->id, 'cover_path');
 
         $ebook->delete();
+        AuditLog::record('Delete', 'Menghapus e-book "' . $title . '"');
         $this->syncSubjectStatus($subjectId);
 
         $redirectParams = array_filter([

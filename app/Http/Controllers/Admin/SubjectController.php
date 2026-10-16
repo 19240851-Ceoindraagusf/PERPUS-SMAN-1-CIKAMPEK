@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\ClassModel;
 use App\Models\Subject;
 use App\Services\EbookFileCleanup;
@@ -72,7 +73,9 @@ class SubjectController extends Controller
 
         $validated['is_active'] = false;
 
-        Subject::create($validated);
+        $subject = Subject::create($validated);
+        $subject->load('class');
+        AuditLog::record('Create', 'Menambahkan mata pelajaran "' . $subject->name . '" (Kelas ' . ($subject->class?->name ?? '-') . ')', $subject);
 
         return redirect()->route('admin.subjects.index')->with('success', 'Mata pelajaran berhasil ditambahkan.');
     }
@@ -99,6 +102,8 @@ class SubjectController extends Controller
         $validated['is_active'] = $subject->ebooks()->where('is_active', true)->exists();
 
         $subject->update($validated);
+        $subject->load('class');
+        AuditLog::record('Update', 'Memperbarui mata pelajaran "' . $subject->name . '" (Kelas ' . ($subject->class?->name ?? '-') . ')', $subject);
 
         $redirectParams = array_filter([
             'class_id' => $request->input('return_class_id') ?? $request->input('class_id'),
@@ -115,9 +120,13 @@ class SubjectController extends Controller
             ]);
         }
 
+        $subjectName = $subject->name;
+        $className = $subject->class?->name ?? '-';
+
         $subject->ebooks()->get()->each(fn ($ebook) => $ebookFileCleanup->delete($ebook));
 
         $subject->delete();
+        AuditLog::record('Delete', 'Menghapus mata pelajaran "' . $subjectName . '" (Kelas ' . $className . ')');
 
         $redirectParams = array_filter([
             'class_id' => $request->input('return_class_id') ?? $request->input('class_id'),
