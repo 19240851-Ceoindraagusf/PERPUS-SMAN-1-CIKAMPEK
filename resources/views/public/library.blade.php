@@ -39,9 +39,10 @@
                     <label class="form-label small fw-semibold text-muted" for="q">
                         <i class="bi bi-search me-1 text-success"></i> Kata Kunci
                     </label>
-                    <div class="input-group">
+                    <div class="input-group position-relative">
                         <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                        <input type="search" class="form-control border-start-0 ps-0" id="q" name="q" value="{{ $search }}" data-smart-search autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="catalog-search-suggestions" placeholder="Contoh: Matematika, X, Biologi...">
+                        <input type="search" class="form-control border-start-0 ps-0 pe-5" id="q" name="q" value="{{ $search }}" data-smart-search autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="catalog-search-suggestions" placeholder="Contoh: Matematika, X, Biologi...">
+                        <span class="search-shortcut-badge position-absolute end-0 top-50 translate-middle-y me-3 d-none d-md-inline-block z-3">Ctrl K</span>
                     </div>
                     <div class="search-suggestions" id="catalog-search-suggestions" data-search-suggestions role="listbox" hidden></div>
                 </div>
@@ -220,11 +221,14 @@
                                     <div class="text-truncate mb-1"><i class="bi bi-person me-1"></i> {{ $ebook->author ?: 'SMAN 1 Cikampek' }}</div>
                                     <div class="text-truncate"><i class="bi bi-calendar3 me-1"></i> {{ $ebook->publication_year ?: 'Kurikulum Merdeka' }}</div>
                                 </div>
-                                <div class="ebook-card-actions mt-auto pt-2 border-top d-flex align-items-center justify-content-between gap-2">
+                                <div class="ebook-card-actions mt-auto pt-2 border-top d-flex align-items-center justify-content-between gap-1">
                                     <a href="{{ route('ebooks.reader', $ebook) }}" class="btn btn-sm btn-success rounded-pill px-3 fw-semibold flex-grow-1 d-inline-flex align-items-center justify-content-center gap-1" title="Buka dan baca sekarang">
                                         <i class="bi bi-book-half"></i> <span>Baca</span>
                                     </a>
-                                    <a href="{{ route('ebooks.show', $ebook) }}" class="btn btn-sm btn-outline-secondary rounded-pill px-2" title="Detail & info lengkap">
+                                    <button type="button" class="btn btn-sm btn-outline-danger rounded-circle p-1" style="width:32px;height:32px;" title="Simpan ke favorit" data-favorite-button data-ebook-id="{{ $ebook->id }}" data-ebook-title="{{ $ebook->title }}" data-ebook-subject="{{ $ebook->subject->name }}" data-ebook-class="{{ $ebook->subject->class->name }}" data-ebook-url="{{ route('ebooks.show', $ebook) }}" data-ebook-reader-url="{{ route('ebooks.reader', $ebook) }}" data-ebook-cover="{{ $ebook->cover_path ? asset('storage/' . $ebook->cover_path) : '' }}" data-ebook-author="{{ $ebook->author ?: '' }}">
+                                        ♡
+                                    </button>
+                                    <a href="{{ route('ebooks.show', $ebook) }}" class="btn btn-sm btn-outline-secondary rounded-circle p-1" style="width:32px;height:32px;display:grid;place-items:center;" title="Detail & info lengkap">
                                         <i class="bi bi-info-circle"></i>
                                     </a>
                                 </div>

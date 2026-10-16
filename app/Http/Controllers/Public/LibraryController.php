@@ -195,12 +195,17 @@ class LibraryController extends Controller
                     ->orWhere('author', 'like', "%{$search}%")
                     ->orWhereHas('subject', fn ($subjectQuery) => $subjectQuery->where('name', 'like', "%{$search}%"));
             })
-            ->limit(20)
+            ->limit(10)
             ->get()
             ->map(fn (Ebook $ebook) => [
                 'title' => $ebook->title,
+                'author' => $ebook->author ?: 'SMAN 1 Cikampek',
+                'class_name' => $ebook->subject->class->name ?? '-',
+                'subject_name' => $ebook->subject->name ?? 'E-book',
                 'meta' => 'Kelas '.($ebook->subject->class->name ?? '-').' · '.($ebook->subject->name ?? 'E-book'),
+                'cover_url' => $ebook->cover_path ? asset('storage/'.$ebook->cover_path) : null,
                 'url' => route('ebooks.show', $ebook),
+                'reader_url' => route('ebooks.reader', $ebook),
             ]);
 
         $correction = $ebooks->isEmpty() ? $this->closestSearchTerm($search) : null;

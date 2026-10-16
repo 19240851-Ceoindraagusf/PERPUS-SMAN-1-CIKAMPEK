@@ -544,12 +544,121 @@
         .saved-book-card + .saved-book-card { margin-top: .75rem; }
         .study-banner { border: 1px solid var(--school-line); border-radius: 18px; background: linear-gradient(115deg, #eff8f4, #f7fbff); padding: 1.5rem; display: flex; gap: 1rem; justify-content: space-between; align-items: center; }
         .study-banner .eyebrow { color: var(--school-green); }
-        .subject-icon { font-size: 1.3rem; }
-        .search-suggestions { position: absolute; z-index: 1090; top: calc(100% + .25rem); left: 0; right: 0; max-height: 360px; overflow-y: auto; overscroll-behavior: contain; background: #fff; border: 1px solid var(--school-line); border-radius: 12px; box-shadow: 0 14px 30px rgba(15,35,63,.22); }
-        .search-suggestion-heading { position: sticky; top: 0; z-index: 1; padding: .55rem .85rem; background: #f7faf9; border-bottom: 1px solid var(--school-line); color: var(--school-muted); font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
-        .search-suggestion { display: block; padding: .7rem .85rem; color: var(--school-ink); text-decoration: none; }
-        .search-suggestion:hover, .search-suggestion:focus, .search-suggestion.active { background: var(--school-soft); color: var(--school-green); }
-        .search-all-results { display: block; position: sticky; bottom: 0; padding: .7rem .85rem; background: #fff; border-top: 1px solid var(--school-line); color: var(--school-green); font-size: .875rem; font-weight: 700; text-decoration: none; }
+        .search-suggestions { 
+            position: absolute; 
+            z-index: 1090; 
+            top: calc(100% + .4rem); 
+            left: 0; 
+            right: 0; 
+            max-height: 420px; 
+            overflow-y: auto; 
+            overscroll-behavior: contain; 
+            background: #ffffff; 
+            border: 1px solid var(--school-line); 
+            border-radius: 16px; 
+            box-shadow: 0 18px 45px rgba(15, 35, 63, 0.18); 
+        }
+        [data-bs-theme="dark"] .search-suggestions {
+            background: #152238;
+            border-color: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.5);
+        }
+        .search-suggestion-heading { 
+            position: sticky; 
+            top: 0; 
+            z-index: 2; 
+            padding: .65rem 1rem; 
+            background: #f7faf9; 
+            border-bottom: 1px solid var(--school-line); 
+            color: var(--school-muted); 
+            font-size: .72rem; 
+            font-weight: 700; 
+            letter-spacing: .08em; 
+            text-transform: uppercase; 
+        }
+        [data-bs-theme="dark"] .search-suggestion-heading {
+            background: #111b2d;
+            border-bottom-color: rgba(255,255,255,0.08);
+            color: #94a3b8;
+        }
+        .search-suggestion { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.85rem; 
+            padding: .7rem 1rem; 
+            color: var(--school-ink); 
+            text-decoration: none; 
+            border-bottom: 1px solid rgba(0,0,0,0.03); 
+            transition: all 0.18s ease;
+        }
+        [data-bs-theme="dark"] .search-suggestion {
+            color: #e2e8f0;
+            border-bottom-color: rgba(255,255,255,0.04);
+        }
+        .search-suggestion:hover, .search-suggestion:focus, .search-suggestion.active { 
+            background: var(--school-soft); 
+            color: var(--school-green); 
+            padding-left: 1.25rem;
+        }
+        [data-bs-theme="dark"] .search-suggestion:hover,
+        [data-bs-theme="dark"] .search-suggestion:focus,
+        [data-bs-theme="dark"] .search-suggestion.active {
+            background: rgba(16, 185, 129, 0.14);
+            color: #6ee7b7;
+        }
+        .search-all-results { 
+            display: block; 
+            position: sticky; 
+            bottom: 0; 
+            padding: .75rem 1rem; 
+            background: #ffffff; 
+            border-top: 1px solid var(--school-line); 
+            color: var(--school-green); 
+            font-size: .875rem; 
+            font-weight: 700; 
+            text-decoration: none; 
+        }
+        [data-bs-theme="dark"] .search-all-results {
+            background: #152238;
+            border-top-color: rgba(255, 255, 255, 0.1);
+            color: #34d399;
+        }
+        .search-shortcut-badge {
+            font-size: 0.68rem;
+            font-weight: 700;
+            background: rgba(255,255,255,0.25);
+            color: inherit;
+            padding: 2px 7px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.4);
+            pointer-events: none;
+            letter-spacing: 0.05em;
+        }
+        .hero-search .search-shortcut-badge {
+            background: rgba(255,255,255,0.25);
+            color: #fff;
+        }
+        .catalog-search .search-shortcut-badge {
+            background: rgba(0,0,0,0.05);
+            color: #64748b;
+            border-color: rgba(0,0,0,0.08);
+        }
+
+        /* Reader Sepia & Dark Enhancements */
+        .reader-shell.reader-sepia { background: #fbf0d9 !important; }
+        .reader-shell.reader-sepia .reader-frame { filter: sepia(0.35) contrast(0.95); }
+        .reader-progress-track {
+            height: 4px;
+            background: rgba(0,0,0,0.06);
+            border-radius: 999px;
+            overflow: hidden;
+            width: 100%;
+        }
+        .reader-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--school-green), #10b981);
+            transition: width 0.3s ease;
+        }
         /* ==========================================================================
            FAVORITES & SAVED BOOKS PAGE STYLING
            ========================================================================== */
@@ -1629,11 +1738,28 @@
                             panel.append(heading);
                         }
                         suggestions.forEach((item, index) => {
-                            const link = document.createElement('a'); link.href = item.url; link.className = 'search-suggestion';
-                            link.id = `search-suggestion-${index}`; link.setAttribute('role', 'option');
-                            const title = document.createElement('strong'); title.className = 'd-block small'; title.textContent = item.title;
-                            const meta = document.createElement('span'); meta.className = 'small text-muted'; meta.textContent = item.meta;
-                            link.append(title, meta); panel.append(link);
+                            const link = document.createElement('a'); 
+                            link.href = item.url; 
+                            link.className = 'search-suggestion';
+                            link.id = `search-suggestion-${index}`; 
+                            link.setAttribute('role', 'option');
+
+                            const thumbHtml = item.cover_url 
+                                ? `<img src="${item.cover_url}" class="rounded shadow-sm flex-shrink-0" style="width:36px;height:48px;object-fit:cover;" alt="Cover">`
+                                : `<div class="rounded shadow-sm flex-shrink-0 d-flex align-items-center justify-content-center bg-light text-muted" style="width:36px;height:48px;font-size:1.1rem;"><i class="bi bi-book"></i></div>`;
+
+                            link.innerHTML = `
+                                ${thumbHtml}
+                                <div class="flex-grow-1 min-w-0">
+                                    <strong class="d-block small text-truncate mb-0">${item.title}</strong>
+                                    <div class="d-flex align-items-center gap-2 mt-1">
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size:0.68rem;">Kelas ${item.class_name || '-'}</span>
+                                        <span class="small text-muted text-truncate" style="font-size:0.75rem;">${item.author || item.subject_name || ''}</span>
+                                    </div>
+                                </div>
+                                <i class="bi bi-arrow-right text-muted opacity-50 small ms-auto"></i>
+                            `;
+                            panel.append(link);
                         });
                         if (!Array.isArray(payload) && payload.correction) {
                             const correction = document.createElement('a'); correction.href = payload.correction.url; correction.className = 'search-suggestion fw-semibold';
@@ -1667,6 +1793,25 @@
                 window.location.assign(link.href);
             });
             input.addEventListener('blur', () => setTimeout(clear, 160));
+        });
+
+        // Global Keyboard Shortcut: Ctrl+K or '/' to focus search
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                const searchInput = document.querySelector('[data-smart-search]');
+                if (searchInput) {
+                    searchInput.focus();
+                    searchInput.select();
+                }
+            } else if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+                e.preventDefault();
+                const searchInput = document.querySelector('[data-smart-search]');
+                if (searchInput) {
+                    searchInput.focus();
+                    searchInput.select();
+                }
+            }
         });
     })();
 </script>

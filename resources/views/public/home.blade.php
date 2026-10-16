@@ -14,7 +14,8 @@
                 <form action="{{ route('home') }}" method="GET" class="hero-panel hero-search p-3 mt-4">
                     <div class="row g-2 align-items-center">
                         <div class="col-md-6 position-relative">
-                            <input type="search" name="q" value="{{ request('q') }}" class="form-control form-control-lg" data-smart-search autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="hero-search-suggestions" placeholder="Cari judul, mata pelajaran, atau penulis">
+                            <input type="search" name="q" value="{{ request('q') }}" class="form-control form-control-lg pe-5" data-smart-search autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="hero-search-suggestions" placeholder="Cari judul, mata pelajaran, atau penulis...">
+                            <span class="search-shortcut-badge position-absolute end-0 top-50 translate-middle-y me-3 d-none d-md-inline-block">Ctrl K</span>
                             <div class="search-suggestions" id="hero-search-suggestions" data-search-suggestions role="listbox" hidden></div>
                         </div>
                         <div class="col-md-3">
@@ -37,25 +38,60 @@
                     @endforeach
                 </div>
             </div>
-            <div class="col-lg-5 hero-collection ps-lg-5">
-                <div class="ps-lg-2">
-                    <p class="eyebrow mb-2">Koleksi kami</p>
-                    <h2 class="h5 mb-3">Pilih kelasmu, lalu mulai belajar.</h2>
-                    <div class="row g-2">
+            <div class="col-lg-5 hero-collection ps-lg-4">
+                <div class="hero-panel p-4 rounded-4 shadow-lg position-relative overflow-hidden" style="border: 1px solid rgba(255,255,255,0.22); background: rgba(255,255,255,0.12); backdrop-filter: blur(16px);">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="badge rounded-pill px-3 py-1 bg-white bg-opacity-25 text-white border border-white border-opacity-25 fw-semibold" style="font-size: 0.78rem;">
+                            <i class="bi bi-shield-check me-1"></i> Kurikulum Merdeka
+                        </span>
+                        <span class="small text-white-50"><i class="bi bi-wifi me-1"></i> Akses 24 Jam</span>
+                    </div>
+
+                    <h2 class="h5 text-white fw-bold mb-3">E-Book Pembelajaran Digital</h2>
+
+                    <div class="row g-2 mb-3">
                         <div class="col-6">
-                            <div class="hero-stat"><div class="h4 fw-bold mb-0">{{ $stats['classes'] }}</div><div class="small opacity-75">Kelas aktif</div></div>
+                            <div class="hero-stat p-3 rounded-3" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);">
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <i class="bi bi-mortarboard text-warning fs-5"></i>
+                                    <div class="h4 fw-bold mb-0 text-white">{{ $stats['classes'] }}</div>
+                                </div>
+                                <div class="small text-white-50">Tingkat Kelas</div>
+                            </div>
                         </div>
                         <div class="col-6">
-                            <div class="hero-stat"><div class="h4 fw-bold mb-0">{{ $stats['subjects'] }}</div><div class="small opacity-75">Mata pelajaran</div></div>
+                            <div class="hero-stat p-3 rounded-3" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);">
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <i class="bi bi-journal-bookmark text-info fs-5"></i>
+                                    <div class="h4 fw-bold mb-0 text-white">{{ $stats['subjects'] }}</div>
+                                </div>
+                                <div class="small text-white-50">Mata Pelajaran</div>
+                            </div>
                         </div>
                         <div class="col-6">
-                            <div class="hero-stat"><div class="h4 fw-bold mb-0">{{ $stats['ebooks'] }}</div><div class="small opacity-75">E-book</div></div>
+                            <div class="hero-stat p-3 rounded-3" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);">
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <i class="bi bi-book text-success fs-5"></i>
+                                    <div class="h4 fw-bold mb-0 text-white">{{ $stats['ebooks'] }}</div>
+                                </div>
+                                <div class="small text-white-50">Koleksi E-Book</div>
+                            </div>
                         </div>
                         <div class="col-6">
-                            <div class="hero-stat"><div class="h4 fw-bold mb-0">{{ $stats['reads'] }}</div><div class="small opacity-75">Mulai dibaca</div></div>
+                            <div class="hero-stat p-3 rounded-3" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);">
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <i class="bi bi-eye text-primary fs-5"></i>
+                                    <div class="h4 fw-bold mb-0 text-white">{{ $stats['reads'] }}</div>
+                                </div>
+                                <div class="small text-white-50">Sesi Dibaca</div>
+                            </div>
                         </div>
                     </div>
-                    <a href="{{ route('library') }}" class="btn btn-light mt-4">Jelajahi Semua Koleksi</a>
+
+                    <a href="{{ route('library') }}" class="btn btn-light w-100 fw-bold rounded-pill py-2 shadow-sm d-flex align-items-center justify-content-center gap-2">
+                        <span>Jelajahi Semua Koleksi</span>
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
                 </div>
             </div>
         </div>
@@ -146,30 +182,38 @@
         @forelse($latestEbooks as $ebook)
             <div class="col-6 col-md-4 col-lg-3">
                 <article class="ebook-modern-card card h-100">
-                    <a class="text-decoration-none text-dark d-flex flex-column h-100" href="{{ route('ebooks.show', $ebook) }}">
-                        <div class="ebook-cover-wrapper position-relative">
-                            <span class="ebook-floating-badge badge-new">
-                                <i class="bi bi-stars me-1"></i> Baru
-                            </span>
+                    <div class="ebook-cover-wrapper position-relative">
+                        <span class="ebook-floating-badge badge-new">
+                            <i class="bi bi-stars me-1"></i> Baru
+                        </span>
+                        <a href="{{ route('ebooks.show', $ebook) }}" class="d-block w-100 h-100" title="{{ $ebook->title }}">
                             @include('public._book-cover', ['ebook' => $ebook])
+                        </a>
+                    </div>
+                    <div class="ebook-card-content d-flex flex-column flex-grow-1 p-3">
+                        <div class="d-flex flex-wrap align-items-center gap-1 mb-2">
+                            <span class="badge badge-soft">Kelas {{ $ebook->subject->class->name ?? '-' }}</span>
+                            <span class="badge text-bg-light border small text-muted text-truncate" style="max-width: 120px;">{{ $ebook->subject->name ?? 'Mapel' }}</span>
                         </div>
-                        <div class="ebook-card-content d-flex flex-column flex-grow-1 p-3">
-                            <div class="d-flex flex-wrap align-items-center gap-1 mb-2">
-                                <span class="badge badge-soft">Kelas {{ $ebook->subject->class->name ?? '-' }}</span>
-                                <span class="badge text-bg-light border small text-muted text-truncate" style="max-width: 120px;">{{ $ebook->subject->name ?? 'Mapel' }}</span>
-                            </div>
-                            <h3 class="ebook-card-title h6 mb-1" title="{{ $ebook->title }}">{{ $ebook->title }}</h3>
-                            <div class="ebook-card-meta small text-muted mb-3">
-                                <div class="text-truncate mb-1"><i class="bi bi-person me-1"></i> {{ $ebook->author ?: 'SMAN 1 Cikampek' }}</div>
-                                <div class="text-truncate"><i class="bi bi-calendar3 me-1"></i> {{ $ebook->publication_year ?: 'Kurikulum Merdeka' }}</div>
-                            </div>
-                            <div class="ebook-card-actions mt-auto pt-2 border-top d-flex align-items-center justify-content-between gap-1">
-                                <span class="btn btn-sm btn-success rounded-pill px-3 fw-semibold w-100 d-inline-flex align-items-center justify-content-center gap-1">
-                                    <i class="bi bi-book-half"></i> <span>Baca E-Book</span>
-                                </span>
-                            </div>
+                        <h3 class="ebook-card-title h6 mb-1" title="{{ $ebook->title }}">
+                            <a href="{{ route('ebooks.show', $ebook) }}">{{ $ebook->title }}</a>
+                        </h3>
+                        <div class="ebook-card-meta small text-muted mb-3">
+                            <div class="text-truncate mb-1"><i class="bi bi-person me-1"></i> {{ $ebook->author ?: 'SMAN 1 Cikampek' }}</div>
+                            <div class="text-truncate"><i class="bi bi-calendar3 me-1"></i> {{ $ebook->publication_year ?: 'Kurikulum Merdeka' }}</div>
                         </div>
-                    </a>
+                        <div class="ebook-card-actions mt-auto pt-2 border-top d-flex align-items-center justify-content-between gap-1">
+                            <a href="{{ route('ebooks.reader', $ebook) }}" class="btn btn-sm btn-success rounded-pill px-3 fw-semibold flex-grow-1 d-inline-flex align-items-center justify-content-center gap-1" title="Buka dan baca sekarang">
+                                <i class="bi bi-book-half"></i> <span>Baca</span>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger rounded-circle p-1" style="width:32px;height:32px;" title="Simpan ke favorit" data-favorite-button data-ebook-id="{{ $ebook->id }}" data-ebook-title="{{ $ebook->title }}" data-ebook-subject="{{ $ebook->subject->name }}" data-ebook-class="{{ $ebook->subject->class->name }}" data-ebook-url="{{ route('ebooks.show', $ebook) }}" data-ebook-reader-url="{{ route('ebooks.reader', $ebook) }}" data-ebook-cover="{{ $ebook->cover_path ? asset('storage/' . $ebook->cover_path) : '' }}" data-ebook-author="{{ $ebook->author ?: '' }}">
+                                ♡
+                            </button>
+                            <a href="{{ route('ebooks.show', $ebook) }}" class="btn btn-sm btn-outline-secondary rounded-circle p-1" style="width:32px;height:32px;display:grid;place-items:center;" title="Detail lengkap">
+                                <i class="bi bi-info-circle"></i>
+                            </a>
+                        </div>
+                    </div>
                 </article>
             </div>
         @empty
@@ -195,32 +239,40 @@
         @forelse($popularEbooks as $ebook)
             <div class="col-6 col-md-4 col-lg-3">
                 <article class="ebook-modern-card card h-100">
-                    <a class="text-decoration-none text-dark d-flex flex-column h-100" href="{{ route('ebooks.show', $ebook) }}">
-                        <div class="ebook-cover-wrapper position-relative">
-                            <span class="ebook-floating-badge badge-popular">
-                                <i class="bi bi-fire me-1"></i> Populer
-                            </span>
+                    <div class="ebook-cover-wrapper position-relative">
+                        <span class="ebook-floating-badge badge-popular">
+                            <i class="bi bi-fire me-1"></i> Populer
+                        </span>
+                        <a href="{{ route('ebooks.show', $ebook) }}" class="d-block w-100 h-100" title="{{ $ebook->title }}">
                             @include('public._book-cover', ['ebook' => $ebook])
+                        </a>
+                    </div>
+                    <div class="ebook-card-content d-flex flex-column flex-grow-1 p-3">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-1 mb-2">
+                            <span class="badge badge-soft">Kelas {{ $ebook->subject->class->name ?? '-' }}</span>
+                            <span class="badge rounded-pill text-bg-warning fw-bold text-dark" style="font-size: 0.72rem;">
+                                <i class="bi bi-eye-fill me-1"></i> {{ $ebook->reads_count }}x
+                            </span>
                         </div>
-                        <div class="ebook-card-content d-flex flex-column flex-grow-1 p-3">
-                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-1 mb-2">
-                                <span class="badge badge-soft">Kelas {{ $ebook->subject->class->name ?? '-' }}</span>
-                                <span class="badge rounded-pill text-bg-warning fw-bold text-dark" style="font-size: 0.72rem;">
-                                    <i class="bi bi-eye-fill me-1"></i> {{ $ebook->reads_count }}x
-                                </span>
-                            </div>
-                            <h3 class="ebook-card-title h6 mb-1" title="{{ $ebook->title }}">{{ $ebook->title }}</h3>
-                            <div class="ebook-card-meta small text-muted mb-3">
-                                <div class="text-truncate mb-1"><i class="bi bi-person me-1"></i> {{ $ebook->author ?: 'SMAN 1 Cikampek' }}</div>
-                                <div class="text-truncate"><i class="bi bi-book me-1"></i> {{ $ebook->subject->name ?? 'Mata Pelajaran' }}</div>
-                            </div>
-                            <div class="ebook-card-actions mt-auto pt-2 border-top d-flex align-items-center justify-content-between gap-1">
-                                <span class="btn btn-sm btn-success rounded-pill px-3 fw-semibold w-100 d-inline-flex align-items-center justify-content-center gap-1">
-                                    <i class="bi bi-book-half"></i> <span>Baca E-Book</span>
-                                </span>
-                            </div>
+                        <h3 class="ebook-card-title h6 mb-1" title="{{ $ebook->title }}">
+                            <a href="{{ route('ebooks.show', $ebook) }}">{{ $ebook->title }}</a>
+                        </h3>
+                        <div class="ebook-card-meta small text-muted mb-3">
+                            <div class="text-truncate mb-1"><i class="bi bi-person me-1"></i> {{ $ebook->author ?: 'SMAN 1 Cikampek' }}</div>
+                            <div class="text-truncate"><i class="bi bi-book me-1"></i> {{ $ebook->subject->name ?? 'Mata Pelajaran' }}</div>
                         </div>
-                    </a>
+                        <div class="ebook-card-actions mt-auto pt-2 border-top d-flex align-items-center justify-content-between gap-1">
+                            <a href="{{ route('ebooks.reader', $ebook) }}" class="btn btn-sm btn-success rounded-pill px-3 fw-semibold flex-grow-1 d-inline-flex align-items-center justify-content-center gap-1" title="Buka dan baca sekarang">
+                                <i class="bi bi-book-half"></i> <span>Baca</span>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger rounded-circle p-1" style="width:32px;height:32px;" title="Simpan ke favorit" data-favorite-button data-ebook-id="{{ $ebook->id }}" data-ebook-title="{{ $ebook->title }}" data-ebook-subject="{{ $ebook->subject->name }}" data-ebook-class="{{ $ebook->subject->class->name }}" data-ebook-url="{{ route('ebooks.show', $ebook) }}" data-ebook-reader-url="{{ route('ebooks.reader', $ebook) }}" data-ebook-cover="{{ $ebook->cover_path ? asset('storage/' . $ebook->cover_path) : '' }}" data-ebook-author="{{ $ebook->author ?: '' }}">
+                                ♡
+                            </button>
+                            <a href="{{ route('ebooks.show', $ebook) }}" class="btn btn-sm btn-outline-secondary rounded-circle p-1" style="width:32px;height:32px;display:grid;place-items:center;" title="Detail lengkap">
+                                <i class="bi bi-info-circle"></i>
+                            </a>
+                        </div>
+                    </div>
                 </article>
             </div>
         @empty

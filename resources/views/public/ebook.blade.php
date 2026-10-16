@@ -38,12 +38,12 @@
                 <div class="col-sm-6"><div class="metric"><div class="small text-muted">Penulis</div><div class="fw-semibold">{{ $ebook->author ?: '-' }}</div></div></div>
                 <div class="col-sm-6"><div class="metric"><div class="small text-muted">Penerbit</div><div class="fw-semibold">{{ $ebook->publisher ?: '-' }}</div></div></div>
                 <div class="col-sm-6"><div class="metric"><div class="small text-muted">Tahun</div><div class="fw-semibold">{{ $ebook->publication_year ?: '-' }}</div></div></div>
-                <div class="col-sm-6"><div class="metric"><div class="small text-muted">Mulai dibaca</div><div class="fw-semibold">{{ $ebook->reads_count }} kali</div></div></div>
+                <div class="col-sm-6"><div class="metric"><div class="small text-muted">Telah dibaca</div><div class="fw-semibold">{{ $ebook->reads_count }} kali</div></div></div>
                 @php
                     $avgRating = $ebook->comments()->whereNotNull('rating')->avg('rating');
                 @endphp
                 @if($avgRating)
-                <div class="col-sm-6"><div class="metric"><div class="small text-muted">Rating Pembaca</div><div class="fw-semibold">{{ number_format($avgRating, 1) }} / 5 ⭐</div></div></div>
+                <div class="col-sm-6"><div class="metric"><div class="small text-muted">Rating Pembaca</div><div class="fw-semibold">{{ number_format($avgRating, 1) }} / 5.0 ⭐</div></div></div>
                 @endif
             </div>
 
@@ -52,10 +52,7 @@
                     <a href="{{ route('ebooks.reader', $ebook) }}" class="btn btn-success flex-fill">Baca Sekarang</a>
                     <a href="{{ route('ebooks.download', $ebook) }}" class="btn btn-outline-success flex-fill">Download</a>
                 </div>
-                <div class="d-flex flex-column flex-sm-row gap-2 mt-2">
-                    <button type="button" class="btn btn-outline-success flex-fill" data-favorite-button data-ebook-id="{{ $ebook->id }}" data-ebook-title="{{ $ebook->title }}" data-ebook-subject="{{ $ebook->subject->name }}" data-ebook-class="{{ $ebook->subject->class->name }}" data-ebook-url="{{ route('ebooks.show', $ebook) }}" data-ebook-reader-url="{{ route('ebooks.reader', $ebook) }}" data-ebook-cover="{{ $ebook->cover_path ? asset('storage/' . $ebook->cover_path) : '' }}" data-ebook-author="{{ $ebook->author ?: '' }}">♡ Simpan ke favorit</button>
-                    <button type="button" class="btn btn-outline-primary flex-fill" id="btn-offline" data-pdf-url="{{ asset('storage/' . $ebook->file_path) }}">⬇️ Simpan Offline</button>
-                </div>
+                <button type="button" class="btn btn-outline-danger mt-2 w-100" data-favorite-button data-ebook-id="{{ $ebook->id }}" data-ebook-title="{{ $ebook->title }}" data-ebook-subject="{{ $ebook->subject->name }}" data-ebook-class="{{ $ebook->subject->class->name }}" data-ebook-url="{{ route('ebooks.show', $ebook) }}" data-ebook-reader-url="{{ route('ebooks.reader', $ebook) }}" data-ebook-cover="{{ $ebook->cover_path ? asset('storage/' . $ebook->cover_path) : '' }}" data-ebook-author="{{ $ebook->author ?: '' }}">♡ Simpan ke Favorit</button>
             @else
                 <div class="alert alert-warning mb-0">File PDF belum tersedia.</div>
             @endif
@@ -271,42 +268,3 @@
     @endif
 </section>
 @endsection
-
-@push('scripts')
-<script>
-    const btnOffline = document.getElementById('btn-offline');
-    if (btnOffline) {
-        const pdfUrl = btnOffline.dataset.pdfUrl;
-        
-        // Check if already cached
-        if ('caches' in window) {
-            caches.open('perpus-sman1-static-v2').then(cache => {
-                cache.match(pdfUrl).then(response => {
-                    if (response) {
-                        btnOffline.textContent = '✅ Tersedia Offline';
-                        btnOffline.classList.replace('btn-outline-primary', 'btn-primary');
-                        btnOffline.disabled = true;
-                    }
-                });
-            });
-            
-            btnOffline.addEventListener('click', async () => {
-                btnOffline.textContent = '⏳ Menyimpan...';
-                try {
-                    const cache = await caches.open('perpus-sman1-static-v2');
-                    await cache.add(pdfUrl);
-                    btnOffline.textContent = '✅ Tersedia Offline';
-                    btnOffline.classList.replace('btn-outline-primary', 'btn-primary');
-                    btnOffline.disabled = true;
-                } catch (error) {
-                    console.error('Failed to cache PDF:', error);
-                    btnOffline.textContent = '❌ Gagal Menyimpan';
-                    setTimeout(() => btnOffline.textContent = '⬇️ Simpan Offline', 3000);
-                }
-            });
-        } else {
-            btnOffline.style.display = 'none';
-        }
-    }
-</script>
-@endpush
