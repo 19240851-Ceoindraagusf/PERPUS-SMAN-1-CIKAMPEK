@@ -1,6 +1,9 @@
 @php
     $name = trim($class->name);
-    $upperName = strtoupper($name);
+    // Replace lowercase 'l' that looks like Roman numeral 'I' or 'i' (e.g., 'Xl' -> 'XI')
+    $normalizedName = preg_replace('/\bX[lL]\b/i', 'XI', $name);
+    $normalizedName = preg_replace('/\bX[lL]\s+/i', 'XI ', $normalizedName);
+    $upperName = strtoupper($normalizedName);
     
     // Determine level: X, XI, XII
     if (str_starts_with($upperName, 'XII') || str_contains($upperName, '12')) {
@@ -17,6 +20,10 @@
         $romanShort = 'X';
     }
 
+    // Default icon and theme fallback
+    $classIcon = 'bi-collection';
+    $themeClass = 'class-theme-cyan';
+
     // Determine stream, icon & color theme
     if ($level === 'X') {
         $themeClass = 'class-theme-emerald';
@@ -27,7 +34,7 @@
         if (str_contains($upperName, 'IPA') || str_contains($upperName, 'MIPA')) {
             $themeClass = 'class-theme-blue';
             $streamBadge = 'Fase F • MIPA';
-            $classIcon = 'bi-atom';
+            $classIcon = 'bi-lightning-charge';
             $streamDesc = 'Peminatan Matematika dan Ilmu Pengetahuan Alam.';
         } elseif (str_contains($upperName, 'IPS') || str_contains($upperName, 'IIS')) {
             $themeClass = 'class-theme-amber';

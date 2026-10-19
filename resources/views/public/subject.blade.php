@@ -27,7 +27,7 @@
     } elseif (str_contains($norm, 'ipa') || str_contains($norm, 'sains')) {
         $cluster = 'Ilmu Pengetahuan Alam';
         $subTheme = 'subject-theme-blue';
-        $subIcon = 'bi-atom';
+        $subIcon = 'bi-flask';
     } elseif (str_contains($norm, 'inggris')) {
         $cluster = 'Bahasa Inggris & Asing';
         $subTheme = 'subject-theme-emerald';

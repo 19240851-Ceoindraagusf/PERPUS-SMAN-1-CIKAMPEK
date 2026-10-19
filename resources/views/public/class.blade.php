@@ -5,7 +5,9 @@
 @section('content')
 @php
     $name = trim($class->name);
-    $upperName = strtoupper($name);
+    $normalizedName = preg_replace('/\bX[lL]\b/i', 'XI', $name);
+    $normalizedName = preg_replace('/\bX[lL]\s+/i', 'XI ', $normalizedName);
+    $upperName = strtoupper($normalizedName);
     
     if (str_starts_with($upperName, 'XII') || str_contains($upperName, '12')) {
         $level = 'XII';
@@ -18,6 +20,9 @@
         $levelLabel = 'Tingkat X • Kelas 10';
     }
 
+    $classIcon = 'bi-collection';
+    $themeClass = 'class-theme-cyan';
+
     if ($level === 'X') {
         $themeClass = 'class-theme-emerald';
         $streamBadge = 'Fase E • Umum';
@@ -26,7 +31,7 @@
         if (str_contains($upperName, 'IPA') || str_contains($upperName, 'MIPA')) {
             $themeClass = 'class-theme-blue';
             $streamBadge = 'Fase F • MIPA';
-            $classIcon = 'bi-atom';
+            $classIcon = 'bi-lightning-charge';
         } elseif (str_contains($upperName, 'IPS') || str_contains($upperName, 'IIS')) {
             $themeClass = 'class-theme-amber';
             $streamBadge = 'Fase F • IPS';

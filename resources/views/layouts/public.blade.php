@@ -55,13 +55,30 @@
             background: linear-gradient(135deg, rgba(15, 107, 79, 0.82), rgba(18, 63, 114, 0.85)), url('{{ asset("images/gedung-sman-1-cikampek.png") }}') center/cover no-repeat;
             color: #fff;
             position: relative;
-            overflow: hidden;
-            z-index: 1;
+            overflow: visible;
+            z-index: 20;
             padding-top: 3.5rem !important;
             padding-bottom: 3.5rem !important;
             min-height: 480px;
         }
-        .hero::after { content: ''; position: absolute; width: 420px; height: 420px; border: 1px solid rgba(255,255,255,.13); border-radius: 50%; right: -120px; bottom: -260px; pointer-events: none; z-index: 0; }
+        .hero-bg-shapes {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .hero-bg-shapes::after {
+            content: '';
+            position: absolute;
+            width: 420px;
+            height: 420px;
+            border: 1px solid rgba(255,255,255,.13);
+            border-radius: 50%;
+            right: -120px;
+            bottom: -260px;
+            pointer-events: none;
+        }
         .hero-panel { background: rgba(255, 255, 255, .14); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, .26); border-radius: 16px; position: relative; z-index: 2; }
         .section-title { max-width: 680px; }
         .info-card, .card {
@@ -549,19 +566,47 @@
             z-index: 1090; 
             top: calc(100% + .4rem); 
             left: 0; 
-            right: 0; 
-            max-height: 420px; 
+            width: 100%;
+            min-width: 100%;
+            max-height: min(420px, 65vh); 
             overflow-y: auto; 
             overscroll-behavior: contain; 
             background: #ffffff; 
             border: 1px solid var(--school-line); 
             border-radius: 16px; 
-            box-shadow: 0 18px 45px rgba(15, 35, 63, 0.18); 
+            box-shadow: 0 20px 45px rgba(15, 35, 63, 0.22); 
+            scrollbar-width: thin;
+            scrollbar-color: rgba(15, 107, 79, 0.35) transparent;
+        }
+        .search-suggestions::-webkit-scrollbar {
+            width: 6px;
+        }
+        .search-suggestions::-webkit-scrollbar-track {
+            background: transparent;
+            margin: 8px 0;
+        }
+        .search-suggestions::-webkit-scrollbar-thumb {
+            background: rgba(15, 107, 79, 0.3);
+            border-radius: 10px;
+        }
+        .search-suggestions::-webkit-scrollbar-thumb:hover {
+            background: rgba(15, 107, 79, 0.5);
         }
         [data-bs-theme="dark"] .search-suggestions {
             background: #152238;
             border-color: rgba(255, 255, 255, 0.12);
-            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
+            scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+        }
+        [data-bs-theme="dark"] .search-suggestions::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.25);
+        }
+        @media (min-width: 768px) {
+            .hero-search .search-suggestions {
+                min-width: min(520px, calc(100vw - 3rem));
+                width: max-content;
+                max-width: min(560px, calc(100vw - 4rem));
+            }
         }
         .search-suggestion-heading { 
             position: sticky; 
@@ -591,6 +636,9 @@
             border-bottom: 1px solid rgba(0,0,0,0.03); 
             transition: all 0.18s ease;
         }
+        .search-suggestion .bi-arrow-right {
+            transition: transform 0.18s ease, color 0.18s ease, opacity 0.18s ease;
+        }
         [data-bs-theme="dark"] .search-suggestion {
             color: #e2e8f0;
             border-bottom-color: rgba(255,255,255,0.04);
@@ -599,6 +647,13 @@
             background: var(--school-soft); 
             color: var(--school-green); 
             padding-left: 1.25rem;
+        }
+        .search-suggestion:hover .bi-arrow-right,
+        .search-suggestion:focus .bi-arrow-right,
+        .search-suggestion.active .bi-arrow-right {
+            transform: translateX(4px);
+            opacity: 1 !important;
+            color: var(--school-green) !important;
         }
         [data-bs-theme="dark"] .search-suggestion:hover,
         [data-bs-theme="dark"] .search-suggestion:focus,
@@ -1275,6 +1330,8 @@
             pointer-events: none;
         }
         .library-filter-panel {
+            position: relative;
+            z-index: 20;
             background: #ffffff;
             border: 1px solid var(--school-line);
             border-radius: 20px;
@@ -1430,6 +1487,7 @@
     </style>
 </head>
 <body>
+@unless(View::hasSection('hide_global_nav_footer'))
 <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
         <a class="navbar-brand fw-semibold d-flex align-items-center gap-2" href="{{ route('library') }}">
@@ -1450,9 +1508,11 @@
         </div>
     </div>
 </nav>
+@endunless
 
 <main>@yield('content')</main>
 
+@unless(View::hasSection('hide_global_nav_footer'))
 <footer class="border-top bg-white py-4 mt-5">
     <div class="container">
         <div class="row text-center text-md-start g-3 small text-muted">
@@ -1463,6 +1523,7 @@
         </div>
     </div>
 </footer>
+@endunless
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -1484,9 +1545,17 @@
         const isFavorite = (book) => read(favoriteKey).some((item) => item.id === book.id);
         const updateFavoriteButton = (button) => {
             const saved = isFavorite(bookFrom(button));
-            button.innerHTML = saved ? '<i class="bi bi-bookmark-check-fill me-1"></i> Tersimpan di favorit' : '<i class="bi bi-bookmark-heart me-1"></i> Simpan ke favorit';
-            button.classList.toggle('btn-success', saved);
-            button.classList.toggle('btn-outline-success', !saved);
+            const isCircle = button.classList.contains('rounded-circle');
+            if (isCircle) {
+                button.innerHTML = saved ? '<i class="bi bi-bookmark-fill"></i>' : '<i class="bi bi-bookmark"></i>';
+                button.classList.toggle('btn-danger', saved);
+                button.classList.toggle('text-white', saved);
+                button.classList.toggle('btn-outline-danger', !saved);
+            } else {
+                button.innerHTML = saved ? '<i class="bi bi-bookmark-check-fill me-1"></i> Tersimpan di favorit' : '<i class="bi bi-bookmark-heart me-1"></i> Simpan ke favorit';
+                button.classList.toggle('btn-success', saved);
+                button.classList.toggle('btn-outline-success', !saved);
+            }
         };
         document.querySelectorAll('[data-favorite-button]').forEach((button) => {
             updateFavoriteButton(button);
@@ -1753,11 +1822,11 @@
                                 <div class="flex-grow-1 min-w-0">
                                     <strong class="d-block small text-truncate mb-0">${item.title}</strong>
                                     <div class="d-flex align-items-center gap-2 mt-1">
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size:0.68rem;">Kelas ${item.class_name || '-'}</span>
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle flex-shrink-0" style="font-size:0.68rem;">Kelas ${item.class_name || '-'}</span>
                                         <span class="small text-muted text-truncate" style="font-size:0.75rem;">${item.author || item.subject_name || ''}</span>
                                     </div>
                                 </div>
-                                <i class="bi bi-arrow-right text-muted opacity-50 small ms-auto"></i>
+                                <i class="bi bi-arrow-right text-muted opacity-50 small ms-auto flex-shrink-0"></i>
                             `;
                             panel.append(link);
                         });

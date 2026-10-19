@@ -1,141 +1,805 @@
 @extends('layouts.public')
 
 @section('title', 'Baca ' . $ebook->title)
+@section('hide_global_nav_footer', true)
 
 @section('content')
-<section class="container px-2 px-md-3 py-3 py-md-4" data-ebook-record data-ebook-id="{{ $ebook->id }}" data-ebook-title="{{ $ebook->title }}" data-ebook-subject="{{ $ebook->subject->name }}" data-ebook-class="{{ $ebook->subject->class->name }}" data-ebook-url="{{ route('ebooks.show', $ebook) }}" data-ebook-reader-url="{{ route('ebooks.reader', $ebook) }}" data-ebook-cover="{{ $ebook->cover_path ? asset('storage/' . $ebook->cover_path) : '' }}" data-ebook-author="{{ $ebook->author ?: '' }}">
-    {{-- Header Bar --}}
-    <div class="card border-0 shadow-sm rounded-4 mb-3">
-        <div class="card-body p-3 p-md-4">
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
-                <div class="min-w-0">
-                    <a href="{{ route('ebooks.show', $ebook) }}" class="small text-decoration-none text-muted mb-1 d-inline-flex align-items-center gap-1">
-                        <i class="bi bi-arrow-left"></i> <span>Kembali ke detail</span>
-                    </a>
-                    <h1 class="h5 fw-bold mb-0 text-truncate text-dark">{{ $ebook->title }}</h1>
-                    <div class="d-flex align-items-center gap-2 mt-1">
-                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill" style="font-size: 0.72rem;">Kelas {{ $ebook->subject->class->name }}</span>
-                        <span class="small text-muted text-truncate" style="font-size: 0.8rem;">{{ $ebook->subject->name }}</span>
-                    </div>
-                </div>
-                <div class="d-flex flex-wrap align-items-center gap-2">
-                    <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-semibold" data-favorite-button data-ebook-id="{{ $ebook->id }}" data-ebook-title="{{ $ebook->title }}" data-ebook-subject="{{ $ebook->subject->name }}" data-ebook-class="{{ $ebook->subject->class->name }}" data-ebook-url="{{ route('ebooks.show', $ebook) }}" data-ebook-reader-url="{{ route('ebooks.reader', $ebook) }}" data-ebook-cover="{{ $ebook->cover_path ? asset('storage/' . $ebook->cover_path) : '' }}" data-ebook-author="{{ $ebook->author ?: '' }}">
-                        ♡ Favorit
-                    </button>
-                    
-                    {{-- Reader Mode Selector --}}
-                    <div class="btn-group btn-group-sm" role="group">
-                        <button type="button" class="btn btn-outline-secondary active" id="btnModeLight" title="Mode Terang">
-                            <i class="bi bi-sun"></i> Terang
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary" id="btnModeSepia" title="Mode Sepia (Hangat)">
-                            <i class="bi bi-book"></i> Sepia
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary" id="btnModeDark" title="Mode Gelap">
-                            <i class="bi bi-moon"></i> Gelap
-                        </button>
-                    </div>
+<div class="reader-app d-flex flex-column" data-ebook-record data-ebook-id="{{ $ebook->id }}" data-ebook-title="{{ $ebook->title }}" data-ebook-subject="{{ $ebook->subject->name }}" data-ebook-class="{{ $ebook->subject->class->name }}" data-ebook-url="{{ route('ebooks.show', $ebook) }}" data-ebook-reader-url="{{ route('ebooks.reader', $ebook) }}" data-ebook-cover="{{ $ebook->cover_path ? asset('storage/' . $ebook->cover_path) : '' }}" data-ebook-author="{{ $ebook->author ?: '' }}">
 
-                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-reader-fullscreen title="Tampilan Layar Penuh">
-                        <i class="bi bi-arrows-fullscreen me-1"></i> Layar Penuh
-                    </button>
-                    <a href="{{ route('ebooks.download', $ebook) }}" class="btn btn-sm btn-success rounded-pill px-3 fw-semibold">
-                        <i class="bi bi-download me-1"></i> Download PDF
-                    </a>
-                </div>
-            </div>
-
-            <hr class="my-3 opacity-10">
-
-            {{-- Page Marker & Quick Navigation --}}
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
-                <p class="small text-muted mb-0 d-none d-md-block">
-                    <i class="bi bi-info-circle me-1"></i> Scroll atau gunakan kontrol PDF bawaan browser untuk zoom dan mencari kata.
-                </p>
-                <div class="d-flex gap-2 align-items-center ms-auto">
-                    <label for="pageInput" class="small text-muted mb-0 text-nowrap fw-semibold">Lompat / Tandai Hal:</label>
-                    <input type="number" id="pageInput" class="form-control form-control-sm text-center" style="width: 76px" min="1" placeholder="1">
-                    <button type="button" class="btn btn-sm btn-outline-success fw-semibold rounded-pill px-3" id="savePageBtn">
-                        <i class="bi bi-bookmark-check me-1"></i> Simpan
-                    </button>
-                    <span id="savePageFeedback" class="small text-success d-none fw-semibold">
-                        <i class="bi bi-check2"></i> Tersimpan!
-                    </span>
+    {{-- Top Navigation & Reading Controls Bar --}}
+    <header class="reader-topbar px-3 py-2 d-flex align-items-center justify-content-between border-bottom shadow-sm">
+        <div class="d-flex align-items-center gap-2 min-w-0">
+            <a href="{{ route('ebooks.show', $ebook) }}" class="btn btn-sm btn-icon-round reader-btn-back" title="Kembali ke detail buku">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div class="reader-book-info min-w-0">
+                <h1 class="reader-title h6 fw-bold mb-0 text-truncate" title="{{ $ebook->title }}">{{ $ebook->title }}</h1>
+                <div class="reader-meta d-flex align-items-center gap-2 small">
+                    <span class="badge rounded-pill reader-class-badge">Kelas {{ $ebook->subject->class->name }}</span>
+                    <span class="text-truncate text-muted d-none d-sm-inline" style="font-size: 0.78rem;">{{ $ebook->subject->name }}</span>
                 </div>
             </div>
         </div>
-    </div>
 
-    {{-- Reader Shell & Progress Bar --}}
-    <div class="reader-shell shadow-sm rounded-4 p-2 p-md-3 position-relative" data-reader-shell>
-        <iframe id="pdfFrame" class="reader-frame rounded-3 shadow-sm w-100" style="min-height: 80vh; border: none;" src="{{ asset('storage/' . $ebook->file_path) }}#view=FitH" title="Pembaca PDF: {{ $ebook->title }}">
-            <p>Browser Anda tidak mendukung pembaca PDF bawaan. <a href="{{ route('ebooks.download', $ebook) }}">Download PDF di sini</a>.</p>
-        </iframe>
-    </div>
-</section>
-@endsection
+        <div class="d-flex align-items-center gap-1 gap-md-2 flex-shrink-0">
+            {{-- Quick Page Indicator & Jump --}}
+            <div class="reader-page-stepper d-flex align-items-center bg-light rounded-pill px-2 py-1 border">
+                <button type="button" class="btn btn-sm p-0 text-muted" id="btnPagePrev" title="Halaman Sebelumnya">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <div class="d-flex align-items-center px-1">
+                    <input type="number" id="pageNumberInput" class="form-control form-control-sm border-0 bg-transparent text-center p-0 fw-bold" style="width: 42px; font-size: 0.85rem;" min="1" value="1">
+                    <span class="text-muted small mx-1">/</span>
+                    <span id="pageTotalCount" class="text-muted small fw-semibold">--</span>
+                </div>
+                <button type="button" class="btn btn-sm p-0 text-muted" id="btnPageNext" title="Halaman Berikutnya">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
 
-@push('scripts')
-<script>
-    const readerShell = document.querySelector('[data-reader-shell]');
-    const btnLight = document.getElementById('btnModeLight');
-    const btnSepia = document.getElementById('btnModeSepia');
-    const btnDark = document.getElementById('btnModeDark');
+            {{-- Zoom Controls (Desktop / Tablet) --}}
+            <div class="btn-group btn-group-sm d-none d-md-inline-flex" role="group" aria-label="Zoom controls">
+                <button type="button" class="btn btn-outline-secondary" id="btnZoomOut" title="Perkecil (-)">
+                    <i class="bi bi-dash"></i>
+                </button>
+                <button type="button" class="btn btn-outline-secondary px-2 text-nowrap" id="btnZoomFit" title="Pas Lebar (Fit Width)">
+                    <span id="zoomPercentLabel" style="font-size: 0.78rem;">Fit</span>
+                </button>
+                <button type="button" class="btn btn-outline-secondary" id="btnZoomIn" title="Perbesar (+)">
+                    <i class="bi bi-plus"></i>
+                </button>
+            </div>
 
-    const setReaderMode = (mode) => {
-        readerShell.classList.remove('reader-dark', 'reader-sepia');
-        btnLight.classList.remove('active');
-        btnSepia.classList.remove('active');
-        btnDark.classList.remove('active');
+            {{-- Theme & Mood Selector (Light / Warm Sepia / Dark) --}}
+            <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary rounded-pill px-2 px-md-3 d-flex align-items-center gap-1" type="button" id="themeDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false" title="Ubah mode kenyamanan mata">
+                    <i class="bi bi-circle-half"></i>
+                    <span class="d-none d-lg-inline" style="font-size: 0.82rem;">Tampilan</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-lg rounded-3 py-2 border-0" aria-labelledby="themeDropdownBtn" style="min-width: 170px;">
+                    <li><h6 class="dropdown-header text-uppercase fw-bold" style="font-size: 0.68rem;">Mode Membaca</h6></li>
+                    <li>
+                        <button class="dropdown-item d-flex align-items-center gap-2 active" type="button" data-theme-btn="light">
+                            <i class="bi bi-sun text-warning"></i> <span>Mode Terang</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="dropdown-item d-flex align-items-center gap-2" type="button" data-theme-btn="sepia">
+                            <i class="bi bi-book text-amber" style="color: #d97706;"></i> <span>Mode Hangat (Sepia)</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="dropdown-item d-flex align-items-center gap-2" type="button" data-theme-btn="dark">
+                            <i class="bi bi-moon-stars text-primary"></i> <span>Mode Gelap</span>
+                        </button>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><h6 class="dropdown-header text-uppercase fw-bold" style="font-size: 0.68rem;">Tampilan Halaman</h6></li>
+                    <li>
+                        <button class="dropdown-item d-flex align-items-center gap-2 active" type="button" id="btnViewSingle">
+                            <i class="bi bi-file-earmark"></i> <span>1 Halaman</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="dropdown-item d-flex align-items-center gap-2" type="button" id="btnViewScroll">
+                            <i class="bi bi-distribute-vertical"></i> <span>Gulir Berkelanjutan</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
 
-        if (mode === 'sepia') {
-            readerShell.classList.add('reader-sepia');
-            btnSepia.classList.add('active');
-        } else if (mode === 'dark') {
-            readerShell.classList.add('reader-dark');
-            btnDark.classList.add('active');
-        } else {
-            btnLight.classList.add('active');
-        }
-        localStorage.setItem('perpus_reader_mode', mode);
-    };
+            {{-- Bookmark / Favorite Button --}}
+            <button type="button" class="btn btn-sm btn-outline-danger rounded-circle p-0 d-inline-flex align-items-center justify-content-center" style="width: 34px; height: 34px;" title="Simpan ke favorit" data-favorite-button data-ebook-id="{{ $ebook->id }}" data-ebook-title="{{ $ebook->title }}" data-ebook-subject="{{ $ebook->subject->name }}" data-ebook-class="{{ $ebook->subject->class->name }}" data-ebook-url="{{ route('ebooks.show', $ebook) }}" data-ebook-reader-url="{{ route('ebooks.reader', $ebook) }}" data-ebook-cover="{{ $ebook->cover_path ? asset('storage/' . $ebook->cover_path) : '' }}" data-ebook-author="{{ $ebook->author ?: '' }}">
+                <i class="bi bi-bookmark"></i>
+            </button>
 
-    btnLight?.addEventListener('click', () => setReaderMode('light'));
-    btnSepia?.addEventListener('click', () => setReaderMode('sepia'));
-    btnDark?.addEventListener('click', () => setReaderMode('dark'));
+            {{-- Fullscreen Mode --}}
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle p-0 d-inline-flex align-items-center justify-content-center" style="width: 34px; height: 34px;" id="btnFullscreenToggle" title="Mode Layar Penuh">
+                <i class="bi bi-arrows-fullscreen"></i>
+            </button>
 
-    // Restore saved reader mode
-    const savedMode = localStorage.getItem('perpus_reader_mode');
-    if (savedMode) setReaderMode(savedMode);
+            {{-- Download File --}}
+            <a href="{{ route('ebooks.download', $ebook) }}" class="btn btn-sm btn-success rounded-pill px-3 fw-semibold d-none d-sm-inline-flex align-items-center gap-1" title="Unduh PDF lengkap">
+                <i class="bi bi-download"></i> <span style="font-size: 0.82rem;">Unduh</span>
+            </a>
+        </div>
+    </header>
 
-    document.querySelector('[data-reader-fullscreen]')?.addEventListener('click', () => {
-        readerShell?.requestFullscreen?.();
-    });
+    {{-- Main Reading Area --}}
+    <main class="reader-viewport flex-grow-1 position-relative overflow-hidden" id="readerViewport" tabindex="0">
+        {{-- Loading Spinner Overlay --}}
+        <div class="reader-loading-state position-absolute inset-0 d-flex flex-column align-items-center justify-content-center" id="readerLoadingState">
+            <div class="spinner-grow text-success mb-3" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Memuat dokumen...</span>
+            </div>
+            <div class="fw-semibold text-dark mb-1" id="loadingText">Menyiapkan E-Book...</div>
+            <div class="small text-muted" id="loadingSubtext">Mengoptimalkan tampilan untuk perangkat Anda</div>
+        </div>
 
-    const ebookId = document.querySelector('[data-ebook-id]').dataset.ebookId;
-    const savePageBtn = document.getElementById('savePageBtn');
-    const pageInput = document.getElementById('pageInput');
-    const pdfFrame = document.getElementById('pdfFrame');
-    const feedback = document.getElementById('savePageFeedback');
-    
-    // Load saved page
-    const savedPage = localStorage.getItem('perpus_last_page_' + ebookId);
-    if (savedPage) {
-        pageInput.value = savedPage;
-        const currentSrc = pdfFrame.src.split('#')[0];
-        pdfFrame.src = currentSrc + '#page=' + savedPage + '&view=FitH';
+        {{-- Error State Overlay --}}
+        <div class="reader-error-state position-absolute inset-0 d-none flex-column align-items-center justify-content-center p-4 text-center" id="readerErrorState">
+            <div class="text-danger mb-3" style="font-size: 3rem;"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            <h5 class="fw-bold mb-2">Gagal Memuat E-Book di Penampil Cerdas</h5>
+            <p class="text-muted small mb-4" style="max-width: 460px;">Dokumen PDF dapat dibuka menggunakan penampil bawaan browser atau diunduh langsung ke perangkat Anda.</p>
+            <div class="d-flex flex-wrap justify-content-center gap-2">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-3" id="btnFallbackIframe">
+                    <i class="bi bi-window me-1"></i> Buka dengan Penampil Bawaan
+                </button>
+                <a href="{{ route('ebooks.download', $ebook) }}" class="btn btn-success rounded-pill px-4">
+                    <i class="bi bi-download me-1"></i> Unduh File PDF
+                </a>
+            </div>
+        </div>
+
+        {{-- Interactive Canvas Stage (Single Page Mode) --}}
+        <div class="reader-stage d-flex align-items-center justify-content-center w-100 h-100 overflow-auto" id="readerStage">
+            <div class="reader-canvas-card position-relative shadow" id="readerCanvasCard">
+                <canvas id="pdfCanvas" class="d-block mx-auto"></canvas>
+            </div>
+        </div>
+
+        {{-- Continuous Scroll Stage (Vertical Mode) --}}
+        <div class="reader-scroll-stage d-none w-100 h-100 overflow-auto py-3 py-md-4" id="readerScrollStage">
+            <div class="container-fluid d-flex flex-column align-items-center gap-3 gap-md-4" id="readerScrollContainer">
+                {{-- Dynamic pages will be placed here --}}
+            </div>
+        </div>
+
+        {{-- Fallback Iframe (Hidden by default, used if needed) --}}
+        <iframe id="pdfFallbackIframe" class="w-100 h-100 border-0 d-none" title="Fallback PDF Viewer"></iframe>
+
+        {{-- On-Screen Floating Nav Arrows (Visible on Desktop / Hover) --}}
+        <button type="button" class="reader-nav-arrow reader-nav-prev d-none d-md-flex align-items-center justify-content-center shadow-lg" id="floatingPrevBtn" title="Halaman Sebelumnya (Tekan Panah Kiri)">
+            <i class="bi bi-chevron-left fs-4"></i>
+        </button>
+        <button type="button" class="reader-nav-arrow reader-nav-next d-none d-md-flex align-items-center justify-content-center shadow-lg" id="floatingNextBtn" title="Halaman Berikutnya (Tekan Panah Kanan)">
+            <i class="bi bi-chevron-right fs-4"></i>
+        </button>
+
+        {{-- Floating Notification Toast (Saved Page, etc.) --}}
+        <div class="reader-toast position-absolute bottom-0 start-50 translate-middle-x mb-4 shadow rounded-pill px-4 py-2 d-none" id="readerToast">
+            <i class="bi bi-check-circle-fill text-success me-2"></i>
+            <span id="readerToastText" class="small fw-semibold"></span>
+        </div>
+    </main>
+
+    {{-- Bottom Touch Control Bar (Optimized for Mobile/Phone) --}}
+    <footer class="reader-bottombar px-3 py-2 border-top d-flex align-items-center justify-content-between shadow-sm">
+        <div class="d-flex align-items-center gap-1">
+            <button type="button" class="btn btn-sm btn-icon-round" id="btnMobilePrev" title="Sebelumnya">
+                <i class="bi bi-arrow-left-short fs-4"></i>
+            </button>
+            <span class="small fw-bold px-2 text-muted" id="mobilePageIndicator" style="font-size: 0.82rem;">1 / --</span>
+            <button type="button" class="btn btn-sm btn-icon-round" id="btnMobileNext" title="Berikutnya">
+                <i class="bi bi-arrow-right-short fs-4"></i>
+            </button>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            {{-- Quick Bookmark Current Page Button --}}
+            <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold d-flex align-items-center gap-1" id="btnQuickBookmark">
+                <i class="bi bi-bookmark-check"></i>
+                <span class="d-none d-sm-inline" style="font-size: 0.8rem;">Tandai Halaman Ini</span>
+                <span class="d-inline d-sm-none" style="font-size: 0.8rem;">Tandai</span>
+            </button>
+
+            {{-- Zoom Out / In on Mobile --}}
+            <div class="d-flex d-md-none align-items-center gap-1">
+                <button type="button" class="btn btn-sm btn-icon-round" id="btnMobileZoomOut" title="Perkecil">
+                    <i class="bi bi-dash-lg"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-icon-round" id="btnMobileZoomIn" title="Perbesar">
+                    <i class="bi bi-plus-lg"></i>
+                </button>
+            </div>
+        </div>
+    </footer>
+</div>
+
+{{-- Reader Styles --}}
+<style>
+    /* Full-screen Reader App Shell */
+    html, body {
+        height: 100%;
+        overflow: hidden !important;
+        margin: 0;
+        padding: 0;
+    }
+    .reader-app {
+        height: 100vh;
+        height: 100dvh;
+        width: 100vw;
+        overflow: hidden;
+        background-color: #f1f5f9;
+        color: #1e293b;
+        font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        transition: background-color 0.25s ease, color 0.25s ease;
+    }
+    .inset-0 {
+        top: 0; right: 0; bottom: 0; left: 0;
     }
 
-    savePageBtn?.addEventListener('click', () => {
-        const page = pageInput.value;
-        if (page && page > 0) {
-            localStorage.setItem('perpus_last_page_' + ebookId, page);
-            feedback.classList.remove('d-none');
-            setTimeout(() => feedback.classList.add('d-none'), 2200);
-            
-            const currentSrc = pdfFrame.src.split('#')[0];
-            pdfFrame.src = currentSrc + '#page=' + page + '&view=FitH';
+    /* Top and Bottom Bars */
+    .reader-topbar, .reader-bottombar {
+        background-color: #ffffff;
+        z-index: 1050;
+        transition: background-color 0.25s ease, border-color 0.25s ease;
+    }
+    .reader-title {
+        max-width: 420px;
+    }
+    .reader-class-badge {
+        background: rgba(15, 107, 79, 0.12);
+        color: #0f6b4f;
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+    .btn-icon-round {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(0,0,0,0.08);
+        background: #f8fafc;
+        color: #334155;
+        transition: all 0.2s ease;
+    }
+    .btn-icon-round:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+        transform: scale(1.05);
+    }
+
+    /* Stage & Canvas Styling */
+    .reader-stage {
+        padding: 1.5rem 1rem;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+    .reader-canvas-card {
+        background: #ffffff;
+        border-radius: 6px;
+        overflow: hidden;
+        transition: box-shadow 0.25s ease, transform 0.15s ease-out;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+    #pdfCanvas {
+        display: block;
+        max-width: 100%;
+        height: auto;
+    }
+
+    /* Floating Navigation Arrows */
+    .reader-nav-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.9);
+        color: #1e293b;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        z-index: 1040;
+        backdrop-filter: blur(8px);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        opacity: 0.65;
+    }
+    .reader-nav-arrow:hover {
+        opacity: 1;
+        background: #0f6b4f;
+        color: #ffffff;
+        transform: translateY(-50%) scale(1.1);
+    }
+    .reader-nav-prev { left: 1.25rem; }
+    .reader-nav-next { right: 1.25rem; }
+
+    /* Continuous Scroll Mode */
+    .reader-scroll-stage .pdf-scroll-page {
+        background: #ffffff;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        border-radius: 6px;
+        overflow: hidden;
+        margin: 0 auto;
+        max-width: 100%;
+    }
+
+    /* Floating Toast Notification */
+    .reader-toast {
+        background: #1e293b;
+        color: #ffffff;
+        z-index: 1090;
+        pointer-events: none;
+        animation: toastFadeIn 0.25s ease;
+    }
+    @keyframes toastFadeIn {
+        from { opacity: 0; transform: translate(-50%, 15px); }
+        to { opacity: 1; transform: translate(-50%, 0); }
+    }
+
+    /* ==========================================================================
+       COMFORT MODES: SEPIA (WARM PAPER) & DARK (NIGHT MODE)
+       ========================================================================== */
+    /* Sepia / Warm Paper */
+    .reader-app.reader-theme-sepia {
+        background-color: #f4ecd8 !important;
+        color: #433422 !important;
+    }
+    .reader-app.reader-theme-sepia .reader-topbar,
+    .reader-app.reader-theme-sepia .reader-bottombar {
+        background-color: #ede2c9 !important;
+        border-color: #dfd2b5 !important;
+        color: #433422 !important;
+    }
+    .reader-app.reader-theme-sepia .btn-icon-round {
+        background: #fbf5e7;
+        border-color: #d8c7a6;
+        color: #5d462c;
+    }
+    .reader-app.reader-theme-sepia .reader-canvas-card {
+        box-shadow: 0 10px 30px rgba(93, 70, 44, 0.18);
+        filter: sepia(25%) contrast(97%) brightness(98%);
+    }
+
+    /* Dark Mode (Night Reading) */
+    .reader-app.reader-theme-dark {
+        background-color: #0f172a !important;
+        color: #e2e8f0 !important;
+    }
+    .reader-app.reader-theme-dark .reader-topbar,
+    .reader-app.reader-theme-dark .reader-bottombar {
+        background-color: #1e293b !important;
+        border-color: #334155 !important;
+        color: #f1f5f9 !important;
+    }
+    .reader-app.reader-theme-dark .reader-title {
+        color: #f8fafc !important;
+    }
+    .reader-app.reader-theme-dark .reader-class-badge {
+        background: rgba(16, 185, 129, 0.2);
+        color: #6ee7b7;
+    }
+    .reader-app.reader-theme-dark .btn-icon-round {
+        background: #334155;
+        border-color: #475569;
+        color: #f1f5f9;
+    }
+    .reader-app.reader-theme-dark .btn-icon-round:hover {
+        background: #475569;
+    }
+    .reader-app.reader-theme-dark .reader-canvas-card {
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+        filter: invert(90%) hue-rotate(180deg) contrast(95%);
+    }
+    .reader-app.reader-theme-dark .reader-nav-arrow {
+        background: rgba(30, 41, 59, 0.85);
+        color: #e2e8f0;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    .reader-app.reader-theme-dark .reader-page-stepper {
+        background-color: #0f172a !important;
+        border-color: #334155 !important;
+    }
+    .reader-app.reader-theme-dark #pageNumberInput,
+    .reader-app.reader-theme-dark #pageTotalCount {
+        color: #e2e8f0 !important;
+    }
+
+    /* Mobile Enhancements */
+    @media (max-width: 576px) {
+        .reader-topbar { padding: 0.5rem 0.75rem !important; }
+        .reader-bottombar { padding: 0.5rem 0.75rem !important; }
+        .reader-stage { padding: 0.5rem 0.25rem !important; }
+        .reader-canvas-card { border-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.12); }
+        .reader-title { max-width: 160px; font-size: 0.9rem !important; }
+        .reader-page-stepper { padding: 0.15rem 0.5rem !important; }
+        #pageNumberInput { width: 34px !important; }
+    }
+</style>
+
+{{-- PDF.js Library via CDN --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+</script>
+
+<script>
+(() => {
+    'use strict';
+
+    const pdfUrl = "{{ asset('storage/' . $ebook->file_path) }}";
+    const ebookId = "{{ $ebook->id }}";
+    const storagePrefix = 'perpus_reader_' + ebookId;
+
+    // DOM Elements
+    const appContainer = document.querySelector('.reader-app');
+    const viewport = document.getElementById('readerViewport');
+    const stage = document.getElementById('readerStage');
+    const canvasCard = document.getElementById('readerCanvasCard');
+    const canvas = document.getElementById('pdfCanvas');
+    const ctx = canvas.getContext('2d');
+    const loadingState = document.getElementById('readerLoadingState');
+    const errorState = document.getElementById('readerErrorState');
+    const fallbackIframe = document.getElementById('pdfFallbackIframe');
+    const scrollStage = document.getElementById('readerScrollStage');
+    const scrollContainer = document.getElementById('readerScrollContainer');
+    const toast = document.getElementById('readerToast');
+    const toastText = document.getElementById('readerToastText');
+
+    // Controls
+    const pageInput = document.getElementById('pageNumberInput');
+    const pageTotal = document.getElementById('pageTotalCount');
+    const mobilePageIndicator = document.getElementById('mobilePageIndicator');
+    const zoomPercentLabel = document.getElementById('zoomPercentLabel');
+
+    // State Variables
+    let pdfDoc = null;
+    let currentPage = 1;
+    let totalPages = 1;
+    let currentScale = 1.0;
+    let autoFitScale = 1.0;
+    let isFitWidth = true;
+    let pageRendering = false;
+    let pageNumPending = null;
+    let renderTask = null;
+    let viewMode = 'single'; // 'single' | 'scroll'
+
+    // Toast Helper
+    const showToast = (message, duration = 2000) => {
+        toastText.textContent = message;
+        toast.classList.remove('d-none');
+        clearTimeout(toast._timer);
+        toast._timer = setTimeout(() => toast.classList.add('d-none'), duration);
+    };
+
+    // Theme Selector
+    const setTheme = (themeName) => {
+        appContainer.classList.remove('reader-theme-sepia', 'reader-theme-dark');
+        document.querySelectorAll('[data-theme-btn]').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.themeBtn === themeName);
+        });
+        if (themeName === 'sepia') {
+            appContainer.classList.add('reader-theme-sepia');
+        } else if (themeName === 'dark') {
+            appContainer.classList.add('reader-theme-dark');
+        }
+        localStorage.setItem(storagePrefix + '_theme', themeName);
+    };
+
+    document.querySelectorAll('[data-theme-btn]').forEach(btn => {
+        btn.addEventListener('click', () => setTheme(btn.dataset.themeBtn));
+    });
+    const savedTheme = localStorage.getItem(storagePrefix + '_theme') || 'light';
+    setTheme(savedTheme);
+
+    // Calculate Optimal Auto-Fit Scale
+    const computeFitScale = (pageViewport) => {
+        const availableWidth = stage.clientWidth - (window.innerWidth < 576 ? 16 : 48);
+        const availableHeight = stage.clientHeight - (window.innerWidth < 576 ? 16 : 48);
+        const scaleX = availableWidth / pageViewport.width;
+        const scaleY = availableHeight / pageViewport.height;
+
+        // On mobile portrait, prioritize fit width for legible textbook reading
+        if (window.innerWidth < 768) {
+            return Math.min(Math.max(scaleX, 0.6), 2.2);
+        }
+        // On desktop, fit within container comfortably
+        return Math.min(scaleX, scaleY, 1.8);
+    };
+
+    // Render Single Page with High-DPI support
+    const renderPage = async (num) => {
+        if (!pdfDoc) return;
+        pageRendering = true;
+
+        try {
+            const page = await pdfDoc.getPage(num);
+
+            // Compute scale
+            const unscaledViewport = page.getViewport({ scale: 1.0 });
+            if (isFitWidth) {
+                currentScale = computeFitScale(unscaledViewport);
+            }
+
+            const viewportScaled = page.getViewport({ scale: currentScale });
+            const pixelRatio = window.devicePixelRatio || 1;
+
+            // Canvas size in hardware pixels for crystal clear text
+            canvas.width = Math.floor(viewportScaled.width * pixelRatio);
+            canvas.height = Math.floor(viewportScaled.height * pixelRatio);
+
+            // Canvas CSS layout size
+            canvas.style.width = Math.floor(viewportScaled.width) + 'px';
+            canvas.style.height = Math.floor(viewportScaled.height) + 'px';
+
+            const renderContext = {
+                canvasContext: ctx,
+                viewport: viewportScaled,
+                transform: pixelRatio !== 1 ? [pixelRatio, 0, 0, pixelRatio, 0, 0] : null
+            };
+
+            if (renderTask) {
+                renderTask.cancel();
+            }
+            renderTask = page.render(renderContext);
+            await renderTask.promise;
+
+            pageRendering = false;
+            if (pageNumPending !== null) {
+                const pending = pageNumPending;
+                pageNumPending = null;
+                renderPage(pending);
+            }
+
+            // Update UI indicators
+            pageInput.value = num;
+            mobilePageIndicator.textContent = `${num} / ${totalPages}`;
+            zoomPercentLabel.textContent = isFitWidth ? 'Fit' : `${Math.round(currentScale * 100)}%`;
+
+            // Auto save last reading position
+            localStorage.setItem(storagePrefix + '_last_page', num);
+
+        } catch (err) {
+            if (err.name !== 'RenderingCancelledException') {
+                console.error('Rendering error on page ' + num, err);
+            }
+            pageRendering = false;
+        }
+    };
+
+    const queueRenderPage = (num) => {
+        if (num < 1) num = 1;
+        if (num > totalPages) num = totalPages;
+        currentPage = num;
+
+        if (pageRendering) {
+            pageNumPending = num;
+        } else {
+            renderPage(num);
+        }
+    };
+
+    const goToPrevPage = () => {
+        if (currentPage <= 1) {
+            showToast('Ini adalah halaman pertama');
+            return;
+        }
+        queueRenderPage(currentPage - 1);
+    };
+
+    const goToNextPage = () => {
+        if (currentPage >= totalPages) {
+            showToast('Ini adalah halaman terakhir');
+            return;
+        }
+        queueRenderPage(currentPage + 1);
+    };
+
+    // Zoom Functions
+    const setZoom = (newScale, fit = false) => {
+        isFitWidth = fit;
+        currentScale = Math.min(Math.max(newScale, 0.45), 3.2);
+        queueRenderPage(currentPage);
+    };
+
+    // Continuous Scroll (Intersection Observer)
+    let scrollObserver = null;
+    const initScrollMode = async () => {
+        scrollContainer.innerHTML = '';
+        scrollObserver?.disconnect();
+
+        scrollObserver = new IntersectionObserver((entries) => {
+            entries.forEach(async (entry) => {
+                if (entry.isIntersecting) {
+                    const pageEl = entry.target;
+                    const pageNum = parseInt(pageEl.dataset.page, 10);
+                    scrollObserver.unobserve(pageEl);
+
+                    const page = await pdfDoc.getPage(pageNum);
+                    const unscaled = page.getViewport({ scale: 1.0 });
+                    const scale = computeFitScale(unscaled);
+                    const vp = page.getViewport({ scale });
+                    const dpr = window.devicePixelRatio || 1;
+
+                    const pCanvas = document.createElement('canvas');
+                    pCanvas.width = Math.floor(vp.width * dpr);
+                    pCanvas.height = Math.floor(vp.height * dpr);
+                    pCanvas.style.width = Math.floor(vp.width) + 'px';
+                    pCanvas.style.height = Math.floor(vp.height) + 'px';
+
+                    const pCtx = pCanvas.getContext('2d');
+                    await page.render({
+                        canvasContext: pCtx,
+                        viewport: vp,
+                        transform: dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : null
+                    }).promise;
+
+                    pageEl.innerHTML = '';
+                    pageEl.appendChild(pCanvas);
+                }
+            });
+        }, { root: scrollStage, rootMargin: '300px 0px', threshold: 0.01 });
+
+        for (let i = 1; i <= totalPages; i++) {
+            const pageBox = document.createElement('div');
+            pageBox.className = 'pdf-scroll-page d-flex align-items-center justify-content-center';
+            pageBox.dataset.page = i;
+            pageBox.style.minHeight = '360px';
+            pageBox.style.width = 'fit-content';
+            pageBox.innerHTML = `<div class="text-muted small py-5"><span class="spinner-border spinner-border-sm me-1"></span> Halaman ${i}</div>`;
+            scrollContainer.appendChild(pageBox);
+            scrollObserver.observe(pageBox);
+        }
+    };
+
+    // Load PDF Document
+    const loadDocument = async () => {
+        try {
+            loadingState.classList.remove('d-none');
+            errorState.classList.add('d-none');
+
+            const loadingTask = window.pdfjsLib.getDocument({
+                url: pdfUrl,
+                cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+                cMapPacked: true
+            });
+
+            pdfDoc = await loadingTask.promise;
+            totalPages = pdfDoc.numPages;
+
+            pageTotal.textContent = totalPages;
+            pageInput.max = totalPages;
+
+            // Restore last read page
+            const savedPage = parseInt(localStorage.getItem(storagePrefix + '_last_page'), 10);
+            if (savedPage && savedPage >= 1 && savedPage <= totalPages) {
+                currentPage = savedPage;
+                showToast(`Melanjutkan dari halaman ${currentPage}`, 2500);
+            } else {
+                currentPage = 1;
+            }
+
+            loadingState.classList.add('d-none');
+            queueRenderPage(currentPage);
+
+        } catch (err) {
+            console.warn('PDF.js failed to parse file directly, falling back:', err);
+            loadingState.classList.add('d-none');
+            errorState.classList.remove('d-none');
+        }
+    };
+
+    // Fallback Button
+    document.getElementById('btnFallbackIframe')?.addEventListener('click', () => {
+        errorState.classList.add('d-none');
+        stage.classList.add('d-none');
+        fallbackIframe.classList.remove('d-none');
+        fallbackIframe.src = pdfUrl + '#view=FitH&page=' + currentPage;
+    });
+
+    // Page Navigation Events
+    document.getElementById('btnPagePrev')?.addEventListener('click', goToPrevPage);
+    document.getElementById('btnPageNext')?.addEventListener('click', goToNextPage);
+    document.getElementById('btnMobilePrev')?.addEventListener('click', goToPrevPage);
+    document.getElementById('btnMobileNext')?.addEventListener('click', goToNextPage);
+    document.getElementById('floatingPrevBtn')?.addEventListener('click', goToPrevPage);
+    document.getElementById('floatingNextBtn')?.addEventListener('click', goToNextPage);
+
+    // Jump by Input
+    pageInput?.addEventListener('change', () => {
+        const val = parseInt(pageInput.value, 10);
+        if (val >= 1 && val <= totalPages) {
+            queueRenderPage(val);
+        } else {
+            pageInput.value = currentPage;
         }
     });
+
+    // Zoom Events
+    document.getElementById('btnZoomIn')?.addEventListener('click', () => setZoom(currentScale * 1.2));
+    document.getElementById('btnZoomOut')?.addEventListener('click', () => setZoom(currentScale / 1.2));
+    document.getElementById('btnZoomFit')?.addEventListener('click', () => setZoom(computeFitScale(canvas), true));
+    document.getElementById('btnMobileZoomIn')?.addEventListener('click', () => setZoom(currentScale * 1.25));
+    document.getElementById('btnMobileZoomOut')?.addEventListener('click', () => setZoom(currentScale / 1.25));
+
+    // Fullscreen Toggle
+    document.getElementById('btnFullscreenToggle')?.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen?.().catch(() => {});
+        } else {
+            document.exitFullscreen?.().catch(() => {});
+        }
+    });
+
+    // Quick Bookmark Current Page
+    document.getElementById('btnQuickBookmark')?.addEventListener('click', () => {
+        localStorage.setItem(storagePrefix + '_last_page', currentPage);
+        showToast(`Halaman ${currentPage} berhasil ditandai!`);
+    });
+
+    // View Mode Toggle (Single vs Continuous Scroll)
+    document.getElementById('btnViewSingle')?.addEventListener('click', () => {
+        stage.classList.remove('d-none');
+        scrollStage.classList.add('d-none');
+        document.getElementById('btnViewSingle').classList.add('active');
+        document.getElementById('btnViewScroll').classList.remove('active');
+        queueRenderPage(currentPage);
+    });
+    document.getElementById('btnViewScroll')?.addEventListener('click', () => {
+        stage.classList.add('d-none');
+        scrollStage.classList.remove('d-none');
+        document.getElementById('btnViewSingle').classList.remove('active');
+        document.getElementById('btnViewScroll').classList.add('active');
+        initScrollMode();
+    });
+
+    // Keyboard Shortcuts (Arrow Left, Right, Page Up, Page Down)
+    window.addEventListener('keydown', (e) => {
+        if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+            e.preventDefault();
+            goToNextPage();
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+            e.preventDefault();
+            goToPrevPage();
+        } else if (e.key === '+' || e.key === '=') {
+            e.preventDefault();
+            setZoom(currentScale * 1.2);
+        } else if (e.key === '-') {
+            e.preventDefault();
+            setZoom(currentScale / 1.2);
+        } else if (e.key === '0') {
+            e.preventDefault();
+            setZoom(1.0, true);
+        }
+    });
+
+    // Touch Swipe Gestures for Mobile
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTime = 0;
+
+    viewport.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            touchStartTime = Date.now();
+        }
+    }, { passive: true });
+
+    viewport.addEventListener('touchend', (e) => {
+        if (e.changedTouches.length === 1) {
+            const deltaX = e.changedTouches[0].clientX - touchStartX;
+            const deltaY = e.changedTouches[0].clientY - touchStartY;
+            const elapsedTime = Date.now() - touchStartTime;
+
+            // Horizontal swipe gesture detection (minimum 45px distance and fast flick)
+            if (Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5 && elapsedTime < 450) {
+                if (deltaX < 0) {
+                    goToNextPage();
+                } else {
+                    goToPrevPage();
+                }
+            }
+        }
+    }, { passive: true });
+
+    // Handle Window Resize (Auto re-fit)
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            if (isFitWidth && pdfDoc) {
+                renderPage(currentPage);
+            }
+        }, 200);
+    });
+
+    // Start loading
+    loadDocument();
+})();
 </script>
-@endpush
+@endsection

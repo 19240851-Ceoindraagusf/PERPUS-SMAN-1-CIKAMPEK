@@ -5,7 +5,8 @@
 
 @section('content')
 <section class="hero py-5">
-    <div class="container py-4">
+    <div class="hero-bg-shapes" aria-hidden="true"></div>
+    <div class="container py-4 position-relative" style="z-index: 2;">
         <div class="row align-items-center g-4">
             <div class="col-lg-7">
                 <p class="eyebrow mb-2">Ruang belajar tanpa batas</p>
