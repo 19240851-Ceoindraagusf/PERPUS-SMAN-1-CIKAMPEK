@@ -561,6 +561,19 @@
         .saved-book-card + .saved-book-card { margin-top: .75rem; }
         .study-banner { border: 1px solid var(--school-line); border-radius: 18px; background: linear-gradient(115deg, #eff8f4, #f7fbff); padding: 1.5rem; display: flex; gap: 1rem; justify-content: space-between; align-items: center; }
         .study-banner .eyebrow { color: var(--school-green); }
+        .voice-search-host { position: relative; }
+        .voice-search-input { padding-right: 3rem !important; }
+        .voice-search-button {
+            position: absolute; right: .45rem; top: 50%; transform: translateY(-50%);
+            z-index: 4; width: 2.15rem; height: 2.15rem; border: 0; border-radius: 50%;
+            display: grid; place-items: center; color: var(--school-green); background: #eaf5f0;
+            transition: background .18s ease, color .18s ease, box-shadow .18s ease;
+        }
+        .voice-search-button:hover { background: var(--school-green); color: #fff; }
+        .voice-search-button.is-listening { background: #dc2626; color: #fff; animation: voice-pulse 1.1s infinite; }
+        .voice-search-button.is-unavailable { opacity: .45; cursor: not-allowed; }
+        .voice-search-host > .input-group-text { padding-right: 2.8rem; }
+        @keyframes voice-pulse { 50% { box-shadow: 0 0 0 .45rem rgba(220,38,38,.18); } }
         .search-suggestions { 
             position: absolute; 
             z-index: 1090; 
@@ -1862,6 +1875,73 @@
                 window.location.assign(link.href);
             });
             input.addEventListener('blur', () => setTimeout(clear, 160));
+
+            // Voice search: uses the browser's built-in speech recognition (HTTPS required).
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!input.dataset.voiceSearchReady) {
+                input.dataset.voiceSearchReady = 'true';
+                const host = input.closest('.input-group') || input.parentElement;
+                host.classList.add('voice-search-host');
+                input.classList.add('voice-search-input');
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'voice-search-button';
+                button.setAttribute('aria-label', 'Cari menggunakan suara');
+                button.title = 'Cari menggunakan suara';
+                button.innerHTML = '<i class="bi bi-mic-fill" aria-hidden="true"></i>';
+                host.append(button);
+
+                if (!SpeechRecognition) {
+                    button.disabled = true;
+                    button.title = 'Pencarian suara tidak didukung browser ini. Coba Chrome atau Edge.';
+                    button.setAttribute('aria-label', button.title);
+                    button.classList.add('is-unavailable');
+                } else {
+
+                const recognition = new SpeechRecognition();
+                recognition.lang = 'id-ID';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+                let listening = false;
+                const stopListening = () => {
+                    listening = false;
+                    button.classList.remove('is-listening');
+                    button.setAttribute('aria-label', 'Cari menggunakan suara');
+                    button.title = 'Cari menggunakan suara';
+                };
+                recognition.addEventListener('start', () => {
+                    listening = true;
+                    button.classList.add('is-listening');
+                    button.setAttribute('aria-label', 'Berhenti merekam suara');
+                    button.title = 'Mendengarkan… klik untuk berhenti';
+                });
+                recognition.addEventListener('end', stopListening);
+                recognition.addEventListener('error', (event) => {
+                    stopListening();
+                    const messages = {
+                        'not-allowed': 'Izin mikrofon ditolak. Aktifkan izin mikrofon untuk situs ini.',
+                        'no-speech': 'Suara belum terdengar. Silakan coba lagi.',
+                        'network': 'Pengenalan suara memerlukan koneksi internet.'
+                    };
+                    if (event.error !== 'aborted') window.alert(messages[event.error] || 'Pencarian suara gagal. Silakan coba lagi.');
+                });
+                recognition.addEventListener('result', (event) => {
+                    const transcript = event.results?.[0]?.[0]?.transcript?.trim();
+                    if (!transcript) return;
+                    input.value = transcript;
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    input.form?.requestSubmit();
+                });
+                button.addEventListener('click', () => {
+                    if (listening) recognition.stop();
+                    else {
+                        input.focus();
+                        try { recognition.start(); }
+                        catch (error) { stopListening(); }
+                    }
+                });
+                }
+            }
         });
 
         // Global Keyboard Shortcut: Ctrl+K or '/' to focus search

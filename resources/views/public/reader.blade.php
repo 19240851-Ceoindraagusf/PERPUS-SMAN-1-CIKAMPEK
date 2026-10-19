@@ -215,6 +215,7 @@
         font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         transition: background-color 0.25s ease, color 0.25s ease;
     }
+    .reader-viewport { min-height: 0; min-width: 0; overscroll-behavior: contain; }
     .inset-0 {
         top: 0; right: 0; bottom: 0; left: 0;
     }
@@ -298,13 +299,16 @@
     .reader-nav-next { right: 1.25rem; }
 
     /* Continuous Scroll Mode */
+    .reader-scroll-stage { min-height: 0; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; }
     .reader-scroll-stage .pdf-scroll-page {
         background: #ffffff;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
         border-radius: 6px;
         overflow: hidden;
         margin: 0 auto;
-        max-width: 100%;
+        width: min(100%, 1100px);
+        min-height: 420px;
+        flex: 0 0 auto;
     }
 
     /* Floating Toast Notification */
@@ -446,6 +450,8 @@
     let pageNumPending = null;
     let renderTask = null;
     let viewMode = 'single'; // 'single' | 'scroll'
+    let scrollRenderGeneration = 0;
+    let pagePositionFrame = 0;
 
     // Toast Helper
     const showToast = (message, duration = 2000) => {
@@ -555,6 +561,17 @@
         if (num > totalPages) num = totalPages;
         currentPage = num;
 
+        if (viewMode === 'scroll') {
+            const target = scrollContainer.querySelector(`[data-page="${num}"]`);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                pageInput.value = num;
+                mobilePageIndicator.textContent = `${num} / ${totalPages}`;
+                localStorage.setItem(storagePrefix + '_last_page', num);
+                return;
+            }
+        }
+
         if (pageRendering) {
             pageNumPending = num;
         } else {
@@ -587,9 +604,11 @@
 
     // Continuous Scroll (Intersection Observer)
     let scrollObserver = null;
-    const initScrollMode = async () => {
+    const initScrollMode = async (targetPage = currentPage) => {
         scrollContainer.innerHTML = '';
+        scrollStage.scrollTop = 0;
         scrollObserver?.disconnect();
+        const generation = ++scrollRenderGeneration;
 
         scrollObserver = new IntersectionObserver((entries) => {
             entries.forEach(async (entry) => {
@@ -598,27 +617,28 @@
                     const pageNum = parseInt(pageEl.dataset.page, 10);
                     scrollObserver.unobserve(pageEl);
 
-                    const page = await pdfDoc.getPage(pageNum);
-                    const unscaled = page.getViewport({ scale: 1.0 });
-                    const scale = computeFitScale(unscaled);
-                    const vp = page.getViewport({ scale });
-                    const dpr = window.devicePixelRatio || 1;
-
-                    const pCanvas = document.createElement('canvas');
-                    pCanvas.width = Math.floor(vp.width * dpr);
-                    pCanvas.height = Math.floor(vp.height * dpr);
-                    pCanvas.style.width = Math.floor(vp.width) + 'px';
-                    pCanvas.style.height = Math.floor(vp.height) + 'px';
-
-                    const pCtx = pCanvas.getContext('2d');
-                    await page.render({
-                        canvasContext: pCtx,
-                        viewport: vp,
-                        transform: dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : null
-                    }).promise;
-
-                    pageEl.innerHTML = '';
-                    pageEl.appendChild(pCanvas);
+                    try {
+                        const page = await pdfDoc.getPage(pageNum);
+                        const unscaled = page.getViewport({ scale: 1.0 });
+                        const availableWidth = Math.max(240, scrollStage.clientWidth - 32);
+                        const scale = Math.min(availableWidth / unscaled.width, 1.8);
+                        const vp = page.getViewport({ scale });
+                        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                        const pCanvas = document.createElement('canvas');
+                        pCanvas.width = Math.floor(vp.width * dpr);
+                        pCanvas.height = Math.floor(vp.height * dpr);
+                        pCanvas.style.width = `${Math.floor(vp.width)}px`;
+                        pCanvas.style.height = `${Math.floor(vp.height)}px`;
+                        const pCtx = pCanvas.getContext('2d', { alpha: false });
+                        await page.render({ canvasContext: pCtx, viewport: vp, transform: dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : null }).promise;
+                        if (generation === scrollRenderGeneration) {
+                            pageEl.replaceChildren(pCanvas);
+                            pageEl.style.minHeight = `${Math.ceil(vp.height)}px`;
+                        }
+                    } catch (error) {
+                        if (generation === scrollRenderGeneration) pageEl.innerHTML = `<div class="text-danger small py-5">Halaman ${pageNum} gagal dimuat.</div>`;
+                        console.error(`Rendering error on page ${pageNum}`, error);
+                    }
                 }
             });
         }, { root: scrollStage, rootMargin: '300px 0px', threshold: 0.01 });
@@ -627,13 +647,43 @@
             const pageBox = document.createElement('div');
             pageBox.className = 'pdf-scroll-page d-flex align-items-center justify-content-center';
             pageBox.dataset.page = i;
-            pageBox.style.minHeight = '360px';
-            pageBox.style.width = 'fit-content';
+            pageBox.style.minHeight = '420px';
             pageBox.innerHTML = `<div class="text-muted small py-5"><span class="spinner-border spinner-border-sm me-1"></span> Halaman ${i}</div>`;
             scrollContainer.appendChild(pageBox);
             scrollObserver.observe(pageBox);
         }
+        viewMode = 'scroll';
+        requestAnimationFrame(() => {
+            const target = scrollContainer.querySelector(`[data-page="${targetPage}"]`);
+            if (target) scrollStage.scrollTop = target.offsetTop - scrollContainer.offsetTop;
+            updatePageFromScroll();
+        });
     };
+
+    const updatePageFromScroll = () => {
+        if (viewMode !== 'scroll') return;
+        cancelAnimationFrame(pagePositionFrame);
+        pagePositionFrame = requestAnimationFrame(() => {
+            const stageRect = scrollStage.getBoundingClientRect();
+            const marker = stageRect.top + stageRect.height * 0.4;
+            let nearest = null;
+            let nearestDistance = Infinity;
+            [...scrollContainer.children].forEach((pageEl) => {
+                const rect = pageEl.getBoundingClientRect();
+                const distance = Math.abs(rect.top + Math.min(rect.height, stageRect.height) * 0.4 - marker);
+                if (distance < nearestDistance) { nearest = pageEl; nearestDistance = distance; }
+            });
+            if (!nearest) return;
+            const pageNum = Number(nearest.dataset.page);
+            if (pageNum && pageNum !== currentPage) {
+                currentPage = pageNum;
+                pageInput.value = pageNum;
+                mobilePageIndicator.textContent = `${pageNum} / ${totalPages}`;
+                localStorage.setItem(storagePrefix + '_last_page', pageNum);
+            }
+        });
+    };
+    scrollStage.addEventListener('scroll', updatePageFromScroll, { passive: true });
 
     // Load PDF Document
     const loadDocument = async () => {
@@ -722,6 +772,9 @@
 
     // View Mode Toggle (Single vs Continuous Scroll)
     document.getElementById('btnViewSingle')?.addEventListener('click', () => {
+        viewMode = 'single';
+        scrollObserver?.disconnect();
+        scrollRenderGeneration++;
         stage.classList.remove('d-none');
         scrollStage.classList.add('d-none');
         document.getElementById('btnViewSingle').classList.add('active');
@@ -733,12 +786,13 @@
         scrollStage.classList.remove('d-none');
         document.getElementById('btnViewSingle').classList.remove('active');
         document.getElementById('btnViewScroll').classList.add('active');
-        initScrollMode();
+        initScrollMode(currentPage);
     });
 
     // Keyboard Shortcuts (Arrow Left, Right, Page Up, Page Down)
     window.addEventListener('keydown', (e) => {
         if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+        if (viewMode === 'scroll' && ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', ' '].includes(e.key)) return;
         if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
             e.preventDefault();
             goToNextPage();
@@ -792,7 +846,9 @@
     window.addEventListener('resize', () => {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(() => {
-            if (isFitWidth && pdfDoc) {
+            if (viewMode === 'scroll' && pdfDoc) {
+                initScrollMode(currentPage);
+            } else if (isFitWidth && pdfDoc) {
                 renderPage(currentPage);
             }
         }, 200);
