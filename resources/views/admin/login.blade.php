@@ -328,7 +328,6 @@
 
         <ul class="feature-list">
             <li><i class="bi bi-check-circle-fill"></i> Manajemen e-book &amp; kategori</li>
-            <li><i class="bi bi-check-circle-fill"></i> Monitoring peminjaman siswa</li>
             <li><i class="bi bi-check-circle-fill"></i> Laporan statistik akses</li>
             <li><i class="bi bi-check-circle-fill"></i> Manajemen kelas &amp; mata pelajaran</li>
         </ul>
