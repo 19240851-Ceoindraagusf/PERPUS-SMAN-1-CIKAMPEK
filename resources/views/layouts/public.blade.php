@@ -1513,6 +1513,15 @@
         .book-cover, .ebook-cover, .book-cover-image { object-fit: cover; background: #edf2f5; }
         .ebook-title, .book-title { color: #172b45; font-weight: 700; line-height: 1.35; }
         .ebook-meta, .book-meta { color: #66788b; font-size: .84rem; }
+        .comment-card-modern { max-width: 980px; margin-inline: auto; padding: clamp(1rem,3vw,1.65rem); border-radius: 20px; border-color: #e3e9ee; box-shadow: 0 8px 26px rgba(20,42,63,.055); }
+        .comment-card-modern + .comment-card-modern { margin-top: 1rem; }
+        .comment-card-modern .comment-book-banner { display: flex; align-items: center; gap: .75rem; padding: .85rem 1rem !important; background: #f5f8f7; border: 1px solid #e3ece8; border-radius: 13px; }
+        .comment-card-modern .comment-book-banner > div { min-width: 0; }
+        .comment-card-modern .comment-bubble, [data-ebook-record] .comment-bubble { padding: 1rem 1.1rem; border-radius: 14px; background: #f7f9fa; border-color: #e7edf1; line-height: 1.7; overflow-wrap: anywhere; }
+        .comment-card-modern .comment-avatar { width: 46px; height: 46px; border-radius: 15px; }
+        .comment-card-modern time { font-variant-numeric: tabular-nums; }
+        .comment-card-modern .comment-report-accordion > summary { list-style: none; }
+        .comment-card-modern .comment-report-accordion > summary::-webkit-details-marker { display: none; }
         .reader-topbar { background: rgba(255,255,255,.97); border-color: #e1e8ef !important; }
         .reader-viewport { background: #e9edf1; }
         .reader-canvas-card { border-radius: 6px; box-shadow: 0 12px 38px rgba(22,38,54,.18) !important; }
@@ -1547,6 +1556,11 @@
             .class-filter-btn-group { max-width: 100%; overflow-x: auto; flex-wrap: nowrap !important; padding-bottom: .35rem; }
             .class-filter-pill { white-space: nowrap; }
             .table-responsive { border-radius: 14px; }
+            .comment-card-modern { padding: 1rem; }
+            .comment-card-modern .comment-book-banner { align-items: flex-start; }
+            .comment-card-modern .comment-book-banner > a.btn { width: 100%; }
+            .comment-card-modern > .d-flex:last-child { align-items: flex-start !important; }
+            .comment-card-modern .comment-report-card { width: min(100%, 360px); }
         }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
         @media (max-width: 575.98px) {

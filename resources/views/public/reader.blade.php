@@ -226,6 +226,20 @@
         z-index: 1050;
         transition: background-color 0.25s ease, border-color 0.25s ease;
     }
+    .reader-topbar {
+        position: relative;
+        flex-wrap: wrap;
+        gap: .5rem 1rem;
+        padding-top: .65rem !important;
+        padding-bottom: .65rem !important;
+        border-color: #e3e9ef !important;
+        box-shadow: 0 5px 20px rgba(15,35,55,.07) !important;
+    }
+    .reader-topbar > div:first-child { flex: 1 1 260px; }
+    .reader-topbar > div:last-child { flex: 0 1 auto; flex-wrap: wrap; }
+    .reader-topbar button, .reader-topbar a { touch-action: manipulation; }
+    .reader-page-stepper { min-height: 36px; border-color: #dfe6ec !important; }
+    .reader-viewport { background-image: radial-gradient(ellipse at top, rgba(255,255,255,.7), transparent 65%); }
     .reader-title {
         max-width: 420px;
     }
@@ -394,13 +408,17 @@
 
     /* Mobile Enhancements */
     @media (max-width: 576px) {
-        .reader-topbar { padding: 0.5rem 0.75rem !important; }
+        .reader-topbar { padding: 0.5rem 0.65rem !important; gap: .45rem; }
+        .reader-topbar > div:first-child { flex: 1 1 100%; }
+        .reader-topbar > div:last-child { flex: 1 1 100%; justify-content: space-between; }
         .reader-bottombar { padding: 0.5rem 0.75rem !important; }
         .reader-stage { padding: 0.5rem 0.25rem !important; }
         .reader-canvas-card { border-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.12); }
-        .reader-title { max-width: 160px; font-size: 0.9rem !important; }
+        .reader-title { max-width: calc(100vw - 90px); font-size: 0.9rem !important; }
         .reader-page-stepper { padding: 0.15rem 0.5rem !important; }
         #pageNumberInput { width: 34px !important; }
+        .reader-toast { max-width: calc(100vw - 2rem); white-space: nowrap; font-size: .85rem; }
+        .reader-error-state { overflow-y: auto; }
     }
 </style>
 

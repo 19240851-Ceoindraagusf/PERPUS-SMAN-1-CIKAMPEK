@@ -75,7 +75,7 @@
                                         <i class="bi bi-mortarboard me-1 text-success"></i> Siswa
                                     </span>
                                     @if($comment->rating)
-                                        <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis border border-warning-subtle small fw-bold">
+                                        <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis border border-warning-subtle small fw-bold" aria-label="Rating {{ $comment->rating }} dari 5" title="Rating {{ $comment->rating }} dari 5">
                                             <i class="bi bi-star-fill text-warning me-1"></i> {{ $comment->rating }}/5
                                         </span>
                                     @endif
