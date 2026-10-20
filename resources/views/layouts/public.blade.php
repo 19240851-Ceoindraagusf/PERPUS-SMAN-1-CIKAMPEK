@@ -1480,6 +1480,51 @@
             background: #241416;
             border-color: rgba(239, 68, 68, 0.3);
         }
+        /* Refined library interface */
+        :root { --school-green: #12634c; --school-blue: #244f83; --school-ink: #172b45; --school-muted: #64748b; --school-line: #e1e8ef; --school-soft: #eff6f2; }
+        body { background: #f5f7f8; letter-spacing: -.01em; }
+        .navbar { border-bottom: 1px solid #e7edf1; box-shadow: 0 5px 24px rgba(19,43,67,.045); }
+        .nav-pill { border-radius: 999px; }
+        .hero { min-height: 440px; padding-top: 4.5rem !important; padding-bottom: 4.5rem !important; background-image: linear-gradient(110deg, rgba(9,48,39,.91), rgba(20,64,93,.76)), url('{{ asset("images/gedung-sman-1-cikampek.png") }}'); }
+        .hero h1 { letter-spacing: -.045em; line-height: 1.08; }
+        .hero-panel { border-radius: 22px; box-shadow: 0 20px 55px rgba(6,28,46,.16); }
+        .section-title { letter-spacing: -.035em; }
+        .card, .info-card { border-color: #e4eaf0; border-radius: 18px; box-shadow: 0 8px 28px rgba(20,42,63,.055); }
+        .info-card:hover { transform: translateY(-3px); box-shadow: 0 16px 35px rgba(20,42,63,.09); }
+        .btn { font-weight: 600; transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease; }
+        .btn-success { --bs-btn-bg: #12634c; --bs-btn-border-color: #12634c; --bs-btn-hover-bg: #0d503d; --bs-btn-hover-border-color: #0d503d; }
+        .form-control, .form-select, .input-group-text { min-height: 44px; border-color: #dce5eb; border-radius: 11px; }
+        .form-control:focus, .form-select:focus { border-color: #5a9a80; box-shadow: 0 0 0 .22rem rgba(18,99,76,.13); }
+        .library-hero-banner, .favorites-hero { border-radius: 24px; box-shadow: 0 18px 40px rgba(18,60,69,.13); }
+        .library-filter-panel { background: #fff; border: 1px solid #e4eaf0; border-radius: 20px; box-shadow: 0 10px 30px rgba(20,42,63,.055); }
+        .active-filter-chip { border-radius: 999px; }
+        .ebook-modern-card, .ebook-card, .book-card, .library-book-card { overflow: hidden; border: 1px solid #e5ebf0; border-radius: 18px; background: #fff; box-shadow: 0 8px 24px rgba(20,42,63,.055); transition: transform .22s ease, box-shadow .22s ease; }
+        .ebook-modern-card:hover, .ebook-card:hover, .book-card:hover, .library-book-card:hover { transform: translateY(-4px); box-shadow: 0 18px 35px rgba(20,42,63,.11); }
+        .ebook-cover-wrapper { background: #edf2f5; }
+        .ebook-cover-wrapper .book-cover { width: 100%; height: 100%; display: block; object-fit: cover; }
+        .ebook-card-title { line-height: 1.35; font-weight: 700; }
+        .ebook-card-title a { color: #172b45; text-decoration: none; }
+        .ebook-card-title a:hover { color: #12634c; }
+        .ebook-card-meta { color: #66788b !important; }
+        .ebook-card-actions .btn { min-height: 34px; }
+        .book-cover-placeholder { min-height: 100%; }
+        .book-cover, .ebook-cover, .book-cover-image { object-fit: cover; background: #edf2f5; }
+        .ebook-title, .book-title { color: #172b45; font-weight: 700; line-height: 1.35; }
+        .ebook-meta, .book-meta { color: #66788b; font-size: .84rem; }
+        .reader-topbar { background: rgba(255,255,255,.97); border-color: #e1e8ef !important; }
+        .reader-viewport { background: #e9edf1; }
+        .reader-canvas-card { border-radius: 6px; box-shadow: 0 12px 38px rgba(22,38,54,.18) !important; }
+        [data-ebook-record] > .row:first-child > .col-lg-7 > .card { overflow: hidden; }
+        [data-ebook-record] > .row:first-child > .col-lg-5 > .card { position: sticky; top: 100px; }
+        :where(a, button, input, select, textarea, iframe):focus-visible { outline: 3px solid #d99b32; outline-offset: 3px; }
+        img { max-width: 100%; }
+        @media (max-width: 767.98px) {
+            .hero { min-height: 390px; padding-top: 3rem !important; padding-bottom: 3rem !important; }
+            .hero h1 { font-size: clamp(2rem, 9vw, 3rem); }
+            .library-filter-panel { padding: 1rem !important; }
+            .container { --bs-gutter-x: 1.25rem; }
+        }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
         @media (max-width: 575.98px) {
             .brand-mark { width: 48px; height: 48px; font-size: .85rem; }
             .brand-name { font-size: .92rem; }

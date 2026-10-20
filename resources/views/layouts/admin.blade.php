@@ -87,6 +87,10 @@
             color: #fff;
             flex-shrink: 0;
         }
+        /* Keep dashboard KPI cards equal in height when labels wrap. */
+        .admin-content .row > [class*="col-"] > .stat-card {
+            height: 100%;
+        }
         /* ===== SIDEBAR PREMIUM ===== */
         .admin-sidebar {
             background: linear-gradient(180deg, #0a4535 0%, #0f6b4f 35%, #123f72 100%);
@@ -285,6 +289,25 @@
         .pagination .page-link:hover { transform: translateY(-1px); }
         .pagination .page-item.active .page-link { box-shadow: 0 8px 18px rgba(15, 107, 79, .18); }
         .pagination .page-item.disabled .page-link { cursor: not-allowed; }
+        /* Consistent admin workspace */
+        :root { --admin-green: #12634c; --admin-ink: #172b45; --admin-line: #e1e8ef; }
+        body { background: #f4f6f8; }
+        .admin-sidebar { background: linear-gradient(180deg, #103d35 0%, #12634c 48%, #183b63 100%); box-shadow: 5px 0 28px rgba(13,45,43,.14); }
+        .admin-content { padding: clamp(1rem, 2.4vw, 2rem) !important; }
+        .page-header { border-radius: 18px; box-shadow: 0 12px 30px rgba(20,67,65,.14); }
+        .admin-card, .card { border: 1px solid #e2e8ed; border-radius: 16px !important; box-shadow: 0 8px 26px rgba(20,42,63,.055) !important; }
+        .table { --bs-table-bg: transparent; }
+        .table thead th { color: #607286; font-size: .73rem; font-weight: 700; letter-spacing: .055em; text-transform: uppercase; background: #f7f9fa; }
+        .table > :not(caption) > * > * { padding: .9rem .85rem; border-bottom-color: #edf1f4; }
+        .form-control, .form-select { min-height: 43px; border-color: #dce4e9; border-radius: 10px; }
+        .form-control:focus, .form-select:focus { border-color: #5a9a80; box-shadow: 0 0 0 .22rem rgba(18,99,76,.13); }
+        .btn { font-weight: 600; border-radius: 9px; }
+        .btn-success { --bs-btn-bg: #12634c; --bs-btn-border-color: #12634c; --bs-btn-hover-bg: #0d503d; --bs-btn-hover-border-color: #0d503d; }
+        :where(a, button, input, select, textarea):focus-visible { outline: 3px solid #d99b32; outline-offset: 3px; }
+        @media (min-width: 992px) { .admin-sidebar { position: sticky; top: 0; height: 100vh; overflow-y: auto; } }
+        @media (max-width: 991.98px) { .admin-sidebar { min-width: 0; box-shadow: none; } .admin-sidebar nav { display: grid !important; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: .2rem !important; } .sidebar-nav-label { grid-column: 1 / -1; } }
+        @media (max-width: 575.98px) { .page-header-inner { padding: .9rem 1rem; } .ph-right { width: 100%; justify-content: space-between; } }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
         @media (max-width: 991.98px) {
             .admin-shell { flex-direction: column; }
             .admin-sidebar { width: 100%; }

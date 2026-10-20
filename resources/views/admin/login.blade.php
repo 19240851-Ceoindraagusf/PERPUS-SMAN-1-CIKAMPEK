@@ -36,7 +36,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
         }
 
         /* ===== PARTIKEL LATAR (lingkaran blur) ===== */
@@ -197,7 +198,8 @@
         .captcha-image-wrap img { width: 100%; height: 100%; object-fit: contain; }
         .captcha-refresh { width: 56px; height: 56px; flex: 0 0 56px; border: 1px solid #c4b5fd; border-radius: 12px; color: #6d28d9; background: rgba(255,255,255,.12); font-size: 1.2rem; }
         .captcha-refresh:hover { background: rgba(196,181,253,.2); }
-        .captcha-input { text-align: center; letter-spacing: .25em; text-transform: uppercase; font-size: 1rem !important; }
+        .captcha-input { text-align: center; letter-spacing: .12em; text-transform: uppercase; font-size: 1rem !important; }
+        .captcha-input::placeholder { letter-spacing: normal; text-transform: none; font-size: .88rem; }
 
         /* ===== PASSWORD WRAPPER ===== */
         .pwd-wrapper {
@@ -410,7 +412,7 @@
                         <i class="bi bi-arrow-repeat"></i>
                     </button>
                 </div>
-                <input class="form-control captcha-input" id="captcha" name="captcha" type="text" minlength="3" maxlength="3" pattern="[A-Za-z]{3}" autocomplete="off" placeholder="Masukkan 3 karakter di atas" required>
+                <input class="form-control captcha-input" id="captcha" name="captcha" type="text" minlength="3" maxlength="3" pattern="[A-Za-z0-9]{3}" inputmode="text" autocomplete="off" placeholder="Masukkan 3 karakter di atas" required>
             </div>
 
             {{-- Ingat Saya --}}
@@ -434,6 +436,10 @@
 </div>
 
 <script>
+    document.getElementById('captcha').addEventListener('input', function () {
+        this.value = this.value.replace(/[^a-z0-9]/gi, '').toUpperCase().slice(0, 3);
+    });
+
     document.getElementById('captchaRefresh').addEventListener('click', function () {
         const image = document.getElementById('captchaImage');
         image.src = @json(route('admin.login.captcha')) + '?_=' + Date.now();
