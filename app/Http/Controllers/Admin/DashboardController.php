@@ -91,7 +91,9 @@ class DashboardController extends Controller
             }
             if ($author === '') {
                 $issues[] = ['label' => 'Penulis belum diisi', 'level' => 'warning'];
-            } elseif (mb_strlen($author) > 120 || str_contains(mb_strtoupper($author), 'DAFTAR ISI')) {
+            // Panjang nama penulis bukan indikator data rusak: buku dapat memiliki
+            // banyak kontributor. Tandai hanya bila isinya jelas berupa teks daftar isi.
+            } elseif (preg_match('/\bDAFTAR\s+ISI\b/iu', $author)) {
                 $issues[] = ['label' => 'Penulis perlu diperiksa', 'level' => 'warning'];
             }
             if (trim((string) $ebook->publisher) === '') {

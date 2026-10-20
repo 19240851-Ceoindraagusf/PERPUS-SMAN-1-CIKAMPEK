@@ -31,6 +31,7 @@ Route::get('/audit-logs', fn () => redirect()->route('admin.audit-logs.index'));
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::get('/login/captcha', [AuthController::class, 'captcha'])->name('login.captcha');
     Route::post('/login', [AuthController::class, 'login'])->name('login.store');
     Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 

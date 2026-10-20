@@ -192,6 +192,13 @@
             -webkit-text-fill-color: #fff !important;
         }
 
+        .captcha-row { display: flex; gap: .65rem; align-items: center; }
+        .captcha-image-wrap { min-width: 0; flex: 1; height: 64px; display: flex; align-items: center; justify-content: center; border: 1px solid #c4b5fd; border-radius: 12px; background: rgba(255,255,255,.96); overflow: hidden; }
+        .captcha-image-wrap img { width: 100%; height: 100%; object-fit: contain; }
+        .captcha-refresh { width: 56px; height: 56px; flex: 0 0 56px; border: 1px solid #c4b5fd; border-radius: 12px; color: #6d28d9; background: rgba(255,255,255,.12); font-size: 1.2rem; }
+        .captcha-refresh:hover { background: rgba(196,181,253,.2); }
+        .captcha-input { text-align: center; letter-spacing: .25em; text-transform: uppercase; font-size: 1rem !important; }
+
         /* ===== PASSWORD WRAPPER ===== */
         .pwd-wrapper {
             position: relative;
@@ -392,6 +399,20 @@
                 </div>
             </div>
 
+            {{-- Kode keamanan --}}
+            <div class="mb-4">
+                <label class="form-label" for="captcha"><i class="bi bi-shield-check me-1"></i>Kode Keamanan</label>
+                <div class="captcha-row mb-2">
+                    <div class="captcha-image-wrap">
+                        <img id="captchaImage" src="data:image/svg+xml;base64,{{ base64_encode($captchaSvg) }}" alt="Kode keamanan tiga karakter">
+                    </div>
+                    <button class="captcha-refresh" id="captchaRefresh" type="button" aria-label="Muat kode keamanan baru" title="Muat kode baru">
+                        <i class="bi bi-arrow-repeat"></i>
+                    </button>
+                </div>
+                <input class="form-control captcha-input" id="captcha" name="captcha" type="text" minlength="3" maxlength="3" pattern="[A-Za-z]{3}" autocomplete="off" placeholder="Masukkan 3 karakter di atas" required>
+            </div>
+
             {{-- Ingat Saya --}}
             <div class="form-check mb-4">
                 <input class="form-check-input" id="remember" name="remember" type="checkbox" value="1">
@@ -413,6 +434,12 @@
 </div>
 
 <script>
+    document.getElementById('captchaRefresh').addEventListener('click', function () {
+        const image = document.getElementById('captchaImage');
+        image.src = @json(route('admin.login.captcha')) + '?_=' + Date.now();
+        document.getElementById('captcha').value = '';
+    });
+
     // ===== TOGGLE PASSWORD (EYE) =====
     function togglePassword() {
         const pwdInput = document.getElementById('password');
