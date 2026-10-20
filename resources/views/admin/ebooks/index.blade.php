@@ -135,7 +135,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="7" class="text-muted text-center py-5">Data e-book belum tersedia.</td></tr>
+                <tr><td colspan="7" class="text-center py-5"><div class="empty-state"><i class="bi bi-journal-x fs-2 text-success d-block mb-2"></i><strong class="d-block mb-1">Belum ada e-book pada pilihan ini</strong><span class="text-muted small">Ubah filter kelas atau mata pelajaran, atau tambahkan koleksi baru.</span></div></td></tr>
             @endforelse
             </tbody>
         </table>

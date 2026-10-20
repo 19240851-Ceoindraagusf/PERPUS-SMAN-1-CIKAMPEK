@@ -161,7 +161,7 @@
         @forelse($classes as $class)
             @include('public._class_card', ['class' => $class])
         @empty
-            <div class="col-12"><div class="alert alert-info">Data kelas belum tersedia.</div></div>
+            <div class="col-12"><div class="empty-state text-center"><div class="saved-empty-icon mb-3 mx-auto"><i class="bi bi-mortarboard"></i></div><h3 class="h5 fw-bold">Koleksi kelas sedang disiapkan</h3><p class="text-muted mb-3">Kelas dan materi akan muncul di sini setelah data perpustakaan diperbarui.</p><a class="btn btn-outline-success rounded-pill px-4" href="{{ route('library') }}">Jelajahi katalog</a></div></div>
         @endforelse
     </div>
 </section>
@@ -218,7 +218,7 @@
                 </article>
             </div>
         @empty
-            <div class="col-12"><div class="alert alert-info">E-book belum tersedia.</div></div>
+            <div class="col-12"><div class="empty-state text-center"><div class="saved-empty-icon mb-3 mx-auto"><i class="bi bi-book"></i></div><h3 class="h5 fw-bold">E-book terbaru akan segera hadir</h3><p class="text-muted mb-3">Sementara itu, jelajahi seluruh koleksi perpustakaan.</p><a class="btn btn-outline-success rounded-pill px-4" href="{{ route('library') }}">Buka katalog</a></div></div>
         @endforelse
     </div>
 </section>
@@ -277,7 +277,7 @@
                 </article>
             </div>
         @empty
-            <div class="col-12"><div class="empty-state text-muted">Belum ada data bacaan populer.</div></div>
+            <div class="col-12"><div class="empty-state text-center"><div class="saved-empty-icon mb-3 mx-auto"><i class="bi bi-fire"></i></div><h3 class="h5 fw-bold">Belum ada bacaan populer</h3><p class="text-muted mb-0">Koleksi populer akan terbentuk seiring siswa membaca e-book.</p></div></div>
         @endforelse
     </div>
 </section>

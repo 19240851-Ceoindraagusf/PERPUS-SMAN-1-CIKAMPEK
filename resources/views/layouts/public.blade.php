@@ -1498,6 +1498,8 @@
         .library-hero-banner, .favorites-hero { border-radius: 24px; box-shadow: 0 18px 40px rgba(18,60,69,.13); }
         .library-filter-panel { background: #fff; border: 1px solid #e4eaf0; border-radius: 20px; box-shadow: 0 10px 30px rgba(20,42,63,.055); }
         .active-filter-chip { border-radius: 999px; }
+        .class-hero-banner, .subject-hero-banner, .comments-hero-banner { border-radius: 24px; box-shadow: 0 16px 38px rgba(18,60,69,.11); }
+        .class-hero-banner h1, .subject-hero-banner h1, .comments-hero-banner h1, .library-hero-banner h1 { letter-spacing: -.035em; line-height: 1.12; }
         .ebook-modern-card, .ebook-card, .book-card, .library-book-card { overflow: hidden; border: 1px solid #e5ebf0; border-radius: 18px; background: #fff; box-shadow: 0 8px 24px rgba(20,42,63,.055); transition: transform .22s ease, box-shadow .22s ease; }
         .ebook-modern-card:hover, .ebook-card:hover, .book-card:hover, .library-book-card:hover { transform: translateY(-4px); box-shadow: 0 18px 35px rgba(20,42,63,.11); }
         .ebook-cover-wrapper { background: #edf2f5; }
@@ -1515,7 +1517,16 @@
         .reader-viewport { background: #e9edf1; }
         .reader-canvas-card { border-radius: 6px; box-shadow: 0 12px 38px rgba(22,38,54,.18) !important; }
         [data-ebook-record] > .row:first-child > .col-lg-7 > .card { overflow: hidden; }
-        [data-ebook-record] > .row:first-child > .col-lg-5 > .card { position: sticky; top: 100px; }
+        [data-ebook-record] > .row:first-child > .col-lg-4 > .card { position: sticky; top: 100px; border: 1px solid #e4eaf0 !important; }
+        [data-ebook-record] > .row:first-child > .col-lg-4 .detail-cover { width: 100%; max-width: 340px; max-height: 500px; object-fit: contain; box-shadow: 0 14px 32px rgba(18,42,62,.16); }
+        [data-ebook-record] > .row:first-child > .col-lg-8 h1 { font-size: clamp(1.8rem, 3vw, 2.6rem); letter-spacing: -.04em; }
+        [data-ebook-record] .metric { min-height: 82px; border: 1px solid #e5ebef; border-left: 3px solid var(--school-green); }
+        [data-ebook-record] .detail-actions .btn { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; }
+        .empty-state, .saved-empty-state { border-radius: 20px; border: 1px solid #e4eaf0; background: linear-gradient(145deg,#fff,#f8faf9); padding: clamp(1.5rem,4vw,3rem); }
+        .saved-empty-icon { box-shadow: 0 8px 20px rgba(18,99,76,.12); }
+        .mobile-filter-details > summary { display: none; }
+        .mobile-filter-details:not([open]) > :not(summary) { display: block; }
+        .mobile-filter-details > summary:focus-visible { outline: 3px solid #d99b32; outline-offset: 3px; }
         :where(a, button, input, select, textarea, iframe):focus-visible { outline: 3px solid #d99b32; outline-offset: 3px; }
         img { max-width: 100%; }
         @media (max-width: 767.98px) {
@@ -1523,6 +1534,19 @@
             .hero h1 { font-size: clamp(2rem, 9vw, 3rem); }
             .library-filter-panel { padding: 1rem !important; }
             .container { --bs-gutter-x: 1.25rem; }
+            .library-filter-panel { padding: .9rem !important; }
+            .mobile-filter-details > summary { display: flex; align-items: center; gap: .5rem; min-height: 44px; cursor: pointer; list-style: none; color: #172b45; font-weight: 700; }
+            .mobile-filter-details > summary::-webkit-details-marker { display: none; }
+            .mobile-filter-details[open] > summary { padding-bottom: .8rem; margin-bottom: .8rem; border-bottom: 1px solid #e5ebef; }
+            .mobile-filter-details[open] > summary .bi-chevron-down { transform: rotate(180deg); }
+            .mobile-filter-details:not([open]) > :not(summary) { display: none; }
+            .mobile-filter-details[open] > form { display: block; }
+            [data-ebook-record] > .row:first-child > .col-lg-4 > .card { position: static; }
+            .ebook-card-actions { gap: .4rem !important; }
+            .ebook-card-actions .btn { min-width: 34px; }
+            .class-filter-btn-group { max-width: 100%; overflow-x: auto; flex-wrap: nowrap !important; padding-bottom: .35rem; }
+            .class-filter-pill { white-space: nowrap; }
+            .table-responsive { border-radius: 14px; }
         }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
         @media (max-width: 575.98px) {

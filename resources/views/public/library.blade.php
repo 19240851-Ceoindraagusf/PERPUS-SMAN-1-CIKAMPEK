@@ -33,6 +33,8 @@
 
     <!-- Panel Pencarian & Filter Modern -->
     <div class="library-filter-panel p-4 mb-4">
+        <details class="mobile-filter-details" @if($search || $selectedClass || $selectedSubject || $selectedYear || $selectedAuthor || $sort !== 'newest') open @endif>
+        <summary><i class="bi bi-sliders me-2"></i>Cari dan filter koleksi <i class="bi bi-chevron-down ms-auto"></i></summary>
         <form action="{{ route('library') }}" method="GET" class="search-panel">
             <div class="row g-3 align-items-end">
                 <div class="col-lg-4 position-relative">
@@ -112,6 +114,7 @@
                 </div>
             </div>
         </form>
+        </details>
     </div>
 
     <!-- Chip Filter Aktif (Jika Ada) -->
@@ -247,7 +250,7 @@
             <div class="saved-empty-icon mb-3 mx-auto" style="width: 70px; height: 70px; border-radius: 50%; background: rgba(15,107,79,0.1); color: var(--school-green); display: grid; place-items: center; font-size: 2rem;">
                 <i class="bi bi-journal-x"></i>
             </div>
-            <h2 class="h4 fw-bold mb-2">Buku Tidak Ditemukan</h2>
+            <h2 class="h4 fw-bold mb-2">{{ $search || $selectedClass || $selectedSubject || $selectedYear || $selectedAuthor ? 'Buku Tidak Ditemukan' : 'Koleksi Sedang Disiapkan' }}</h2>
             @if($suggestedSearch)
                 <p class="mb-3">
                     Mungkin maksud Anda: 
@@ -257,7 +260,7 @@
                 </p>
             @endif
             <p class="text-muted mb-4 mx-auto" style="max-width: 480px;">
-                Coba gunakan kata kunci lebih singkat, hapus salah satu opsi filter, atau jelajahi mata pelajaran populer berikut:
+                {{ $search || $selectedClass || $selectedSubject || $selectedYear || $selectedAuthor ? 'Coba gunakan kata kunci lebih singkat, hapus salah satu opsi filter, atau jelajahi mata pelajaran populer berikut:' : 'Koleksi digital akan tampil di sini setelah e-book ditambahkan oleh pengelola perpustakaan.' }}
             </p>
             <div class="d-flex justify-content-center flex-wrap gap-2 mb-4">
                 <a class="btn btn-sm btn-outline-success rounded-pill px-3" href="{{ route('library', ['q' => 'Matematika']) }}">Matematika</a>

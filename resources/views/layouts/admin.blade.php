@@ -299,13 +299,17 @@
         .table { --bs-table-bg: transparent; }
         .table thead th { color: #607286; font-size: .73rem; font-weight: 700; letter-spacing: .055em; text-transform: uppercase; background: #f7f9fa; }
         .table > :not(caption) > * > * { padding: .9rem .85rem; border-bottom-color: #edf1f4; }
+        .table-responsive { border-radius: 15px; scrollbar-color: #b8c7c2 #f2f5f4; }
+        .table-responsive table { margin-bottom: 0; }
+        .table-responsive .btn { white-space: nowrap; }
+        .admin-content h1, .admin-content h2 { letter-spacing: -.025em; }
         .form-control, .form-select { min-height: 43px; border-color: #dce4e9; border-radius: 10px; }
         .form-control:focus, .form-select:focus { border-color: #5a9a80; box-shadow: 0 0 0 .22rem rgba(18,99,76,.13); }
         .btn { font-weight: 600; border-radius: 9px; }
         .btn-success { --bs-btn-bg: #12634c; --bs-btn-border-color: #12634c; --bs-btn-hover-bg: #0d503d; --bs-btn-hover-border-color: #0d503d; }
         :where(a, button, input, select, textarea):focus-visible { outline: 3px solid #d99b32; outline-offset: 3px; }
         @media (min-width: 992px) { .admin-sidebar { position: sticky; top: 0; height: 100vh; overflow-y: auto; } }
-        @media (max-width: 991.98px) { .admin-sidebar { min-width: 0; box-shadow: none; } .admin-sidebar nav { display: grid !important; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: .2rem !important; } .sidebar-nav-label { grid-column: 1 / -1; } }
+        @media (max-width: 991.98px) { .admin-sidebar { min-width: 0; box-shadow: none; } .admin-sidebar nav { display: grid !important; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: .2rem !important; } .sidebar-nav-label { grid-column: 1 / -1; } .table-responsive { overscroll-behavior-x: contain; } }
         @media (max-width: 575.98px) { .page-header-inner { padding: .9rem 1rem; } .ph-right { width: 100%; justify-content: space-between; } }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
         @media (max-width: 991.98px) {
