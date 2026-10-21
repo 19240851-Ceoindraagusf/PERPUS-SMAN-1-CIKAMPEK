@@ -176,12 +176,11 @@
         </div>
 
         <div class="d-flex align-items-center gap-2">
-            {{-- Quick Bookmark Current Page Button --}}
-            <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold d-flex align-items-center gap-1" id="btnQuickBookmark">
-                <i class="bi bi-bookmark-check"></i>
-                <span class="d-none d-sm-inline" style="font-size: 0.8rem;">Tandai Halaman Ini</span>
-                <span class="d-inline d-sm-none" style="font-size: 0.8rem;">Tandai</span>
-            </button>
+            <div class="reader-progress-status d-flex align-items-center gap-1 rounded-pill px-2 px-sm-3 py-2" id="readerProgressStatus" role="status" aria-live="polite" title="Posisi baca tersimpan otomatis di browser ini">
+                <i class="bi bi-check2-circle" aria-hidden="true"></i>
+                <span class="d-none d-sm-inline" id="readerProgressStatusText">Menyimpan progres...</span>
+                <span class="d-inline d-sm-none">Otomatis</span>
+            </div>
 
             {{-- Zoom Out / In on Mobile --}}
             <div class="d-flex d-md-none align-items-center gap-1">
@@ -240,6 +239,7 @@
     .reader-topbar button, .reader-topbar a { touch-action: manipulation; }
     .reader-page-stepper { min-height: 36px; border-color: #dfe6ec !important; }
     .reader-viewport { background-image: radial-gradient(ellipse at top, rgba(255,255,255,.7), transparent 65%); }
+    .reader-progress-status { color: #12634c; background: rgba(18,99,76,.08); font-size: .78rem; font-weight: 700; white-space: nowrap; }
     .reader-title {
         max-width: 420px;
     }
@@ -352,6 +352,7 @@
         border-color: #dfd2b5 !important;
         color: #433422 !important;
     }
+    .reader-app.reader-theme-sepia .reader-progress-status { color: #5d462c; background: rgba(93,70,44,.09); }
     .reader-app.reader-theme-sepia .btn-icon-round {
         background: #fbf5e7;
         border-color: #d8c7a6;
@@ -373,6 +374,7 @@
         border-color: #334155 !important;
         color: #f1f5f9 !important;
     }
+    .reader-app.reader-theme-dark .reader-progress-status { color: #6ee7b7; background: rgba(16,185,129,.14); }
     .reader-app.reader-theme-dark .reader-title {
         color: #f8fafc !important;
     }
@@ -435,6 +437,16 @@
     const pdfUrl = "{{ asset('storage/' . $ebook->file_path) }}";
     const ebookId = "{{ $ebook->id }}";
     const storagePrefix = 'perpus_reader_' + ebookId;
+    const progressStatusText = document.getElementById('readerProgressStatusText');
+    const saveReadingProgress = (page) => {
+        try {
+            localStorage.setItem(storagePrefix + '_last_page', String(page));
+            if (progressStatusText) progressStatusText.textContent = `Halaman ${page} tersimpan otomatis`;
+        } catch (error) {
+            if (progressStatusText) progressStatusText.textContent = 'Progres tidak dapat disimpan';
+            console.warn('Reading progress could not be saved:', error);
+        }
+    };
 
     // DOM Elements
     const appContainer = document.querySelector('.reader-app');
@@ -564,7 +576,7 @@
             zoomPercentLabel.textContent = isFitWidth ? 'Fit' : `${Math.round(currentScale * 100)}%`;
 
             // Auto save last reading position
-            localStorage.setItem(storagePrefix + '_last_page', num);
+            saveReadingProgress(num);
 
         } catch (err) {
             if (err.name !== 'RenderingCancelledException') {
@@ -585,7 +597,7 @@
                 target.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 pageInput.value = num;
                 mobilePageIndicator.textContent = `${num} / ${totalPages}`;
-                localStorage.setItem(storagePrefix + '_last_page', num);
+                saveReadingProgress(num);
                 return;
             }
         }
@@ -697,7 +709,7 @@
                 currentPage = pageNum;
                 pageInput.value = pageNum;
                 mobilePageIndicator.textContent = `${pageNum} / ${totalPages}`;
-                localStorage.setItem(storagePrefix + '_last_page', pageNum);
+                saveReadingProgress(pageNum);
             }
         });
     };
@@ -722,7 +734,12 @@
             pageInput.max = totalPages;
 
             // Restore last read page
-            const savedPage = parseInt(localStorage.getItem(storagePrefix + '_last_page'), 10);
+            let savedPage = 0;
+            try {
+                savedPage = parseInt(localStorage.getItem(storagePrefix + '_last_page'), 10);
+            } catch (error) {
+                console.warn('Reading progress could not be restored:', error);
+            }
             if (savedPage && savedPage >= 1 && savedPage <= totalPages) {
                 currentPage = savedPage;
                 showToast(`Melanjutkan dari halaman ${currentPage}`, 2500);
@@ -780,12 +797,6 @@
         } else {
             document.exitFullscreen?.().catch(() => {});
         }
-    });
-
-    // Quick Bookmark Current Page
-    document.getElementById('btnQuickBookmark')?.addEventListener('click', () => {
-        localStorage.setItem(storagePrefix + '_last_page', currentPage);
-        showToast(`Halaman ${currentPage} berhasil ditandai!`);
     });
 
     // View Mode Toggle (Single vs Continuous Scroll)
