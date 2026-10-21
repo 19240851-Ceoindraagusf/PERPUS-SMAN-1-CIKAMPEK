@@ -1513,6 +1513,37 @@
         .book-cover, .ebook-cover, .book-cover-image { object-fit: cover; background: #edf2f5; }
         .ebook-title, .book-title { color: #172b45; font-weight: 700; line-height: 1.35; }
         .ebook-meta, .book-meta { color: #66788b; font-size: .84rem; }
+        .detail-breadcrumb { font-size: .9rem; }
+        .detail-hero { --detail-ink: #173247; }
+        .detail-cover-card { position: sticky; top: 100px; overflow: hidden; border: 1px solid #e4eaf0 !important; border-radius: 22px !important; background: linear-gradient(145deg, #f7faf9, #edf4f1); }
+        .detail-cover-stage { min-height: 300px; display: grid; place-items: center; padding: clamp(1rem, 3vw, 2rem); border-radius: 16px; background: radial-gradient(ellipse at 50% 38%, #fff 0, #f2f6f5 72%); }
+        .detail-cover-stage .detail-cover { width: 100%; max-width: 340px; max-height: min(58vh, 500px); object-fit: contain; box-shadow: 0 18px 42px rgba(18,42,62,.2); }
+        .detail-cover-caption { color: #637688; font-size: .76rem; font-weight: 600; }
+        .detail-info-panel { padding: clamp(1.25rem, 3vw, 2.35rem); border: 1px solid #e5ebef; border-radius: 22px; background: #fff; box-shadow: 0 14px 42px rgba(20,42,63,.07); }
+        .detail-kicker, .detail-subject-chip { display: inline-flex; align-items: center; border-radius: 99px; padding: .45rem .8rem; font-size: .8rem; font-weight: 700; }
+        .detail-kicker { color: #12634c; background: #eaf5f0; }
+        .detail-subject-chip { color: #31516a; background: #eef3f8; }
+        .detail-availability { display: inline-flex; align-items: center; gap: .4rem; color: #17804e; font-size: .78rem; font-weight: 700; }
+        .detail-availability span { width: 8px; height: 8px; border-radius: 50%; background: #20a464; box-shadow: 0 0 0 3px rgba(32,164,100,.13); }
+        .detail-title { color: #173247; font-size: clamp(1.8rem, 3.2vw, 2.7rem); font-weight: 800; line-height: 1.14; letter-spacing: -.04em; overflow-wrap: anywhere; }
+        .detail-description { color: #617284; font-size: 1rem; line-height: 1.8; white-space: pre-line; }
+        .detail-stats { color: #596d7f; font-size: .88rem; }
+        .detail-stats > span { display: inline-flex; align-items: center; }
+        .detail-rating { color: #a96708; font-weight: 800; }
+        .detail-rating small { color: #748393; font-weight: 500; }
+        .detail-info-panel .metric { height: 100%; min-height: 74px; padding: .8rem 1rem; border: 1px solid #e8edf1; border-radius: 13px; background: #fbfcfd; }
+        .detail-info-panel .metric .fw-semibold { margin-top: .25rem; color: #233b4f; overflow-wrap: anywhere; }
+        .detail-info-panel .detail-actions { padding-top: 1rem; border-top: 1px solid #e8edf1; }
+        .detail-info-panel .detail-actions .btn { min-height: 50px; border-radius: 13px; font-weight: 700; }
+        [data-bs-theme="dark"] .detail-info-panel { background: #111a28; border-color: #273648; }
+        [data-bs-theme="dark"] .detail-title, [data-bs-theme="dark"] .detail-info-panel .metric .fw-semibold { color: #edf4f8; }
+        [data-bs-theme="dark"] .detail-description, [data-bs-theme="dark"] .detail-stats { color: #aab8c5; }
+        [data-bs-theme="dark"] .detail-info-panel .metric { background: #172333; border-color: #2a394a; }
+        [data-bs-theme="dark"] .detail-cover-card { background: linear-gradient(145deg, #152233, #1b2d3b); border-color: #2b3a4b !important; }
+        [data-bs-theme="dark"] .detail-cover-stage { background: radial-gradient(ellipse at 50% 38%, #29384a 0, #1a2938 72%); }
+        [data-bs-theme="dark"] .detail-cover-caption { color: #aab8c5; }
+        @media (max-width: 991.98px) { .detail-cover-card { position: static; } .detail-cover-stage { min-height: 240px; } }
+        @media (max-width: 575.98px) { .detail-info-panel { border-radius: 18px; } .detail-cover-stage { min-height: 210px; } }
         .comment-card-modern { max-width: 980px; margin-inline: auto; padding: clamp(1rem,3vw,1.65rem); border-radius: 20px; border-color: #e3e9ee; box-shadow: 0 8px 26px rgba(20,42,63,.055); }
         .comment-card-modern + .comment-card-modern { margin-top: 1rem; }
         .comment-card-modern .comment-book-banner { display: flex; align-items: center; gap: .75rem; padding: .85rem 1rem !important; background: #f5f8f7; border: 1px solid #e3ece8; border-radius: 13px; }

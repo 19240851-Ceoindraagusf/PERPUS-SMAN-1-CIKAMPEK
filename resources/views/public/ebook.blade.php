@@ -5,7 +5,7 @@
 
 @section('content')
 <section class="container py-4 py-md-5" data-ebook-record data-ebook-id="{{ $ebook->id }}" data-ebook-title="{{ $ebook->title }}" data-ebook-subject="{{ $ebook->subject->name }}" data-ebook-class="{{ $ebook->subject->class->name }}" data-ebook-url="{{ route('ebooks.show', $ebook) }}" data-ebook-reader-url="{{ route('ebooks.reader', $ebook) }}" data-ebook-cover="{{ $ebook->cover_path ? asset('storage/' . $ebook->cover_path) : '' }}" data-ebook-author="{{ $ebook->author ?: '' }}">
-    <nav aria-label="breadcrumb" class="mb-4">
+    <nav aria-label="breadcrumb" class="detail-breadcrumb mb-4">
         <ol class="breadcrumb mb-0">
             <li class="breadcrumb-item"><a href="{{ route('library') }}">Perpustakaan</a></li>
             <li class="breadcrumb-item"><a href="{{ route('classes.show', $ebook->subject->class) }}">Kelas {{ $ebook->subject->class->name }}</a></li>
@@ -14,48 +14,64 @@
         </ol>
     </nav>
 
-    <div class="row g-4 align-items-start">
+    <div class="detail-hero row g-4 g-xl-5 align-items-start">
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm">
+            <div class="detail-cover-card card border-0 shadow-sm">
                 <div class="card-body p-3 p-md-4 text-center">
+                    <div class="detail-cover-stage">
                     @if($ebook->cover_path)
-                        <img src="{{ asset('storage/' . $ebook->cover_path) }}" class="detail-cover rounded" loading="lazy" decoding="async" alt="Cover {{ $ebook->title }}">
+                        <img src="{{ asset('storage/' . $ebook->cover_path) }}" class="detail-cover rounded" fetchpriority="high" decoding="async" alt="Cover {{ $ebook->title }}">
                     @else
                         @include('public._book-cover', ['ebook' => $ebook])
                     @endif
+                    </div>
+                    <div class="detail-cover-caption mt-3"><i class="bi bi-shield-check me-1"></i> Koleksi Perpustakaan Digital SMAN 1 Cikampek</div>
                 </div>
             </div>
         </div>
 
         <div class="col-lg-8">
-            <p class="eyebrow mb-2">Kelas {{ $ebook->subject->class->name }} / {{ $ebook->subject->name }}</p>
-            <span class="badge badge-soft mb-3">E-book tersedia untuk dibaca</span>
-            <h1 class="h2 mb-3">{{ $ebook->title }}</h1>
-            <p class="text-muted mb-4">{{ $ebook->description ?: 'Belum ada deskripsi e-book.' }}</p>
+            <div class="detail-info-panel">
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                    <span class="detail-kicker"><i class="bi bi-journal-bookmark-fill me-1"></i> Kelas {{ $ebook->subject->class->name }}</span>
+                    <span class="detail-subject-chip">{{ $ebook->subject->name }}</span>
+                    <span class="detail-availability"><span></span> PDF tersedia</span>
+                </div>
+                <h1 class="detail-title mb-3">{{ $ebook->title }}</h1>
+                <p class="detail-description mb-4">{{ $ebook->description ?: 'Belum ada deskripsi e-book.' }}</p>
 
-            <div class="row g-3 mb-4">
-                <div class="col-sm-6"><div class="metric"><div class="small text-muted">Mata Pelajaran</div><div class="fw-semibold">{{ $ebook->subject->name }}</div></div></div>
-                <div class="col-sm-6"><div class="metric"><div class="small text-muted">Penulis</div><div class="fw-semibold">{{ $ebook->author ?: '-' }}</div></div></div>
-                <div class="col-sm-6"><div class="metric"><div class="small text-muted">Penerbit</div><div class="fw-semibold">{{ $ebook->publisher ?: '-' }}</div></div></div>
-                <div class="col-sm-6"><div class="metric"><div class="small text-muted">Tahun</div><div class="fw-semibold">{{ $ebook->publication_year ?: '-' }}</div></div></div>
-                <div class="col-sm-6"><div class="metric"><div class="small text-muted">Telah dibaca</div><div class="fw-semibold">{{ $ebook->reads_count }} kali</div></div></div>
                 @php
                     $avgRating = $ebook->comments()->whereNotNull('rating')->avg('rating');
+                    $ratingCount = $ebook->comments()->whereNotNull('rating')->count();
                 @endphp
-                @if($avgRating)
-                <div class="col-sm-6"><div class="metric"><div class="small text-muted">Rating Pembaca</div><div class="fw-semibold">{{ number_format($avgRating, 1) }} / 5.0 ⭐</div></div></div>
+                <div class="detail-stats d-flex flex-wrap align-items-center gap-3 mb-4">
+                    <span><i class="bi bi-eye me-1"></i>{{ number_format($ebook->reads_count) }} kali dibaca</span>
+                    @if($avgRating)
+                        <span class="detail-rating"><i class="bi bi-star-fill me-1"></i>{{ number_format($avgRating, 1) }} <small>/ 5 · {{ $ratingCount }} penilaian</small></span>
+                    @else
+                        <span><i class="bi bi-chat-square-text me-1"></i>Belum ada penilaian</span>
+                    @endif
+                </div>
+
+                <div class="detail-metadata row g-2 mb-4">
+                    <div class="col-sm-6"><div class="metric"><div class="small text-muted">Penulis</div><div class="fw-semibold">{{ $ebook->author ?: 'Belum dicantumkan' }}</div></div></div>
+                    <div class="col-sm-6"><div class="metric"><div class="small text-muted">Penerbit</div><div class="fw-semibold">{{ $ebook->publisher ?: 'Belum dicantumkan' }}</div></div></div>
+                    <div class="col-sm-6"><div class="metric"><div class="small text-muted">Tahun terbit</div><div class="fw-semibold">{{ $ebook->publication_year ?: 'Belum dicantumkan' }}</div></div></div>
+                    <div class="col-sm-6"><div class="metric"><div class="small text-muted">Mata pelajaran</div><div class="fw-semibold">{{ $ebook->subject->name }}</div></div></div>
+                </div>
+
+                @if($ebook->file_path)
+                    <div class="detail-actions d-flex flex-column flex-sm-row gap-2">
+                        <a href="{{ route('ebooks.reader', $ebook) }}" class="btn btn-success flex-fill"><i class="bi bi-book-half me-2"></i>Baca Sekarang</a>
+                        <a href="{{ route('ebooks.download', $ebook) }}" class="btn btn-outline-success flex-fill"><i class="bi bi-download me-2"></i>Unduh PDF</a>
+                    </div>
+                    <div class="d-flex gap-2 mt-2">
+                        <button type="button" class="btn btn-outline-danger flex-fill" data-favorite-button data-ebook-id="{{ $ebook->id }}" data-ebook-title="{{ $ebook->title }}" data-ebook-subject="{{ $ebook->subject->name }}" data-ebook-class="{{ $ebook->subject->class->name }}" data-ebook-url="{{ route('ebooks.show', $ebook) }}" data-ebook-reader-url="{{ route('ebooks.reader', $ebook) }}" data-ebook-cover="{{ $ebook->cover_path ? asset('storage/' . $ebook->cover_path) : '' }}" data-ebook-author="{{ $ebook->author ?: '' }}"><i class="bi bi-bookmark-heart me-1"></i>Simpan Favorit</button>
+                    </div>
+                @else
+                    <div class="alert alert-warning mb-0">File PDF belum tersedia.</div>
                 @endif
             </div>
-
-            @if($ebook->file_path)
-                <div class="detail-actions d-flex flex-column flex-sm-row gap-2">
-                    <a href="{{ route('ebooks.reader', $ebook) }}" class="btn btn-success flex-fill">Baca Sekarang</a>
-                    <a href="{{ route('ebooks.download', $ebook) }}" class="btn btn-outline-success flex-fill">Download</a>
-                </div>
-                <button type="button" class="btn btn-outline-danger mt-2 w-100" data-favorite-button data-ebook-id="{{ $ebook->id }}" data-ebook-title="{{ $ebook->title }}" data-ebook-subject="{{ $ebook->subject->name }}" data-ebook-class="{{ $ebook->subject->class->name }}" data-ebook-url="{{ route('ebooks.show', $ebook) }}" data-ebook-reader-url="{{ route('ebooks.reader', $ebook) }}" data-ebook-cover="{{ $ebook->cover_path ? asset('storage/' . $ebook->cover_path) : '' }}" data-ebook-author="{{ $ebook->author ?: '' }}">♡ Simpan ke Favorit</button>
-            @else
-                <div class="alert alert-warning mb-0">File PDF belum tersedia.</div>
-            @endif
         </div>
     </div>
 
