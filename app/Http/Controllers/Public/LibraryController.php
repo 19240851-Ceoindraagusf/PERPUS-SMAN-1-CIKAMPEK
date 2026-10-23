@@ -234,6 +234,9 @@ class LibraryController extends Controller
     {
         $search = trim((string) $request->query('q', ''));
         $selectedSubject = $request->query('subject');
+        $selectedCluster = in_array($request->query('cluster'), ['sains', 'bahasa', 'sosial', 'lainnya'], true)
+            ? $request->query('cluster')
+            : null;
 
         $class->load(['subjects' => fn ($query) => $query
             ->whereRaw("LOWER(name) NOT IN ('ipa', 'ilmu pengetahuan alam', 'ips', 'ilmu pengetahuan sosial')")
@@ -245,6 +248,20 @@ class LibraryController extends Controller
                 }
             })
             ->when($selectedSubject, fn ($subjectQuery) => $subjectQuery->where('name', $selectedSubject))
+            ->when($selectedCluster, function ($subjectQuery) use ($selectedCluster) {
+                $clusterNames = match ($selectedCluster) {
+                    'sains' => ['matematika', 'fisika', 'kimia', 'biologi', 'informatika', 'tik', 'komputer'],
+                    'bahasa' => ['bahasa', 'sastra'],
+                    'sosial' => ['sejarah', 'geografi', 'sosiologi', 'ekonomi', 'pancasila', 'ppkn', 'kewarganegaraan'],
+                    default => ['agama', 'islam', 'kristen', 'katolik', 'seni', 'budaya', 'musik', 'rupa', 'pjok', 'penjas', 'olahraga', 'prakarya', 'pkwu', 'kewirausahaan'],
+                };
+
+                $subjectQuery->where(function ($query) use ($clusterNames) {
+                    foreach ($clusterNames as $name) {
+                        $query->orWhere('name', 'like', '%'.$name.'%');
+                    }
+                });
+            })
             ->when($search, fn ($subjectQuery) => $subjectQuery->where(function ($subjectQuery) use ($search) {
                 $subjectQuery->where('name', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%")
@@ -280,7 +297,7 @@ class LibraryController extends Controller
             ->orderBy('name')
             ->pluck('name');
 
-        return view('public.class', compact('class', 'search', 'selectedSubject', 'subjectOptions', 'totalSubjects'));
+        return view('public.class', compact('class', 'search', 'selectedSubject', 'selectedCluster', 'subjectOptions', 'totalSubjects'));
     }
 
     public function subject(Request $request, ClassModel $class, Subject $subject): View

@@ -128,14 +128,14 @@
         <!-- Quick Cluster Filter Tabs -->
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3 pt-3 border-top">
             <div class="class-filter-btn-group" role="tablist" aria-label="Filter Bidang Studi">
-                <button type="button" class="class-filter-pill active" data-filter-subject="all">Semua Bidang</button>
-                <button type="button" class="class-filter-pill" data-filter-subject="sains">🔬 Sains & Eksakta</button>
-                <button type="button" class="class-filter-pill" data-filter-subject="bahasa">📖 Bahasa & Sastra</button>
-                <button type="button" class="class-filter-pill" data-filter-subject="sosial">🌍 Sosial & Humaniora</button>
-                <button type="button" class="class-filter-pill" data-filter-subject="lainnya">🎨 Seni & Umum</button>
+                <a href="{{ route('classes.show', $class) }}" class="class-filter-pill {{ !$selectedCluster ? 'active' : '' }} text-decoration-none" data-filter-subject="all" role="button" aria-pressed="{{ !$selectedCluster ? 'true' : 'false' }}">Semua Bidang</a>
+                <a href="{{ route('classes.show', [$class, 'cluster' => 'sains']) }}" class="class-filter-pill {{ $selectedCluster === 'sains' ? 'active' : '' }} text-decoration-none" data-filter-subject="sains" role="button" aria-pressed="{{ $selectedCluster === 'sains' ? 'true' : 'false' }}">🔬 Sains & Eksakta</a>
+                <a href="{{ route('classes.show', [$class, 'cluster' => 'bahasa']) }}" class="class-filter-pill {{ $selectedCluster === 'bahasa' ? 'active' : '' }} text-decoration-none" data-filter-subject="bahasa" role="button" aria-pressed="{{ $selectedCluster === 'bahasa' ? 'true' : 'false' }}">📖 Bahasa & Sastra</a>
+                <a href="{{ route('classes.show', [$class, 'cluster' => 'sosial']) }}" class="class-filter-pill {{ $selectedCluster === 'sosial' ? 'active' : '' }} text-decoration-none" data-filter-subject="sosial" role="button" aria-pressed="{{ $selectedCluster === 'sosial' ? 'true' : 'false' }}">🌍 Sosial & Humaniora</a>
+                <a href="{{ route('classes.show', [$class, 'cluster' => 'lainnya']) }}" class="class-filter-pill {{ $selectedCluster === 'lainnya' ? 'active' : '' }} text-decoration-none" data-filter-subject="lainnya" role="button" aria-pressed="{{ $selectedCluster === 'lainnya' ? 'true' : 'false' }}">🎨 Seni & Umum</a>
             </div>
             <span class="small text-muted">
-                Menampilkan <strong>{{ $class->subjects->count() }}</strong> mata pelajaran aktif
+                Menampilkan <strong>{{ $class->subjects->count() }}</strong> mata pelajaran {{ $selectedCluster ? 'pada bidang terpilih' : 'aktif' }}
             </span>
         </div>
     </div>
@@ -169,12 +169,28 @@
         const filterBtns = document.querySelectorAll('[data-filter-subject]');
         const subjectCols = document.querySelectorAll('.subject-card-col');
 
+        const initialCluster = new URLSearchParams(window.location.search).get('cluster');
+        if (initialCluster && [...filterBtns].some((button) => button.dataset.filterSubject === initialCluster)) {
+            filterBtns.forEach((button) => {
+                const active = button.dataset.filterSubject === initialCluster;
+                button.classList.toggle('active', active);
+                button.setAttribute('aria-pressed', String(active));
+            });
+            subjectCols.forEach((column) => {
+                column.classList.toggle('is-hidden', column.dataset.subjectCluster !== initialCluster);
+            });
+        }
+
         filterBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 const target = btn.getAttribute('data-filter-subject');
 
-                filterBtns.forEach(b => b.classList.remove('active'));
+                filterBtns.forEach(b => {
+                    b.classList.remove('active');
+                    b.setAttribute('aria-pressed', 'false');
+                });
                 btn.classList.add('active');
+                btn.setAttribute('aria-pressed', 'true');
 
                 subjectCols.forEach(col => {
                     const cluster = col.getAttribute('data-subject-cluster');
@@ -191,6 +207,12 @@
                         col.classList.add('is-hidden');
                     }
                 });
+
+                if (target === 'all') {
+                    history.replaceState(null, '', window.location.pathname);
+                } else {
+                    history.replaceState(null, '', `${window.location.pathname}?cluster=${encodeURIComponent(target)}`);
+                }
             });
         });
     });

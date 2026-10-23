@@ -146,10 +146,10 @@
         </div>
         <div class="d-flex align-items-center gap-2">
             <div class="class-filter-btn-group" role="tablist" aria-label="Filter Tingkat Kelas">
-                <button type="button" class="class-filter-pill active" data-filter-class="all">Semua</button>
-                <button type="button" class="class-filter-pill" data-filter-class="X">Kelas X</button>
-                <button type="button" class="class-filter-pill" data-filter-class="XI">Kelas XI</button>
-                <button type="button" class="class-filter-pill" data-filter-class="XII">Kelas XII</button>
+                <a href="{{ route('home') }}#pilih-kelas" class="class-filter-pill active text-decoration-none" data-filter-class="all" role="button" aria-pressed="true">Semua</a>
+                <a href="{{ route('library', ['class' => 'X']) }}" class="class-filter-pill text-decoration-none" data-filter-class="X" role="button" aria-pressed="false">Kelas X</a>
+                <a href="{{ route('library', ['class' => 'XI']) }}" class="class-filter-pill text-decoration-none" data-filter-class="XI" role="button" aria-pressed="false">Kelas XI</a>
+                <a href="{{ route('library', ['class' => 'XII']) }}" class="class-filter-pill text-decoration-none" data-filter-class="XII" role="button" aria-pressed="false">Kelas XII</a>
             </div>
             <a href="{{ route('library') }}" class="btn btn-outline-success d-none d-md-inline-flex align-items-center gap-1">
                 <span>Semua Koleksi</span>

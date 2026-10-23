@@ -33,9 +33,9 @@
 
     <!-- Panel Pencarian & Filter Modern -->
     <div class="library-filter-panel p-4 mb-4">
-        <details class="mobile-filter-details" @if($search || $selectedClass || $selectedSubject || $selectedYear || $selectedAuthor || $sort !== 'newest') open @endif>
-        <summary><i class="bi bi-sliders me-2"></i>Cari dan filter koleksi <i class="bi bi-chevron-down ms-auto"></i></summary>
-        <form action="{{ route('library') }}" method="GET" class="search-panel">
+        <div class="mobile-filter-details">
+        <button class="filter-toggle" type="button" aria-expanded="true" aria-controls="library-search-panel"><i class="bi bi-sliders me-2"></i>Cari dan filter koleksi <i class="bi bi-chevron-down ms-auto"></i></button>
+        <form id="library-search-panel" action="{{ route('library') }}" method="GET" class="search-panel">
             <div class="row g-3 align-items-end">
                 <div class="col-lg-4 position-relative">
                     <label class="form-label small fw-semibold text-muted" for="q">
@@ -114,7 +114,7 @@
                 </div>
             </div>
         </form>
-        </details>
+        </div>
     </div>
 
     <!-- Chip Filter Aktif (Jika Ada) -->
@@ -300,3 +300,16 @@
     </div>
 </section>
 @endsection
+
+@push('scripts')
+<script>
+    document.querySelectorAll('.mobile-filter-details .filter-toggle').forEach((button) => {
+        button.addEventListener('click', () => {
+            const wrapper = button.closest('.mobile-filter-details');
+            const expanded = button.getAttribute('aria-expanded') === 'true';
+            button.setAttribute('aria-expanded', String(!expanded));
+            wrapper.classList.toggle('is-collapsed', expanded);
+        });
+    });
+</script>
+@endpush

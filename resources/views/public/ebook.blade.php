@@ -75,9 +75,9 @@
         </div>
     </div>
 
-    <div class="row g-4 mt-2">
+    <div class="detail-community row g-4 mt-3 mt-lg-4">
         <section class="col-lg-7" aria-labelledby="comments-heading">
-            <div class="card h-100 border rounded-4 shadow-sm">
+            <div class="detail-section-card card h-100 border rounded-4 shadow-sm">
                 <div class="card-body p-4">
                     <!-- Header Ulasan -->
                     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 pb-3 border-bottom">
@@ -106,7 +106,7 @@
                             $avatarBg = $avatarGradients[abs(crc32($comment->display_name)) % count($avatarGradients)];
                             $initial = mb_strtoupper(mb_substr($comment->display_name, 0, 1));
                         @endphp
-                        <article class="p-3 mb-3 rounded-4 border bg-light-subtle">
+                        <article class="detail-comment p-3 mb-3 rounded-4 border bg-light-subtle">
                             <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="comment-avatar" style="width: 36px; height: 36px; font-size: 0.95rem; background: {{ $avatarBg }};">
@@ -209,8 +209,8 @@
         </section>
 
         <!-- Aside: Laporkan Masalah -->
-        <aside class="col-lg-5">
-            <div class="card h-100 border rounded-4 shadow-sm">
+        <aside class="col-lg-5" aria-labelledby="report-heading">
+            <div class="detail-report-card card h-100 border rounded-4 shadow-sm">
                 <div class="card-body p-4">
                     <div class="d-flex align-items-center gap-3 mb-3">
                         <div class="icon-box text-warning flex-shrink-0" style="width: 44px; height: 44px; border-radius: 12px; font-size: 1.25rem; background: rgba(217, 119, 6, 0.1);">
@@ -220,7 +220,7 @@
                             <span class="badge px-2 py-1 rounded-pill mb-1" style="background: rgba(217, 119, 6, 0.12); color: #d97706; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase;">
                                 Layanan Perpustakaan
                             </span>
-                            <h2 class="h5 fw-bold mb-0">Laporkan Kendala E-Book</h2>
+                            <h2 id="report-heading" class="h5 fw-bold mb-0">Laporkan Kendala E-Book</h2>
                         </div>
                     </div>
                     <p class="small text-muted mb-3">
@@ -263,7 +263,7 @@
     </div>
 
     @if($relatedEbooks->isNotEmpty())
-        <section class="mt-5 pt-4 catalog-toolbar">
+        <section class="detail-related mt-5 pt-4 catalog-toolbar">
             <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
                 <div><p class="eyebrow mb-1">Lanjutkan belajar</p><h2 class="h4 mb-0">E-Book terkait</h2></div>
                 <a class="small fw-semibold text-decoration-none" href="{{ route('subjects.show', [$ebook->subject->class, $ebook->subject]) }}">Lihat semua mapel →</a>
@@ -271,7 +271,7 @@
             <div class="row g-3">
                 @foreach($relatedEbooks as $related)
                     <div class="col-6 col-md-3">
-                        <article class="collection-card info-card card h-100">
+                        <article class="detail-related-card collection-card info-card card h-100">
                             <a class="text-decoration-none text-dark" href="{{ route('ebooks.show', $related) }}">
                                 @include('public._book-cover', ['ebook' => $related])
                                 <div class="card-body"><h3 class="h6 book-title mb-0">{{ $related->title }}</h3></div>
