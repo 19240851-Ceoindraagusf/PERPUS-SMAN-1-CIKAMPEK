@@ -1518,10 +1518,11 @@
         .detail-hero::before, .detail-hero::after { content: ""; position: absolute; z-index: -1; border-radius: 50%; pointer-events: none; }
         .detail-hero::before { width: 390px; height: 390px; right: 15%; top: -285px; background: rgba(70,170,183,.12); }
         .detail-hero::after { width: 300px; height: 300px; right: -110px; bottom: -230px; background: rgba(76,143,190,.1); }
-        .detail-cover-card { position: sticky; top: 100px; overflow: hidden; border: 1px solid rgba(255,255,255,.42) !important; border-radius: 22px !important; background: rgba(255,255,255,.96); box-shadow: 0 20px 45px rgba(3,26,43,.22) !important; }
-        .detail-cover-stage { min-height: 300px; display: grid; place-items: center; padding: clamp(1rem, 3vw, 2rem); border-radius: 16px; background: radial-gradient(ellipse at 50% 38%, #fff 0, #edf8f8 72%); }
-        .detail-cover-stage .detail-cover { width: 100%; max-width: 340px; max-height: min(58vh, 500px); object-fit: contain; box-shadow: 0 18px 42px rgba(18,42,62,.2); }
-        .detail-cover-stage .book-cover-placeholder { width: min(100%, 340px); aspect-ratio: 2 / 3; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; border-radius: 12px; box-shadow: 0 18px 42px rgba(18,42,62,.2); }
+        .detail-cover-card { position: sticky; top: 100px; overflow: hidden; border: 0 !important; border-radius: 18px !important; background: transparent; box-shadow: none !important; }
+        .detail-cover-card .card-body { padding: 0 !important; }
+        .detail-cover-stage { min-height: 300px; display: grid; place-items: center; padding: 0; border-radius: 0; background: transparent; }
+        .detail-cover-stage .detail-cover { width: 100%; max-width: 430px; max-height: min(76vh, 680px); object-fit: contain; border-radius: 10px; box-shadow: 0 12px 30px rgba(18,42,62,.14); }
+        .detail-cover-stage .book-cover-placeholder { width: min(100%, 430px); aspect-ratio: 2 / 3; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; border-radius: 12px; box-shadow: 0 12px 30px rgba(18,42,62,.14); }
         .detail-cover-caption { color: #637688; font-size: .76rem; font-weight: 600; }
         .detail-info-panel { padding: clamp(.5rem, 1.5vw, 1.3rem); border: 0; border-radius: 0; background: transparent; box-shadow: none; }
         .detail-kicker, .detail-subject-chip { display: inline-flex; align-items: center; border-radius: 99px; padding: .45rem .8rem; font-size: .8rem; font-weight: 700; }
@@ -1594,7 +1595,7 @@
         .reader-canvas-card { border-radius: 6px; box-shadow: 0 12px 38px rgba(22,38,54,.18) !important; }
         [data-ebook-record] > .row:first-child > .col-lg-7 > .card { overflow: hidden; }
         [data-ebook-record] > .row:first-child > .col-lg-4 > .card { position: sticky; top: 100px; border: 1px solid #e4eaf0 !important; }
-        [data-ebook-record] > .row:first-child > .col-lg-4 .detail-cover { width: 100%; max-width: 340px; max-height: 500px; object-fit: contain; box-shadow: 0 14px 32px rgba(18,42,62,.16); }
+        [data-ebook-record] > .row:first-child > .col-lg-4 .detail-cover { width: 100%; max-width: 430px; max-height: min(76vh, 680px); object-fit: contain; box-shadow: 0 12px 30px rgba(18,42,62,.14); }
         [data-ebook-record] > .row:first-child > .col-lg-8 h1 { font-size: clamp(1.8rem, 3vw, 2.6rem); letter-spacing: -.04em; }
         [data-ebook-record] .metric { min-height: 82px; border: 1px solid #e5ebef; border-left: 3px solid var(--school-green); }
         [data-ebook-record] .detail-actions .btn { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; }
