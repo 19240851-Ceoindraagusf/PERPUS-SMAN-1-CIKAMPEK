@@ -12,6 +12,31 @@ use App\Http\Controllers\Admin\EbookController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Public\LibraryController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
+
+/*
+|--------------------------------------------------------------------------
+| Storage Fallback Route (Windows symlink compatibility)
+|--------------------------------------------------------------------------
+| On Windows, `php artisan storage:link` may fail silently or the symlink
+| may not work without administrator privileges. This route serves files
+| from storage/app/public as a fallback when the public/storage symlink
+| is missing or broken. When the symlink IS present, the web server
+| handles the request directly and this route is never reached.
+*/
+Route::get('/storage/{path}', function (string $path) {
+    if (!Storage::disk('public')->exists($path)) {
+        abort(404);
+    }
+
+    $fullPath = Storage::disk('public')->path($path);
+    $mimeType = mime_content_type($fullPath) ?: 'application/octet-stream';
+
+    return response()->file($fullPath, [
+        'Content-Type' => $mimeType,
+        'Cache-Control' => 'public, max-age=604800',
+    ]);
+})->where('path', '.*')->name('storage.serve');
 
 Route::get('/', [LibraryController::class, 'home'])->name('home');
 Route::get('/perpustakaan', [LibraryController::class, 'library'])->name('library');
