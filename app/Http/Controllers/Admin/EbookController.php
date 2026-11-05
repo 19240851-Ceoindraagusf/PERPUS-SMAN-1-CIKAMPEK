@@ -155,9 +155,33 @@ class EbookController extends Controller
         unset($validated['file'], $validated['cover']);
 
         $oldSubjectId = $ebook->subject_id;
-
+        $oldValues = $ebook->only([
+            'subject_id', 'title', 'description', 'author', 'publisher',
+            'publication_year', 'file_path', 'cover_path', 'is_active',
+        ]);
         $ebook->update($validated);
-        AuditLog::record('Update', 'Memperbarui data e-book "' . $ebook->title . '"', $ebook);
+        $changes = [];
+        $changeLabels = [
+            'cover_path' => 'sampul',
+            'file_path' => 'file PDF',
+            'subject_id' => 'mata pelajaran',
+            'title' => 'judul',
+            'description' => 'deskripsi',
+            'author' => 'penulis',
+            'publisher' => 'penerbit',
+            'publication_year' => 'tahun terbit',
+            'is_active' => 'status publikasi',
+        ];
+        foreach ($changeLabels as $field => $label) {
+            if ((string) ($oldValues[$field] ?? '') !== (string) ($ebook->{$field} ?? '')) {
+                $changes[] = $label;
+            }
+        }
+
+        $activity = $changes
+            ? 'Mengubah ' . implode(', ', $changes) . ' e-book "' . $ebook->title . '"'
+            : 'Menyimpan perubahan e-book "' . $ebook->title . '" tanpa perubahan data';
+        AuditLog::record('Update', $activity, $ebook);
         $this->syncGroupCoverForEbook($ebook, $ebook->cover_path);
 
         $updatedSubject = Subject::findOrFail($ebook->subject_id);
