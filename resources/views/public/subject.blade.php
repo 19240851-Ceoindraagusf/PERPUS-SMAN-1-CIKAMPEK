@@ -7,15 +7,15 @@
 @php
     $norm = strtolower($subject->name);
     
-    // Categorize cluster, theme, and icon
+    // Categorize cluster, theme, and icon with unified academic palette
     if (str_contains($norm, 'matematika')) {
         $cluster = 'Matematika & Logika';
         $subTheme = 'subject-theme-blue';
-        $subIcon = 'bi-calculator-fill';
+        $subIcon = 'bi-calculator';
     } elseif (str_contains($norm, 'fisika')) {
         $cluster = 'Sains & Fisika';
         $subTheme = 'subject-theme-cyan';
-        $subIcon = 'bi-lightning-charge-fill';
+        $subIcon = 'bi-lightning-charge';
     } elseif (str_contains($norm, 'kimia')) {
         $cluster = 'Sains & Kimia';
         $subTheme = 'subject-theme-teal';
@@ -37,9 +37,9 @@
         $subTheme = 'subject-theme-emerald';
         $subIcon = 'bi-book-half';
     } elseif (str_contains($norm, 'sunda') || str_contains($norm, 'daerah') || str_contains($norm, 'jawa')) {
-        $cluster = 'Muatan Lokal & Bahasa Daerah';
+        $cluster = 'Muatan Lokal & Daerah';
         $subTheme = 'subject-theme-emerald';
-        $subIcon = 'bi-chat-heart-fill';
+        $subIcon = 'bi-chat-quote';
     } elseif (str_contains($norm, 'sejarah')) {
         $cluster = 'Sejarah & Peradaban';
         $subTheme = 'subject-theme-amber';
@@ -51,39 +51,39 @@
     } elseif (str_contains($norm, 'sosiologi')) {
         $cluster = 'Sosiologi & Antropologi';
         $subTheme = 'subject-theme-amber';
-        $subIcon = 'bi-people-fill';
+        $subIcon = 'bi-people';
     } elseif (str_contains($norm, 'ekonomi') || str_contains($norm, 'akuntansi')) {
         $cluster = 'Ekonomi & Finansial';
         $subTheme = 'subject-theme-amber';
         $subIcon = 'bi-graph-up-arrow';
     } elseif (str_contains($norm, 'pancasila') || str_contains($norm, 'ppkn') || str_contains($norm, 'kewarganegaraan')) {
         $cluster = 'Pancasila & Kebangsaan';
-        $subTheme = 'subject-theme-crimson';
-        $subIcon = 'bi-shield-fill-check';
+        $subTheme = 'subject-theme-emerald';
+        $subIcon = 'bi-shield-check';
     } elseif (str_contains($norm, 'agama') || str_contains($norm, 'islam') || str_contains($norm, 'kristen') || str_contains($norm, 'katolik')) {
         $cluster = 'Agama & Budi Pekerti';
         $subTheme = 'subject-theme-purple';
-        $subIcon = 'bi-moon-stars-fill';
+        $subIcon = 'bi-moon-stars';
     } elseif (str_contains($norm, 'seni') || str_contains($norm, 'budaya') || str_contains($norm, 'musik') || str_contains($norm, 'rupa')) {
         $cluster = 'Seni & Kebudayaan';
-        $subTheme = 'subject-theme-rose';
-        $subIcon = 'bi-palette-fill';
+        $subTheme = 'subject-theme-teal';
+        $subIcon = 'bi-palette';
     } elseif (str_contains($norm, 'pjok') || str_contains($norm, 'penjas') || str_contains($norm, 'olahraga')) {
         $cluster = 'Pendidikan Jasmani & Kesehatan';
-        $subTheme = 'subject-theme-orange';
-        $subIcon = 'bi-heart-pulse-fill';
+        $subTheme = 'subject-theme-amber';
+        $subIcon = 'bi-heart-pulse';
     } elseif (str_contains($norm, 'informatika') || str_contains($norm, 'tik') || str_contains($norm, 'komputer')) {
         $cluster = 'Informatika & Teknologi';
         $subTheme = 'subject-theme-indigo';
-        $subIcon = 'bi-laptop-fill';
+        $subIcon = 'bi-laptop';
     } elseif (str_contains($norm, 'prakarya') || str_contains($norm, 'pkwu') || str_contains($norm, 'kewirausahaan')) {
         $cluster = 'Prakarya & Kewirausahaan';
-        $subTheme = 'subject-theme-orange';
+        $subTheme = 'subject-theme-amber';
         $subIcon = 'bi-tools';
     } else {
         $cluster = 'Mata Pelajaran Kurikulum';
         $subTheme = 'subject-theme-blue';
-        $subIcon = 'bi-mortarboard-fill';
+        $subIcon = 'bi-journal-bookmark';
     }
 @endphp
 

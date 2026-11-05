@@ -159,6 +159,13 @@
                 </div>
             </div>
         @endforelse
+        <div class="col-12 text-center py-5 d-none" id="subjectFilterEmpty">
+            <div class="empty-state p-4">
+                <i class="bi bi-journal-x text-muted fs-2 mb-2 d-block"></i>
+                <h3 class="h6 fw-bold mb-1">Tidak ada mata pelajaran pada bidang ini</h3>
+                <p class="text-muted small mb-0">Silakan pilih bidang studi lain atau tampilkan semua bidang.</p>
+            </div>
+        </div>
     </div>
 </section>
 @endsection
@@ -168,6 +175,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         const filterBtns = document.querySelectorAll('[data-filter-subject]');
         const subjectCols = document.querySelectorAll('.subject-card-col');
+        const emptyState = document.getElementById('subjectFilterEmpty');
 
         const initialCluster = new URLSearchParams(window.location.search).get('cluster');
         if (initialCluster && [...filterBtns].some((button) => button.dataset.filterSubject === initialCluster)) {
@@ -176,13 +184,20 @@
                 button.classList.toggle('active', active);
                 button.setAttribute('aria-pressed', String(active));
             });
+            let initialVisible = 0;
             subjectCols.forEach((column) => {
-                column.classList.toggle('is-hidden', column.dataset.subjectCluster !== initialCluster);
+                const isMatch = column.dataset.subjectCluster === initialCluster;
+                column.classList.toggle('is-hidden', !isMatch);
+                if (isMatch) initialVisible++;
             });
+            if (emptyState) {
+                emptyState.classList.toggle('d-none', initialVisible > 0 || subjectCols.length === 0);
+            }
         }
 
         filterBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
                 const target = btn.getAttribute('data-filter-subject');
 
                 filterBtns.forEach(b => {
@@ -192,21 +207,31 @@
                 btn.classList.add('active');
                 btn.setAttribute('aria-pressed', 'true');
 
+                let visibleCount = 0;
                 subjectCols.forEach(col => {
                     const cluster = col.getAttribute('data-subject-cluster');
                     if (target === 'all' || cluster === target) {
                         col.classList.remove('is-hidden');
                         col.style.opacity = '0';
-                        col.style.transform = 'translateY(8px)';
+                        col.style.transform = 'translateY(6px)';
                         requestAnimationFrame(() => {
-                            col.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+                            col.style.transition = 'opacity 0.22s ease, transform 0.22s ease';
                             col.style.opacity = '1';
                             col.style.transform = 'translateY(0)';
                         });
+                        visibleCount++;
                     } else {
                         col.classList.add('is-hidden');
                     }
                 });
+
+                if (emptyState) {
+                    if (visibleCount === 0 && subjectCols.length > 0) {
+                        emptyState.classList.remove('d-none');
+                    } else {
+                        emptyState.classList.add('d-none');
+                    }
+                }
 
                 if (target === 'all') {
                     history.replaceState(null, '', window.location.pathname);

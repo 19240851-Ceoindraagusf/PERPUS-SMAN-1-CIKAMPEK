@@ -138,7 +138,7 @@
 <section class="container py-5" id="pilih-kelas">
     <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
         <div class="section-title">
-            <span class="badge px-3 py-2 rounded-pill mb-2" style="background: rgba(15, 107, 79, 0.12); color: var(--school-green); font-weight: 700; font-size: 0.78rem; letter-spacing: 0.05em; text-transform: uppercase;">
+            <span class="badge px-3 py-2 rounded-pill mb-2" style="background: rgba(15, 107, 79, 0.1); color: var(--school-green); font-weight: 700; font-size: 0.78rem; letter-spacing: 0.05em; text-transform: uppercase;">
                 <i class="bi bi-grid-fill me-1"></i> Direktori Kurikulum
             </span>
             <h2 class="h3 fw-bold mb-1">Pilih Kelas</h2>
@@ -146,12 +146,12 @@
         </div>
         <div class="d-flex align-items-center gap-2">
             <div class="class-filter-btn-group" role="tablist" aria-label="Filter Tingkat Kelas">
-                <a href="{{ route('home') }}#pilih-kelas" class="class-filter-pill active text-decoration-none" data-filter-class="all" role="button" aria-pressed="true">Semua</a>
-                <a href="{{ route('library', ['class' => 'X']) }}" class="class-filter-pill text-decoration-none" data-filter-class="X" role="button" aria-pressed="false">Kelas X</a>
-                <a href="{{ route('library', ['class' => 'XI']) }}" class="class-filter-pill text-decoration-none" data-filter-class="XI" role="button" aria-pressed="false">Kelas XI</a>
-                <a href="{{ route('library', ['class' => 'XII']) }}" class="class-filter-pill text-decoration-none" data-filter-class="XII" role="button" aria-pressed="false">Kelas XII</a>
+                <button type="button" class="class-filter-pill active" data-filter-class="all" role="tab" aria-selected="true">Semua</button>
+                <button type="button" class="class-filter-pill" data-filter-class="X" role="tab" aria-selected="false">Kelas X</button>
+                <button type="button" class="class-filter-pill" data-filter-class="XI" role="tab" aria-selected="false">Kelas XI</button>
+                <button type="button" class="class-filter-pill" data-filter-class="XII" role="tab" aria-selected="false">Kelas XII</button>
             </div>
-            <a href="{{ route('library') }}" class="btn btn-outline-success d-none d-md-inline-flex align-items-center gap-1">
+            <a href="{{ route('library') }}" class="btn btn-outline-success rounded-pill px-3 py-2 d-none d-md-inline-flex align-items-center gap-1 fw-semibold">
                 <span>Semua Koleksi</span>
                 <i class="bi bi-chevron-right small"></i>
             </a>
@@ -163,6 +163,13 @@
         @empty
             <div class="col-12"><div class="empty-state text-center"><div class="saved-empty-icon mb-3 mx-auto"><i class="bi bi-mortarboard"></i></div><h3 class="h5 fw-bold">Koleksi kelas sedang disiapkan</h3><p class="text-muted mb-3">Kelas dan materi akan muncul di sini setelah data perpustakaan diperbarui.</p><a class="btn btn-outline-success rounded-pill px-4" href="{{ route('library') }}">Jelajahi katalog</a></div></div>
         @endforelse
+        <div class="col-12 text-center py-5 d-none" id="classFilterEmpty">
+            <div class="empty-state p-4">
+                <i class="bi bi-mortarboard text-muted fs-2 mb-2 d-block"></i>
+                <h4 class="h6 fw-bold mb-1">Tidak ada kelas untuk tingkat ini</h4>
+                <p class="text-muted small mb-0">Silakan pilih tingkat kelas lain atau buka katalog perpustakaan.</p>
+            </div>
+        </div>
     </div>
 </section>
 
@@ -288,29 +295,45 @@
     document.addEventListener('DOMContentLoaded', () => {
         const filterButtons = document.querySelectorAll('[data-filter-class]');
         const classCols = document.querySelectorAll('.class-card-col');
+        const emptyState = document.getElementById('classFilterEmpty');
 
         filterButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
                 const target = btn.getAttribute('data-filter-class');
 
-                filterButtons.forEach(b => b.classList.remove('active'));
+                filterButtons.forEach(b => {
+                    b.classList.remove('active');
+                    b.setAttribute('aria-selected', 'false');
+                });
                 btn.classList.add('active');
+                btn.setAttribute('aria-selected', 'true');
 
+                let visibleCount = 0;
                 classCols.forEach(col => {
                     const level = col.getAttribute('data-class-level');
                     if (target === 'all' || level === target) {
                         col.classList.remove('is-hidden');
                         col.style.opacity = '0';
-                        col.style.transform = 'translateY(8px)';
+                        col.style.transform = 'translateY(6px)';
                         requestAnimationFrame(() => {
-                            col.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+                            col.style.transition = 'opacity 0.22s ease, transform 0.22s ease';
                             col.style.opacity = '1';
                             col.style.transform = 'translateY(0)';
                         });
+                        visibleCount++;
                     } else {
                         col.classList.add('is-hidden');
                     }
                 });
+
+                if (emptyState) {
+                    if (visibleCount === 0 && classCols.length > 0) {
+                        emptyState.classList.remove('d-none');
+                    } else {
+                        emptyState.classList.add('d-none');
+                    }
+                }
             });
         });
     });
