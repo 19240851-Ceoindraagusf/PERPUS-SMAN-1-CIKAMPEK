@@ -141,8 +141,8 @@
             <div class="metric"><div class="small text-muted">E-book tanpa deskripsi</div><div class="d-flex justify-content-between align-items-center"><strong>{{ $collectionHealth['without_description'] }} buku</strong><a class="small" href="{{ route('admin.ebooks.index') }}">Perbaiki →</a></div></div>
         </div></div>
     </div>
-    <div class="col-lg-6">
-        <div class="admin-card card">
+    <div class="col-lg-4">
+        <div class="admin-card card h-100">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <h2 class="h5 mb-0">E-Book Terbaru</h2>
@@ -151,8 +151,8 @@
                 <ul class="list-group list-group-flush">
                     @forelse($latestEbooks as $ebook)
                         <li class="list-group-item px-0">
-                            <div class="fw-semibold">{{ $ebook->title }}</div>
-                            <div class="text-muted small">Kelas {{ $ebook->subject->class->name ?? '-' }} / {{ $ebook->subject->name ?? '-' }}</div>
+                            <div class="fw-semibold text-truncate" title="{{ $ebook->title }}">{{ $ebook->title }}</div>
+                            <div class="text-muted small text-truncate">Kelas {{ $ebook->subject->class->name ?? '-' }} / {{ $ebook->subject->name ?? '-' }}</div>
                         </li>
                     @empty
                         <li class="list-group-item px-0 text-muted">Belum ada e-book.</li>
@@ -161,18 +161,21 @@
             </div>
         </div>
     </div>
-    <div class="col-lg-6">
-        <div class="admin-card card">
+    <div class="col-lg-4">
+        <div class="admin-card card h-100">
             <div class="card-body">
-                <h2 class="h5">E-Book Paling Banyak Diakses</h2>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h2 class="h5 mb-0">E-Book Paling Banyak Diakses</h2>
+                    <a href="{{ route('admin.access-logs.index') }}" class="small">Lihat Log</a>
+                </div>
                 <ul class="list-group list-group-flush">
                     @forelse($popularEbooks as $ebook)
-                        <li class="list-group-item px-0 d-flex justify-content-between gap-3">
-                            <span>
-                                <span class="fw-semibold d-block">{{ $ebook->title }}</span>
-                                <span class="text-muted small">{{ $ebook->subject->name ?? '-' }}</span>
+                        <li class="list-group-item px-0 d-flex justify-content-between align-items-center gap-2">
+                            <span class="overflow-hidden me-2">
+                                <span class="fw-semibold d-block text-truncate" title="{{ $ebook->title }}">{{ $ebook->title }}</span>
+                                <span class="text-muted small text-truncate d-block">{{ $ebook->subject->name ?? '-' }}</span>
                             </span>
-                            <span class="badge text-bg-success align-self-center">{{ $ebook->reads_count }}</span>
+                            <span class="badge text-bg-success align-self-center flex-shrink-0">{{ $ebook->reads_count }}</span>
                         </li>
                     @empty
                         <li class="list-group-item px-0 text-muted">Belum ada data akses.</li>
@@ -181,41 +184,24 @@
             </div>
         </div>
     </div>
-    <div class="col-lg-6">
-        <div class="admin-card card">
+    <div class="col-lg-4">
+        <div class="admin-card card h-100">
             <div class="card-body">
-                <h2 class="h5">Kelas dengan Materi Terbanyak</h2>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h2 class="h5 mb-0">Kelas dengan Materi Terbanyak</h2>
+                    <a href="{{ route('admin.classes.index') }}" class="small">Kelola</a>
+                </div>
                 <ul class="list-group list-group-flush">
                     @forelse($topClasses as $class)
-                        <li class="list-group-item px-0 d-flex justify-content-between gap-3">
-                            <span>
-                                <span class="fw-semibold d-block">Kelas {{ $class->name }}</span>
-                                <span class="text-muted small">{{ $class->subjects_count ?? 0 }} mapel aktif</span>
+                        <li class="list-group-item px-0 d-flex justify-content-between align-items-center gap-2">
+                            <span class="overflow-hidden me-2">
+                                <span class="fw-semibold d-block text-truncate">Kelas {{ $class->name }}</span>
+                                <span class="text-muted small text-truncate d-block">{{ $class->subjects_count ?? 0 }} mapel aktif</span>
                             </span>
-                            <span class="badge text-bg-primary align-self-center">{{ $class->ebooks_count ?? 0 }}</span>
+                            <span class="badge text-bg-primary align-self-center flex-shrink-0">{{ $class->ebooks_count ?? 0 }}</span>
                         </li>
                     @empty
                         <li class="list-group-item px-0 text-muted">Belum ada data kelas.</li>
-                    @endforelse
-                </ul>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-6">
-        <div class="admin-card card">
-            <div class="card-body">
-                <h2 class="h5">Mapel Paling Banyak Diakses</h2>
-                <ul class="list-group list-group-flush">
-                    @forelse($topSubjects as $subject)
-                        <li class="list-group-item px-0 d-flex justify-content-between gap-3">
-                            <span>
-                                <span class="fw-semibold d-block">{{ $subject->name }}</span>
-                                <span class="text-muted small">Kelas {{ $subject->class->name ?? '-' }}</span>
-                            </span>
-                            <span class="badge text-bg-warning align-self-center">{{ $subject->access_count ?? 0 }}</span>
-                        </li>
-                    @empty
-                        <li class="list-group-item px-0 text-muted">Belum ada data mapel.</li>
                     @endforelse
                 </ul>
             </div>

@@ -150,7 +150,7 @@ class PublicLibraryUpgradeTest extends TestCase
         $response->assertOk()
             ->assertSee('E-Book Paling Banyak Diakses')
             ->assertSee('Kelas dengan Materi Terbanyak')
-            ->assertSee('Mapel Paling Banyak Diakses')
+            ->assertDontSee('Mapel Paling Banyak Diakses')
             ->assertSee('Audit kualitas koleksi')
             ->assertSee('Prioritas perbaikan koleksi');
     }
